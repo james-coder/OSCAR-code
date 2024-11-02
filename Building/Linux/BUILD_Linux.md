@@ -1,6 +1,6 @@
 You will need either qtcreator or qttools5-dev-tools and a C++ compiler and linker
 
-Also, you need the packages qt5-default, libqt5serialport5, libqt5serialport5-dev and libqt5opengl5-dev
+Also, you need the packages qt5-default, libqt5serialport5, libqt5serialport5-dev and libqt5opengl5-dev (see ./setup_build_script.sh)
 
 Oscar can be built without its Help module with Qt 5.8 SDK.
 
