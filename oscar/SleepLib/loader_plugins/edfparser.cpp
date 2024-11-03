@@ -28,6 +28,23 @@
 //    delete [] dataArray;
 //}
 
+#ifdef TEST_MACROS_ENABLED
+#include <QRegExp>
+QHash<QString,int> edfSignalsFound;
+QStringList edfSignalList;
+void edfDebugInit() {
+    edfSignalsFound.clear();
+    edfSignalList.clear();
+    edfSignalList
+        // Signals to display containing these names
+        << "Date"
+        << "Mode"
+        ;
+}
+#else
+void edfDebugInit() {};
+#endif
+
 EDFInfo::EDFInfo()
 {
     filename = QString();
@@ -267,7 +284,6 @@ bool EDFInfo::Parse() {
         fileData.clear();
         return false;
     }
-
     bool ret = ParseSignalData();
     fileData.clear();
     return ret;
@@ -299,6 +315,7 @@ bool EDFInfo::ParseSignalData() {
         sig.dataArray = new qint16 [samples];
 //      sig.pos = 0;
     }
+
     for (int recNo = 0; recNo < edfHdr.num_data_records; recNo++) {
         for (auto & sig : edfsignals) {
             if ( sig.label.contains("Annotations") ) {
@@ -308,11 +325,34 @@ bool EDFInfo::ParseSignalData() {
                 for (int j=0;j<sig.sampleCnt;j++) { // Big endian safe
                     qint16 t=Read16();
                     sig.dataArray[recNo*sig.sampleCnt+j]=t;
-                    // c++ macros IF DEBUGFC Q QQ will expand when TEST_MACROS_ENABLED is enabled
-                    // Displays the first entry in an edf signal when data is valid (not all ones).
-                    IF ( (j==0) && (t !=-1) ) {
-                        DEBUGFC Q(&sig) QQ(rec,recNo) QQ(Cnt,sig.sampleCnt) QQ(off,j) QQ(dat,t) QQ(lab,sig.label);
-                    }
+                    #ifdef TEST_MACROS_ENABLED
+                      if (
+                        (t !=-1)   // only display non-null data
+                        && (j==0)     // Only display first data element
+                        )
+                      {
+                        bool displayItem = false;
+                        static QRegExp rx("^\\w[.]");
+                        static QRegExp rx2("\\d$)");
+                        bool havematch = edfSignalList.contains(sig.label) ;
+                        bool havesig  = (rx.indexIn(sig.label) != -1) || havematch ;
+                        bool haveNum  = (rx2.indexIn(sig.label) != -1);
+                        displayItem = havesig && !haveNum;
+                        // displayItem = true;
+                        if (displayItem) {
+                            edfSignalsFound.insert(sig.label,t);
+                            if (sig.label.contains("Mode") ) {
+                                DEBUGFC Q(filename);
+                            }
+                            DEBUGCF O(QString("                     L:%1 %2 Gain:%3 off:%4")
+                                .arg(sig.label,-16)
+                                .arg(t,5)
+                                .arg(sig.gain,5)
+                                .arg(sig.offset) )
+                                ;
+                        };
+                      }
+                    #endif
                 }
             }
         }
