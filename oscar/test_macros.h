@@ -133,7 +133,7 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 #define TEST_MACROS_FILE_ONCE
 
 // This enables or disbale the test macros.
-#if defined( TEST_MACROS_ENABLED )
+#if defined( TEST_MACROS_ENABLED ) || false
 #include <QRegularExpression>
 #include <QFileInfo>
 #include <QDebug>
@@ -170,11 +170,6 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 
 // END internal use in the file
 
-// define API macros
-// always API should start with DEBUGC so that they can allways be easily found in code.
-#define DEBUGCI         DEBUGXC DEBUGXFLM
-#define DEBUGCIS        DEBUGXC DEBUGXFL
-#define DEBUGCT         DEBUGXC DEBUGXTFLM
 // Note users could make their own API using DEBUGXD, DEBUGXC , or DEBUGXW followed by DEBUGXF.. or DEBUGXT..
 // since all macros will be empty when test macros are turned off. so the end user does not have make them empry by default.
 
@@ -213,16 +208,8 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
     #define COMPILER
 #endif
 
-// not used any more define to exist APIS
-#define DEBUGF DEBUGCIS
-#define DEBUGFC DEBUGCI
 //==========================================================================
 #else       // TEST_MACROS_ENABLED
-
-// not supported any more - insure old removed
-#define DEBUGF
-#define DEBUGFC
-
 // Turn debugging off.  macros expands to white space
 
 #define DEBUGXD
@@ -236,10 +223,6 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 #define DEBUGXTF
 #define DEBUGXTFL
 #define DEBUGXTFLM
-
-#define DEBUGCI
-#define DEBUGCIS
-#define DEBUGCT
 
 #define Z( XX )
 #define ZZ( XX , YY)
@@ -259,4 +242,16 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 #endif  // TEST_MACROS_ENABLED
 
 #endif  // TEST_MACROS_FILE_ONCE
+
+//defined API macros
+//API should start with DEBUGC so that they can always be easily found in code.
+
+#define DEBUGCI         DEBUGXC DEBUGXFLM
+#define DEBUGCIS        DEBUGXC DEBUGXFL
+#define DEBUGCT         DEBUGXC DEBUGXTFLM
+
+// obsoluted macros that are still usd.
+#define DEBUGF          DEBUGXC DEBUGXFL
+#define DEBUGFC         DEBUGXC DEBUGXFLM
+
 
