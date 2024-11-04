@@ -1,7 +1,7 @@
 /* SleepLib ResMed Loader Implementation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -64,7 +64,18 @@ void ResmedLoader::LogUnexpectedMessage(const QString & message)
     m_importMutex.unlock();
 }
 
-static const QVector<int> AS11TestedModels {39463, 39420, 39421, 39423, 39483, 39485, 39517, 39520, 39494, 39491, 0};
+static const QVector<int> AS11TestedModels {
+39420,
+39421,
+39423,
+39463,
+39483,
+39485, //as11 AutoSet
+39491, //ac11 ASV
+39494, //ac11 vAuto
+39517,
+39520,
+0};
 
 ResmedLoader::ResmedLoader() {
 #ifndef UNITTEST_MODE
@@ -84,7 +95,7 @@ ResmedLoader::ResmedLoader() {
 #ifdef DEBUG_EFFICIENCY
     timeInTimeDelta = timeInLoadBRP = timeInLoadPLD = timeInLoadEVE = 0;
     timeInLoadCSL = timeInLoadSAD = timeInEDFInfo = timeInEDFOpen = timeInAddWaveform = 0;
-#endif    
+#endif
 
     saveCallback = SaveSession;
 }
@@ -383,6 +394,10 @@ int ResmedLoader::OpenWithCallback(const QString & dirpath, ResDaySaveCallback s
 
 int ResmedLoader::Open(const QString & dirpath)
 {
+#ifdef TEST_MACROS_ENABLED
+void edfDebugInit();
+    edfDebugInit();
+#endif
     qDebug() << "Starting ResmedLoader::Open( with " << dirpath << ")";
     QString datalogPath;
     QHash<QString, QString> idmap;  // Temporary device ID properties hash
@@ -419,8 +434,9 @@ int ResmedLoader::Open(const QString & dirpath)
         qDebug() << "Failed to parse Identification file";
         return -1;
     }
- 
+
     qDebug() << "Info:" << info.series << info.model << info.modelnumber << info.serial;
+    DEBUGFC  O(info.modelnumber) Q(info.series) Q(info.model) O(info.serial);
 #ifdef IDENT_DEBUG
     qDebug() << "IdMap size:" << idmap.size();
     foreach ( QString st , idmap.keys() ) {
@@ -955,9 +971,9 @@ void ResmedLoader::checkSummaryDay( ResMedDay & resday, QDate date, Machine * ma
 ///////////////////////////////////////////////////////////////////////////////////////////
 int ResmedLoader::ScanFiles(Machine * mach, const QString & datalog_path, QDate firstImport)
 {
-#ifdef DEBUG_EFFICIENCY    
+#ifdef DEBUG_EFFICIENCY
     QTime time;
-#endif    
+#endif
 
     bool create_backups = p_profile->session->backupCardData();
     QString backup_path = mach->getBackupPath();
@@ -998,7 +1014,7 @@ int ResmedLoader::ScanFiles(Machine * mach, const QString & datalog_path, QDate 
 
 //  QDateTime ignoreBefore = p_profile->session->ignoreOlderSessionsDate();
 //  bool ignoreOldSessions = p_profile->session->ignoreOlderSessions();
-    
+
     // Scan for any sub folders and create files lists
     for (int i = 0; i < dirlistSize ; i++) {
         const QFileInfo & fi = dirlist.at(i);
@@ -1253,7 +1269,7 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
         ResMedEDFInfo & str = *file.edf;
         int days = str.GetNumDataRecords();
         totalRecs += days;
-#ifdef STR_DEBUG        
+#ifdef STR_DEBUG
         qDebug() << "STR file is" << file.filename.section("/", -3, -1);
         qDebug() << "First day" << QDateTime::fromMSecsSinceEpoch(str.startdate, EDFInfo::localNoDST).date().toString() << "for" << days << "days";
 #endif
@@ -1274,14 +1290,14 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
         int size = str.GetNumDataRecords();
         QDate lastDay = date.addDays(size-1);
 
-#ifdef STR_DEBUG        
+#ifdef STR_DEBUG
         QString & strfile = file.filename;
         qDebug() << "Processing" << strfile.section("/", -3, -1) << date.toString() << "for" << size << "days";
         qDebug() << "Last day is" << lastDay;
 #endif
 
         if ( lastDay < firstImport ) {
-#ifdef STR_DEBUG        
+#ifdef STR_DEBUG
             qDebug() << "LastDay before firstImport, skipping" << strfile.section("/", -3, -1);
 #endif
             continue;
@@ -1363,7 +1379,7 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
 #endif
             auto rit = resdayList.insert(date, ResMedDay(date));
 
-#ifdef STR_DEBUG        
+#ifdef STR_DEBUG
             qDebug() << "Setting up STRRecord for" << date.toString();
 #endif
             STRRecord &R = rit.value().str;
@@ -1382,7 +1398,7 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             int lastOff = -1;
             for (int s = 0; s < maskon->sampleCnt; ++s) {
                 qint32 on = maskon->dataArray[recstart + s];    // these on/off times are minutes since noon
-                qint32 off = maskoff->dataArray[recstart + s];  // we want the actual time in seconds 
+                qint32 off = maskoff->dataArray[recstart + s];  // we want the actual time in seconds
                 if ( (on > 24*60) || (off > 24*60) ) {
                     qWarning().noquote() << "Mask times are out of range. Possible SDcard corruption" << "date" << date << "on" << on << "off" <<off;
                     continue;
@@ -1413,41 +1429,163 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             R.maskevents = maskeventcount->dataArray[rec];
 
             CPAPMode mode = MODE_UNKNOWN;
-            IF (AS_eleven)
-            DEBUGFC Q(AS_eleven) Q(mode) Q(CPAP_Mode) Q(MODE_CPAP) Q((void*)str.lookupSignal(CPAP_Mode)) O("___________________________________");
+
+            #if 0
+            // OSCAR Therapy modes
+            0 MODE_UNKNOWN = 0
+            1 MODE_CPAP
+            2 MODE_APAP
+            3 MODE_BILEVEL_FIXED
+            4 MODE_BILEVEL_AUTO_FIXED_PS
+            5 MODE_BILEVEL_AUTO_VARIABLE_PS
+            6 MODE_ASV
+            7 MODE_ASV_VARIABLE_EPAP
+            8 MODE_AVAPS
+            9 MODE_TRILEVEL_AUTO_VARIABLE_PDIFF
+
+            AS/AC 10 therapy modes characteristics      OSCAR MODES
+                11  Her                                 MODE_APAP
+                10  PAC what ever that is               MODE_UNKNOWN
+                9                                       MODE_AVAPS
+                8   vpap adapt variable epap            MODE_ASV_VARIABLE_EPAP
+                7   vpap adapt                          MODE_ASV
+                6   vpap auto (Min EPAP, Max IPAP, PS)  MODE_BILEVEL_AUTO_FIXED_PS
+                5                                       MODE_BILEVEL_FIXED
+                4                                       MODE_BILEVEL_FIXED
+                3   vpap auto (Min EPAP, Max IPAP, PS)  MODE_BILEVEL_FIXED
+                2                                       MODE_BILEVEL_FIXED
+                1                                       MODE_APAP
+                0   Unkown                              MODE_CPAP
+
+            // Therapy Modes for Resmed version 10 and prior
+            //  0;    // CPAP
+            //  1;    // APAP
+            //  2;    // Bilevel-T
+            //  3;    // BiLevel-S
+            //  4;    // BiLevel-S/T ??
+            //  5;    // MODE_BILEVEL_FIXED  BiLevel-S/T
+            //  6;    // ASVauto is displayed
+            //  7;    // ASV
+            //  8;    // ASVauto
+            //  9;    // IVAPS   MODE_AVAPS  BiLevel-T
+            //  10;   // PAC
+            //  11;   // Auto for Her
+            //  12;   // ASVauto  ??
+			
+            // Therapy Modes for Resmed version 11
+            //  0;    CPAP
+            //  1;    AirSenseAutoSet APAP		7 9
+			//        ResCan Displays TherapyMode AutoSet
+			//        		EPR FULLTIME
+			//              EPR Enable
+			//              EPR Patient Enable
+			//              EPR Level
+			//              Ramp Enable
+			//              Ramp Time
+			//              Patient View
+			//              Resonse
+			//        OSCAR displays    Min {Min} Max {max}
+            //  2;    AirSenseAutoSet APAP her
+			//  	  Mapped by previous developers.
+            //  3;    AirSenseAutoSet CPAP 	
+			//        ResCan Displays TherapyMode CPAP
+			//              Set Pressure
+			//              EPR Level
+			//              Ramp Time
+			//              Patient View
+			//        OSCAR displays    PS {PS} over {MinEPAP}-{MAXIPAP}
+            //  4;    AirCurveVauto BiLevel-S
+            //  5;
+            //  6;    AirCurveASV  ASV	
+			//        ResCan Displays TherapyMode ASV
+			//        		EPAP and MixMaxPs
+			//              Ramp Enable
+			//              Ramp Time
+			//              Patient View
+			//        OSCAR displays    EPAP {v} PS{minPS}-{maxPS} (cmH20)
+            //  7;    AirCurveVauto ASVauto
+			//        ResCan Displays TherapyMode ASVauto
+			//              MinMaxEPAP
+			//              MixMaxPs
+			//              Ramp Enable
+			//              Ramp Time
+			//              Patient View
+			//        OSCAR displays    MinEPAP {v} MaxIPAP {v} PS{minPS}-{maxPS} (cmH20)
+            //  8;    AirCurveVauto vAuto
+			//        ResCan Displays TherapyMode vAuto
+			//              Ramp Enable
+			//              Ramp Time
+			//              Patient View
+			//              Pressure Support (PS)
+			//              MinEPAP
+			//              MaxIPAP
+			//              MixMaxPs
+			//              MinMaxTI
+			//        OSCAR displays    PS {PS} over {MinEPAP}-{MAXIPAP}
+
+
+            // Therapy Modes for Resmed version 11 - for device therapy 
+            //  AC11 Mode  AC11 Therapy              AC10 Therapy       OSCAR Theriapy
+            //  0;         ???
+            //  1;         AirSenseAutoSet APAP	     => 1  APAP         => MODE_APAP    
+            //  2;         AirSenseAutoSet APAP her  => 11 APAPher      => MODE_APAP
+            //  3;         AirSenseAutoSet CPAP 	 => 0  CPAP         => MODE_CPAP      
+            //  4;         AirCurveVauto BiLevel-S   => 3  BiLevel-S    => MODE_BILEVEL_FIXED
+            //  5;         ???
+            //  6;         AirCurveASV  ASV			 => 7  ASV          => MODE_ASV 
+            //  7;         AirCurveVauto ASVauto     => 8  ASVauto      => MODE_ASV_VARIABLE_EPAP
+            //  8;         AirCurveVauto vAuto       => 6  vAuto        => MODE_BILEVEL_FIXED
+            //  9;         ???
+            // 10;         ???
+            // 11;         ???
+            //  ?;         ???                       => 16 Unknown      => MODE_UNKNOWN 
+
+            #endif
 
             if ((sig = str.lookupSignal(CPAP_Mode))) {
                 int mod = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
                 R.rms9_mode = mod;
                 // Convert AirCurve 11 and AirSense 11 to appropiate resmed 10 modes.
-                DEBUGFC  Q(rec) Q(sig->label) Q(sig->transducer_type);
-                DEBUGFC Q(mod) O("=") Q(sig->dataArray[rec]) O("*") Q(sig->gain)  Q("+") Q(sig->offset);
+                // map Resmed 11 devices theraphy mode back to Previous Resmed 10 modes
+                // EPR is pressure recovery not pressure settings
                 if ( AS_eleven  ) {         // translate AS11 mode values back to S9 / AS10 values
+
                     switch ( mod ) {
-                    case 0:
-                        R.rms9_mode = 16;    // Unknown
+                    case 0:                     // AS11 CPAP
+                        R.rms9_mode = 16;       //Unknown - have not seen this machine
                         break;
-                    case 1:
-                        R.rms9_mode = 1;     // still APAP
+                    case 1:                     // AS11 Autoset - APAP
+                        R.rms9_mode = 1;        // still APAP
                         break;
-                    case 2:
-                        R.rms9_mode = 11;   //make it look like A4Her
+                    case 2:                     // AS11 AutoSet  - APAP for Her
+                        R.rms9_mode = 11;       //make it look like AS10 A4Her
                         break;
-                    case 3:
-                        R.rms9_mode = 0;    // make it be CPAP
+                    case 3:                     // AS11 Autoset  CPAP with adjustable EPR.h
+                        R.rms9_mode = 0;        // make it be CPAP
                         break;
-                    case 7:					// Added for ASV .
-                    case 8:					// Added for vAuto .
-                    //case 9:
-                    //case 10:
-                    //case 11:			    // will 11 (A4Her) ever be generated by AS/AC 11?
-                        break;				// no change these are the same as in aircurve 10
+                    case 4:
+                        R.rms9_mode = 3;        //MODE_BILEVEL_FIXED  BiLevel-S  EPAP{n/a} IPAP{n/a} (cmH2O)
+                        break;
+                    case 5:	       			    // never seen this one
+                        R.rms9_mode = 16;       //Unknown - have not seen this machine
+                        break;
+                    case 6:					    // Added for ASV WHat therapy mode
+                        R.rms9_mode = 7;        // make it be ASV
+                        break;
+                    case 7:					    // AC11 ASV ASVauto 
+                        R.rms9_mode = 8;        // make it be AC10 ASVauto
+                        break;
+                    case 8:					    // AC11 vAuto  MODE_BILEVEL_AUTO_FIXED_PS
+                        R.rms9_mode = 6;
+                        break;
                     default:
                         R.rms9_mode = 16;   // unknown for now
                         break;
-                    }
+                    };
+                    // DEBUGFC QQ(serialNumber,mach->info.serial) QQ(Resmed10Mode,R.rms9_mode) QQ(Resmed11Mode,mod) QQ(model,mach->info.modelnumber) ;
                 }
-
+                // Map Resmed theraphy mode to OSCAR therapy modes
+                // for all modes prior to AirCurve 11
                 int RMS9_mode = R.rms9_mode;
                 switch ( RMS9_mode ) {
                 case 11:    
@@ -1485,6 +1623,7 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
                 default:
                     mode = MODE_UNKNOWN;
                 }    
+                DEBUGFC QQ(serialNumber,mach->info.serial) QQ(OSCARMode,mode) QQ(Resmed10Mode,R.rms9_mode) QQ(model,mach->info.modelnumber) ;
                 R.mode = mode;
 
                 // Settings.CPAP.Starting Pressure
@@ -1596,12 +1735,8 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
 
 // Collect the pressure settings
 
-            bool haveipap = false;
-            Q_UNUSED( haveipap );
-
             if ((sig = str.lookupSignal(CPAP_IPAP))) {
                 R.ipap = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                haveipap = true;
             }
             if ((sig = str.lookupSignal(CPAP_EPAP))) {
                 R.epap = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
@@ -1699,11 +1834,9 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             }
             if ((sig = str.lookupSignal(CPAP_IPAPHi))) {
                 R.max_ipap = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                haveipap = true;
             }
             if ((sig = str.lookupSignal(CPAP_IPAPLo))) {
                 R.min_ipap = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                haveipap = true;
             }
             if ((sig = str.lookupSignal(CPAP_PS))) {
                 R.ps = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
@@ -1720,9 +1853,6 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
                 R.min_ps = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
             }
 
-// /////    if (!haveipap) {
-// /////    }
-
             if (mode == MODE_ASV_VARIABLE_EPAP) {
                 R.min_ipap = R.min_epap + R.min_ps;
                 R.max_ipap = R.max_epap + R.max_ps;
@@ -1735,8 +1865,7 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
 
             if ((sig = str.lookupLabel("S.AS.Comfort"))) {
                 R.s_Comfort = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_Comfort--;
+                if ( AS_eleven ) R.s_Comfort--;
             }
 
             EventDataType epr = -1, epr_level = -1;
@@ -1744,8 +1873,7 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             if ((mode == MODE_CPAP) || (mode == MODE_APAP) ) {
                 if ((sig = str.lookupSignal(RMS9_EPR))) {
                     epr= EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    if ( AS_eleven )
-                        epr--;
+                    if ( AS_eleven ) epr--;
                 }
                 if ((sig = str.lookupSignal(RMS9_EPRLevel))) {
                     epr_level= EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
@@ -1754,21 +1882,18 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
                     a1x = true;
                     epr = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
                     epr += 1;
-                    if ( AS_eleven )
-                        epr--;
+                    if ( AS_eleven ) epr--;
                 }
                 int epr_on=0, clin_epr_on=0;
                 if ((sig = str.lookupLabel("S.EPR.EPREnable"))) { // first check devices opinion
                     a1x = true;
                     epr_on = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    if ( AS_eleven )
-                        epr_on--;
+                    if ( AS_eleven ) epr_on--;
                 }
                 if (epr_on && (sig = str.lookupLabel("S.EPR.ClinEnable"))) {
                     a1x = true;
                     clin_epr_on = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    if ( AS_eleven )
-                        clin_epr_on--;
+                    if ( AS_eleven ) clin_epr_on--;
                 }
                 if (a1x && !(epr_on && clin_epr_on)) {
                     epr = 0;
@@ -1823,32 +1948,26 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             }
             if ((sig = str.lookupLabel("S.RampEnable"))) {
                 R.s_RampEnable = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_RampEnable--;
-                if ( R.s_RampEnable == 2 ) 
-                    R.s_RampTime = -1;
+                if ( AS_eleven ) R.s_RampEnable--;
+                if ( R.s_RampEnable == 2 ) R.s_RampTime = -1;
             }
             if ((sig = str.lookupLabel("S.EPR.ClinEnable"))) {
                 R.s_EPR_ClinEnable = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_EPR_ClinEnable--;
+                if ( AS_eleven ) R.s_EPR_ClinEnable--;
             }
             if ((sig = str.lookupLabel("S.EPR.EPREnable"))) {
                 R.s_EPREnable = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_EPREnable--;
+                if ( AS_eleven ) R.s_EPREnable--;
             }
 
             if ((sig = str.lookupLabel("S.ABFilter"))) {
                 R.s_ABFilter = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_ABFilter--;
+                if ( AS_eleven ) R.s_ABFilter--;
             }
 
             if ((sig = str.lookupLabel("S.ClimateControl"))) {
                 R.s_ClimateControl = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_ClimateControl--;
+                if ( AS_eleven ) R.s_ClimateControl--;
             }
 
             if ((sig = str.lookupLabel("S.Mask"))) {
@@ -1864,33 +1983,30 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
                 if ( AS_eleven ) {
                     R.s_PtView = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
                     R.s_PtView--;
-                } else
+                } else {
                     R.s_PtAccess = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
+                }
             }
             if ((sig = str.lookupLabel("S.SmartStart"))) {
                 R.s_SmartStart = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_SmartStart--;
+                if ( AS_eleven ) R.s_SmartStart--;
 //              qDebug() << "SmartStart is set to" << R.s_SmartStart;
             }
             if ((sig = str.lookupLabel("S.SmartStop"))) {
                 R.s_SmartStop = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_SmartStop--;
+                if ( AS_eleven ) R.s_SmartStop--;
                 //qDebug() << "SmartStop is set to" << R.s_SmartStop;
             }
             if ((sig = str.lookupLabel("S.HumEnable"))) {
                 R.s_HumEnable = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_HumEnable--;
+                if ( AS_eleven ) R.s_HumEnable--;
             }
             if ((sig = str.lookupLabel("S.HumLevel"))) {
                 R.s_HumLevel = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
             }
             if ((sig = str.lookupLabel("S.TempEnable"))) {
                 R.s_TempEnable = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                if ( AS_eleven )
-                    R.s_TempEnable--;
+                if ( AS_eleven ) R.s_TempEnable--;
             }
             if ((sig = str.lookupLabel("S.Temp"))) {
                 R.s_Temp = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
@@ -1927,22 +2043,24 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
                 }
             }
             if (R.rms9_mode == 6) {     // vAuto mode
-                qDebug() << "vAuto mode found" << 6;
-                if ((sig = str.lookupLabel("S.Cycle"))) {
+                //qDebug() << "vAuto mode found" << 6;
+                QString sigprefix("S.") ;
+                if ( AS_eleven ) sigprefix.append("VA.");
+                QString signame =QString("%1%2").arg(sigprefix).arg("Cycle");
+                if ((sig = str.lookupLabel(signame))) {
                     R.s_Cycle = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    // qDebug() << "Cycle" << R.s_Cycle;
                 } 
-                if ((sig = str.lookupLabel("S.Trigger"))) {
+                signame =QString("%1%2").arg(sigprefix).arg("Trigger");
+                if ((sig = str.lookupLabel(signame))) {
                     R.s_Trigger = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    // qDebug() << "Trigger" << R.s_Trigger;
                 } 
-                if ((sig = str.lookupLabel("S.TiMax"))) {
+                signame =QString("%1%2").arg(sigprefix).arg("TiMax");
+                if ((sig = str.lookupLabel(signame))) {
                     R.s_TiMax = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    // qDebug() << QString("TiMax %1").arg( R.s_TiMax, 0, 'f', 1);
                 } 
-                if ((sig = str.lookupLabel("S.TiMin"))) {
+                signame =QString("%1%2").arg(sigprefix).arg("TiMin");
+                if ((sig = str.lookupLabel(signame))) {
                     R.s_TiMin = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    // qDebug() << QString("TiMin %1").arg( R.s_TiMin, 0, 'f', 1);
                 } 
             }
             if ( R.min_pressure == 0 ) {
@@ -3712,8 +3830,8 @@ void setupResMedTranslationMap()
 
 
     // STR signals
-    resmed_codes[CPAP_IPAP] = QStringList { "Insp Pres", "IPAP", "S.BL.IPAP" };
-    resmed_codes[CPAP_EPAP] = QStringList { "Exp Pres", "EprPress.2s", "EPAP", "S.BL.EPAP", "EPRPress.2s" };
+    resmed_codes[CPAP_IPAP] = QStringList { "Insp Pres", "IPAP", "S.BL.IPAP" , "S.S.IPAP" };
+    resmed_codes[CPAP_EPAP] = QStringList { "Exp Pres", "EprPress.2s", "EPAP", "S.BL.EPAP", "EPRPress.2s" , "S.S.EPAP" };
     resmed_codes[CPAP_EPAPHi] = QStringList { "Max EPAP" };
     resmed_codes[CPAP_EPAPLo] = QStringList { "Min EPAP", "S.VA.MinEPAP" };
     resmed_codes[CPAP_IPAPHi] = QStringList { "Max IPAP", "S.VA.MaxIPAP" };
@@ -3830,4 +3948,6 @@ void setupResMedTranslationMap()
 //    26104, 26105, 26125, 26126 S8 Auto 25
 //    26102, 26103, 26106, 26107, 26108, 26109, 26123, 26127 VPAP IV
 //    26112, 26113, 26114, 26115, 26116, 26117, 26118, 26124 VPAP IV ST
+
+
 

@@ -553,10 +553,6 @@ void ResventLoader::ReadWaveFormsHeaders(QFile& f, QVector<ChunkData>& wave_form
         wave_forms[i].event_list = GetEventList(name, session, wave_forms[i].sample_rate);
         wave_forms[i].samples_by_chunk = samples_by_chunk;
         wave_forms[i].start_time = usage.start_time.toMSecsSinceEpoch();
-        #ifdef TEST_MACROS_ENABLED
-        wave_forms[i].chunkName = name;
-        wave_forms[i].chunkDebug = -1;
-        #endif
     }
 }
 
