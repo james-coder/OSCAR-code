@@ -500,6 +500,7 @@ void edfDebugInit();
     } else {            // Starting from new beginnings - new or purged
         qDebug() << "New device or just purged";
         p_profile->forceResmedPrefs();
+        #if 0
         int modelNum = info.modelnumber.toInt();
         if ( modelNum >= 39000 ) {
             if ( ! AS11TestedModels.contains(modelNum) ) {
@@ -510,6 +511,7 @@ void edfDebugInit();
                              ,QMessageBox::Ok);
             }
         }
+        #endif
         mach = p_profile->CreateMachine( info );
     }
     QDateTime ignoreBefore = p_profile->session->ignoreOlderSessionsDate();
@@ -1535,9 +1537,6 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             //  6;         AirCurveASV  ASV			 => 7  ASV          => MODE_ASV 
             //  7;         AirCurveVauto ASVauto     => 8  ASVauto      => MODE_ASV_VARIABLE_EPAP
             //  8;         AirCurveVauto vAuto       => 6  vAuto        => MODE_BILEVEL_FIXED
-            //  9;         ???
-            // 10;         ???
-            // 11;         ???
             //  ?;         ???                       => 16 Unknown      => MODE_UNKNOWN 
 
             #endif
