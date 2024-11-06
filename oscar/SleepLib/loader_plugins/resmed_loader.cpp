@@ -64,6 +64,7 @@ void ResmedLoader::LogUnexpectedMessage(const QString & message)
     m_importMutex.unlock();
 }
 
+#if defined(INCLUDE_AS_MODEL_VERIFICATION)
 static const QVector<int> AS11TestedModels {
 39420,
 39421,
@@ -76,6 +77,7 @@ static const QVector<int> AS11TestedModels {
 39517,
 39520,
 0};
+#endif
 
 ResmedLoader::ResmedLoader() {
 #ifndef UNITTEST_MODE
@@ -500,7 +502,7 @@ void edfDebugInit();
     } else {            // Starting from new beginnings - new or purged
         qDebug() << "New device or just purged";
         p_profile->forceResmedPrefs();
-        #if 0
+        #if defined(INCLUDE_AS_MODEL_VERIFICATION)
         int modelNum = info.modelnumber.toInt();
         if ( modelNum >= 39000 ) {
             if ( ! AS11TestedModels.contains(modelNum) ) {
