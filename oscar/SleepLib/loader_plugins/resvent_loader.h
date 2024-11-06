@@ -69,10 +69,6 @@ struct ChunkData {
     qint64 start_time;
     int total_samples_by_chunk;
     float sample_rate;
-    #ifdef TEST_MACROS_ENABLED
-    QString chunkName ;
-    int chunkDebug = -1;
-    #endif
 };
 
 

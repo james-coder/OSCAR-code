@@ -1,7 +1,6 @@
 /* Test macros Implemntation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -28,60 +27,179 @@ To turn off the the test macros.
 #include <test_macros.h>
 ###########################################
 
+These macrio are used to help in understanding the exist code.
+The data in displayed in the debug log file.
 
+All debug statements can be turned or off by a single variable in each file.
+
+if TEST_MACROS_ENABLED is defined then then test macros are enabled.
+#define TEST_MACROS_ENABLEDoff      #to turn off test macros
+#define TEST_MACROS_ENABLED         # to on macro
+#include <test_macros.h>            # to include.
+
+The macros are designed to to be easy to be seen and found.
+1) Basic debug I use criical so there are easily forund in the log file.
+2) The file name , line number and function/method name can be displayed.
+3) macros can be used to display data.
+4) There are display macros display data as needed.
+5) if TEST_MACROS_ENABLED is not defined then all macros and there contents produce nothiing.
+
+
+
+Examples Code               Log FIle
+======================      =========================================================
+
+API OPTIONS
+================
+// API DEBUG macros start with DEBUGC so that they can always be easily found in code.
+DEBUGCI         //  Critical with information (Filename,lineNumber,method/fuction)
+DEBUGCIS        //  Critical with information (Filename,lineNumber)
+DEBUGCT         //  Critical with time and information(Filename,lineNumber)
+
+Examples
+DEBUGCIS ;                              Critical: MinutesAtPressure[218]
+DEBUGCI ;                               Critical: MinutesAtPressure[219]PressureInfo
+DEBUGCT ;                               Critical: 10:44:43.942 MinutesAtPressure[220]PressureInfo
+
+DISPLAY OPTIONS
+================
+EXPRESSION are valid C expressions taht can be display using <<
+Display Values
+--------------
+
+Q( EXPRESSION )                         Display EXPRESSION quoted followed by its value
+O( EXPRESSION )                         Display the EXRESSIONS value  - no label
+Z( EXPRESSION )                         ALWAYS return empty space
+Add a description
+QQ( TEXT , EXPRESSION )                 Displays EXPRESSION with the Description TEXT (quoted)
+OO( TEXT , EXPRESSION )                 Display the EXRESSIONS value  - no Description
+ZZ( TEXT , EXPRESSION )                 ALWAYS return empty space
+
+Examples
+DEBUGCI Q(code) QQ(Channelid,code);     Critical: MinutesAtPressure[221]PressureInfo code: 4364 Channelid: 4364
+DEBUGCI O(code) OO(Channelid,code);     Critical: MinutesAtPressure[221]PressureInfo 4364 4364
+DEBUGCI Z(code) ZZ(Channelid,code);     Critical: MinutesAtPressure[222]PressureInfo
+
+Display Schema codes
+--------------------
+SCHEMA_CODE_ID may be either the Channel id or code.
+DEBUGCI FULLNAME( SCHEMA_CODE_ID ) ;    Displays the FULLNAME of the channel (translateabled)
+DEBUGCI NAME( SCHEMA_CODE_ID ) ;       Displays the is in hex and the name of the code.
+
+Examples
+DEBUGCI FULLNAME(code) ;                Critical: MinutesAtPressure[224]PressureInfo EPAP
+DEBUGCI NAME(code) ;                    Critical: MinutesAtPressure[225]PressureInfo EPAP:0x110E
+
+Display Date Time macro from EPOCH
+----------------------------------
+DEBUGCI DATE( EPOCH ) ;                 Display the DATE
+DEBUGCI TIME( EPOCH ) ;                 Display the time
+DEBUGCI DATETIME( EPOCH ) ;             Displays the full date time
+DEBUGCI DATETIMEUTC( EPOCH ) ;          Displays the full date in UTC
+
+Examples
+DEBUGCI DATE(minTime) ;                 Critical: MinutesAtPressure[226]PressureInfo 31Jan2024
+DEBUGCI TIME(minTime) ;                 Critical: MinutesAtPressure[227]PressureInfo 13:02:00.000
+DEBUGCI DATETIME(minTime) ;             Critical: MinutesAtPressure[228]PressureInfo 31Jan2024 13:02:00.000
+DEBUGCI DATETIMEUTC(minTime) ;          Critical: MinutesAtPressure[229]PressureInfo 31Jan2024 18:02:00.000 UTC
+
+Display utilities
+----------------
+DEBUGCI COMPILER ;                      Display the version of the clang or gcc compiler. other wise nothing
+
+Example
+DEBUGCI COMPILER ;                      Critical: MinutesAtPressure[230]PressureInfo clang++:18.1.3 (1ubuntu1)
+
+Combined Examples
+-----------------
+DEBUGCI FULLNAME(code) DATETIME(minTime) QQ(Minutes, ((maxTime-minTime)/60000) ) ;
+                                        Critical: MinutesAtPressure[231]PressureInfo EPAP 31Jan2024 13:02:00.000 Minutes: 1120
+
+Control feature
+---------------
+IF                                      Expands to "if" or to empty space. Needs to test for conditions.
+
+Examples
+--------
+IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay QDate(2024-01-31)
+                                        Sometimes day is null at this line.
 */
 
-#ifndef TEST_MACROS_ENABLED_ONCE
-#define TEST_MACROS_ENABLED_ONCE
+//==========================================================================
+//==========================================================================
+// START OF MACRO DEFINITIONS
 
-#ifdef TEST_MACROS_ENABLED
+#ifndef TEST_MACROS_FILE_ONCE
+#define TEST_MACROS_FILE_ONCE
+
+// This enables or disbale the test macros.
+#if defined( TEST_MACROS_ENABLED ) || false
 #include <QRegularExpression>
 #include <QFileInfo>
 #include <QDebug>
 #include <QDateTime>
 #include "SleepLib/schema.h"
 
-#define DEBUGI   qInfo().noquote() << "INFO;"
-#define DEBUGD   qInfo().noquote() << "DEBUG;"
-#define DEBUGQ   qDebug().noquote()
-#define DEBUGW   qWarning().noquote()
-#define DEBUGC   qCritical().noquote()
-#define DEBUGF   DEBUGI	<<QString("%1[%2]%3").arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
-#define DEBUGFW  DEBUGW	<<QString("%1[%2]%3").arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
-#define DEBUGFC  DEBUGC <<QString("%1[%2]%3").arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
-#define DEBUGFD  DEBUGD <<QString("%1[%2]%3").arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
-#define DEBUGNC  DEBUGC <<QString("%1[%2").arg(QFileInfo( __FILE__).baseName()).arg(__LINE__)
 
+// define submacros to call logging functions
+#define DEBUGXD   qDebug().noquote(
+#define DEBUGXC   qCritical().noquote()
+#define DEBUGXW   qWarning().noquote()
 
-#define DEBUGT   DEBUGQ	<<QString("%1 %2[%3]%4").arg(QDateTime::currentDateTime().time().toString("hh:mm:ss.zzz")).arg(QFileInfo( __FILE__).baseName()).arg(__LINE__)
-#define DEBUGTF  DEBUGQ	<<QString("%1 %2[%3]%4").arg(QDateTime::currentDateTime().time().toString("hh:mm:ss.zzz")).arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
-#define DEBUGTFW  DEBUGW	<<QString("%1 %2[%3]%4").arg(QDateTime::currentDateTime().time().toString("hh:mm:ss.zzz")).arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
+// define sub-macros for what data to display
+// filename
+#define DEBUGXF         <<QString("%1").arg(QFileInfo( __FILE__).baseName())
 
-                                    // Do nothing
+// filename linenumber
+#define DEBUGXFL        <<QString("%1[%2]").arg(QFileInfo( __FILE__).baseName()).arg(__LINE__)
+
+// filename linenumber Method
+#define DEBUGXFLM       <<QString("%1[%2]%3").arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
+
+// buildTime
+#define DEBUGXT         <<QString("%1").arg(QDateTime::currentDateTime().time().toString("hh:mm:ss.zzz"))
+
+// buildTime filename
+#define DEBUGXTF        <<QString("%1 %2").arg(QDateTime::currentDateTime().time().toString("hh:mm:ss.zzz")).arg(QFileInfo( __FILE__).baseName())
+
+// buildTime filename linenumber
+#define DEBUGXTFL       <<QString("%1 %2[%3]").arg(QDateTime::currentDateTime().time().toString("hh:mm:ss.zzz")).arg(QFileInfo( __FILE__).baseName()).arg(__LINE__)
+
+// buildTime filename linenumber Method
+#define DEBUGXTFLM      <<QString("%1 %2[%3]%4").arg(QDateTime::currentDateTime().time().toString("hh:mm:ss.zzz")).arg(QFileInfo( __FILE__).baseName()).arg(__LINE__).arg(__func__)
+
+// END internal use in the file
+
+// Note users could make their own API using DEBUGXD, DEBUGXC , or DEBUGXW followed by DEBUGXF.. or DEBUGXT..
+// since all macros will be empty when test macros are turned off. so the end user does not have make them empry by default.
+
+// define API macro to display data
+
+// Do nothing - quickly take an item temporally from display
 #define Z( EXPRESSION ) 			/* comment out display of variable */
 #define ZZ( A ,EXPRESSION ) 		/* comment out display of variable */
-                                    // Macros to display variables
+
+// Macros to display variables
+#define Q( EXPRESSION ) 			<<  "" #EXPRESSION ":" << EXPRESSION
 #define O( EXPRESSION ) 			<<  EXPRESSION
-#define OO( EXPRESSION ) 			    EXPRESSION
-#define Q( VALUE ) 			        <<  "" #VALUE ":" << VALUE
 #define QQ( TEXT , EXPRESSION) 		<<  #TEXT ":" << EXPRESSION
-//#define Q( VALUE ) 			        <<  QString("%1:%2").arg( ""  #VALUE).arg(VALUE)
-//#define QQ( TEXT , EXPRESSION) 		<<  QString("%1:%2").arg( ""  #TEXT).arg(VALUE)
-
-//#define NAME( SCHEMACODE ) 			<<  schema::channel[ SCHEMACODE  ].label()
-#define NAME( SCHEMACODE )           <<  QString(("%1:0x%2")).arg(schema::channel[ SCHEMACODE  ].label()).arg( QString::number(SCHEMACODE,16).toUpper() )
-#define FULLNAME( SCHEMACODE ) 		 <<  schema::channel[ SCHEMACODE  ].fullname()
+#define OO( TEXT , EXPRESSION) 		<<  EXPRESSION
 
 
-                                    //display the date of an epoch time stamp "qint64"
-#define DATE( EPOCH ) 			<<  QDateTime::fromMSecsSinceEpoch( EPOCH ).toString("dd MMM yyyy")
-                                    //display the date and Time of an epoch time stamp "qint64"
+// Macros to display chanel name and hex id
+#define NAME( SCHEMA_CODE_ID ) <<  QString(("%1:0x%2")) .arg(schema::channel[ SCHEMA_CODE_ID  ].label()) .arg( QString::number(schema::channel[ SCHEMA_CODE_ID  ].id(),16).toUpper() )
+#define FULLNAME( SCHEMA_CODE_ID ) 		 <<  schema::channel[ SCHEMA_CODE_ID ].fullname()
+
+//display the date of an epoch time stamp "qint64"
+#define DATE( EPOCH ) 			<<  QDateTime::fromMSecsSinceEpoch( EPOCH ).toString("ddMMMyyyy")
+#define TIME( EPOCH ) 		    <<  QDateTime::fromMSecsSinceEpoch( EPOCH ).toString("hh:mm:ss.zzz")
 #define DATETIME( EPOCH ) 		<<  QDateTime::fromMSecsSinceEpoch( EPOCH ).toString("ddMMMyyyy hh:mm:ss.zzz")
 #define DATETIMEUTC( EPOCH ) 	<<  QDateTime::fromMSecsSinceEpoch( EPOCH ,Qt::UTC).toString("ddMMMyyyy hh:mm:ss.zzz UTC")
+
+//Condition execution
 #define IF( EXPRESSION )    if (EXPRESSION )
-#define IFD( EXPA , EXPB )   bool EXPA = EXPB
 
-
+//Define compiler version.
 #ifdef __clang__
     #define COMPILER O(QString("clang++:%1").arg(__clang_version__) );
 #elif __GNUC_VERSION__
@@ -90,102 +208,50 @@ To turn off the the test macros.
     #define COMPILER
 #endif
 
-
-
-#if 0
-//example:  DEBUGF;
-//12361: Debug: "gGraphView[572]popoutGraph"
-
-//example:  DEBUGT;
-//12645: Debug: "06:00:18.284 gGraphView[622]"
-
-//example:  DEBUGTF;
-//12645: Debug: "06:00:18.284 gGraphView[622]popoutGraph"
-
-//example:  DEBUGF Q(name) Q(title) QQ("UNITS",units) Q(height) Q(group);
-//00791: Debug: "gGraph[137]gGraph" name: "RespRate" title: "Respiratory Rate" "UNITS": "Rate of breaths per minute" height: 180 group: 0
-
-//example:  DEBUGTF Q(newname);
-//12645: Debug: "06:00:18.284 gGraphView[622]popoutGraph" newname:"Pressure - Friday, April 15, 2022"
-
-//example:  DEBUGF NAME(dot.code) Q(dot.type) QQ(y,(int)y) Q(ratioX) O(QLine(left + 1, y, left + 1 + width, y)) Q(legendx) O(dot.value) ;
-//92 00917: Debug: "gLineChart[568]paint" "Pressure" dot.type: 4 y: 341 ratioX: 1 QLine(QPoint(91,341),QPoint(464,341)) legendx: 463 12.04
-#endif
-
-#else
+//==========================================================================
+#else       // TEST_MACROS_ENABLED
 // Turn debugging off.  macros expands to white space
 
-#define DEBUGI
-#define DEBUGD
-#define DEBUGQ
-#define DEBUGW
-#define DEBUGC
-#define DEBUGF
-#define DEBUGFW
-#define DEBUGFC
-#define DEBUGFD
-#define DEBUGNC
-#define DEBUGT
-#define DEBUGTF
-#define DEBUGTFW
+#define DEBUGXD
+#define DEBUGXW
+#define DEBUGXC
+
+#define DEBUGXF
+#define DEBUGXFL
+#define DEBUGXFLM
+#define DEBUGXT
+#define DEBUGXTF
+#define DEBUGXTFL
+#define DEBUGXTFLM
 
 #define Z( XX )
 #define ZZ( XX , YY)
-#define O( XX )
-#define OO( XX )
 #define Q( XX )
 #define QQ( XX , YY )
+#define O( XX )
+#define OO( XX , YY )
 #define NAME( id)
 #define FULLNAME( id)
 #define DATE( XX )
+#define TIME( XX )
 #define DATETIME( XX )
 #define DATETIMEUTC( XX )
 #define COMPILER
 #define IF( XX )
-#define IFD( XX , YY )
 
 #endif  // TEST_MACROS_ENABLED
-#ifdef TEST_ROUTIMES_ENABLED
-This is prototype 
-class testRoutines : public QWidget
-{
-Q_OBJECT     
-public:
-typedef enum {debugDisplay = 0, returnQTextEdit} findClassMode;
-QWidget* findQTextEditdisplaywidgets(QWidget* widget,findClassMode mode=findClassMode::debugDisplay,QString name="",int recurseCount=0) {
-         return findQTextEditdisplaywidgets(widget,findClassMode::debugDisplay,"",0);
-}
-private:
-QWidget* findQTextEditdisplaywidgets(QWidget* widget,findClassMode mode,QString objectName,int recurseCount) {
-        QString indent;
-        if (!widget) return nullptr;
-        if (mode==debugDisplay) {
-            if (recurseCount==0) {
-                DEBUGF O("===================================================");
-            }
-            indent = QString("%1").arg("",(recurseCount*4),QLatin1Char(' '));
-        }
-        recurseCount++;
-        if (recurseCount>10) return nullptr;
-        if (mode==debugDisplay) {
-            DEBUGF O(indent) O(widget) ;
-        } else if (mode==returnQTextEdit){
-            if(QTextEdit* te = dynamic_cast<QTextEdit*>(widget)) {
-                return widget ;
-            };
-        }
-        const QList<QObject*> list = widget->children();
-        for (int i = 0; i < list.size(); ++i) {
-            QWidget *next_widget = dynamic_cast<QWidget*>(list.at(i));
-            if (!next_widget) continue;
-            QWidget* found=findQTextEditdisplaywidgets(next_widget,mode,objectName,recurseCount);
-            if (found) return found;
-        }
-        if (mode==debugDisplay && recurseCount==1) DEBUGF O("===================================================");
-        return nullptr;
-    }
-}
-#endif  // TEST_ROUTIMES_ENABLED
 
-#endif  // TEST_MACROS_ENABLED_ONCE
+#endif  // TEST_MACROS_FILE_ONCE
+
+//defined API macros
+//API should start with DEBUGC so that they can always be easily found in code.
+
+#define DEBUGCI         DEBUGXC DEBUGXFLM
+#define DEBUGCIS        DEBUGXC DEBUGXFL
+#define DEBUGCT         DEBUGXC DEBUGXTFLM
+
+// obsoluted macros that are still usd.
+#define DEBUGF          DEBUGXC DEBUGXFL
+#define DEBUGFC         DEBUGXC DEBUGXFLM
+
 

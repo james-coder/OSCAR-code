@@ -7,6 +7,9 @@
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
 
+#define TEST_MACROS_ENABLEDoff
+#include <test_macros.h>
+
 #include <QApplication>
 #include <QString>
 #include <QDateTime>
@@ -69,6 +72,7 @@ bool ResMedEDFInfo::Parse( )	// overrides and calls the super's Parse
 	
 }
 
+//resmed_codes are preinitialized from resmed_loader.
 extern QHash<ChannelID, QStringList> resmed_codes;
 
 // Looks up foreign language Signal names that match this channelID
@@ -86,8 +90,9 @@ EDFSignal *ResMedEDFInfo::lookupSignal(ChannelID ch)
     // Scan through EDF's list of signals to see if any match
     for (auto & name : channames.value()) {
         EDFSignal *sig = lookupLabel(name);
-        if (sig) 
+        if (sig)  {
             return sig;
+        }
     }
 
     // Failed

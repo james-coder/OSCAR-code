@@ -1,12 +1,17 @@
 /* MinutesAtPressure Graph Implementation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
 
+
+#define TEST_MACROS_ENABLEDoff
+#include <test_macros.h>
+
+#define TEST_MACROS_SAMPLEoff
  /*
 
 MinutesAtPressure Graph
@@ -42,7 +47,7 @@ Refactoring was done to
 3. Enhance readability,
 5. Add Dynamic Meta data for Pressure times and Events.
 6. insure data accuracy.
-7. Conditional compilation for features 
+7. Conditional compilation for features
 
 Total Duration displayed by Minutes AT Pressure graphs is based on the actual waveform form files.
 In some cases this duration is different that the session time indicated in the daily session information - due to reasons below.
@@ -125,60 +130,13 @@ some messages from Apnea Board.
 #define NUMBER_OF_CATMULLROMSPLINE_POINTS   5       // Higher the number decreases performance. 5 produces smooth curves. must be >= 1. 1 connects points with straight line.
                                                     // ENABLE_SMOOTH_CURVES must also be enabled.
 
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-//#define ENABLE_MAP_DRAWING_DEBUG              // ENABLE  DEBUG / TESTING definitions
-
-
-#ifdef ENABLE_MAP_DRAWING_DEBUG
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// Define Enable common debug / test features
-
-//#define ENABLE_HOURS_TIME_DISPLAY
-//#define ENABLE_MOUSE_DEBUG_INFO
-//#define ENABLE_MAP_DRAWING_RECT_DEBUG
-//#define TEST_DURATION
-//#define MAP_LOG_EVENTS
-//#define ENABLE_UNEVEN_MACHINE_MIN_MAX_TEST
-
-/ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// Define Display macros to enhance displays
-
-
-#endif
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-#if defined(ENABLE_MAP_DRAWING_DEBUG) && ( defined(ENABLE_TEST_CPAP) || defined(ENABLE_TEST_SAWTOOTH) || defined(ENABLE_TEST_SINGLE) || defined(ENABLE_TEST_NODATA) )
-    #define test_data(A,B,C,D,E,F,G,H)  if (!testdata( A , B ,  C ,  D , E , F , G, H)) continue  ;
-#else
-    #define test_data(A,B,C,D,E,F,G,H)
-#endif
-
-#define TEST_MACROS_ENABLEDoff
-#include "test_macros.h"
-
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-#ifdef ENABLE_DISPLAY_FLAG_EVENTS_AS_TICKS
-    static const int drawTickLength =12;
-#else
-    static const int drawTickLength =0;
-#endif
+static const int drawTickLength =12;
 
 static const int tableSize = 1+(HIGHEST_POSSIBLE_PRESSURE * INTERVALS_PER_CCMH2O);
 static constexpr EventDataType sampleIntervalDiv2 = 1.0/EventDataType(INTERVALS_PER_CCMH2O*2);         // interval pressure is Value-sampleInterval to value+sampleInterval
 
-#ifdef ENABLE_BUCKET_PRESSURE_AVERAGE   // New definition of bucket         Pressure-0.1 - Pressure0.1  //Bucket pressure is in the middle of the low high range
 static constexpr EventDataType sampleIntervalStart = sampleIntervalDiv2;
 static constexpr EventDataType sampleIntervalEnd = sampleIntervalDiv2;
-#else               // Original bucket definition.      Pressure - Pressure+0.2        // Bucket Presure is at the low end of the range.
-static constexpr EventDataType sampleIntervalStart = 0.0;
-static constexpr EventDataType sampleIntervalEnd = sampleIntervalDiv2*2;         // interval pressure is Value-sampleInterval to value+sampleInterval
-#endif
 
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Module      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -212,7 +170,8 @@ EventDataType msecToMinutes(EventDataType value) {
 
 EventDataType getSetting(Session * sess,ChannelID code) {
     if (!sess->settings.contains(code)) {
-        qWarning() << "MinutesAtPressure could not find channel" << code;
+        // qWarning() << "MinutesAtPressure could not find channel" << code;
+        DEBUGCI QQ(MinutesAtPressure could not find channel,code) NAME(code);
         return -1;
     }
     auto setting=sess->settings.value(code);/*[code]; */
@@ -222,7 +181,6 @@ EventDataType getSetting(Session * sess,ChannelID code) {
 }
 
 QString timeString(EventDataType milliSeconds) {
-#if 1
     EventDataType h,m,s = milliSeconds;
     if (s<0) return QString();
     s = 60*modf(s/60000,&m);
@@ -243,25 +201,6 @@ QString timeString(EventDataType milliSeconds) {
         return QObject::tr(TR_TIME_FMT_S).arg(s,1,'f',1);
     }
     return QObject::tr(TR_TIME_FMT_S).arg(s,0,'f',0);
-#else
-    EventDataType time= milliSeconds;
-    QString unit;       // these are already translated.
-    if (time>60*1000) {
-        if (time<=60*60*1000) {
-            time /=(60*1000);
-            unit=STR_UNIT_Minutes;
-        } else {
-            time /=(60*60*1000);
-            unit=STR_UNIT_Hours;
-        }
-    } else {
-        // have seconds.
-        unit=STR_UNIT_Seconds;
-        time /= (1000);
-    }
-    //DEBUG <<O(milliSeconds) <<O(time) <<O(unit);
-    return QString(" (%1 %2)") .arg(time,0,'f',milliSeconds<10?0:1) .arg(unit) ;
-#endif
 }
 
 
@@ -274,9 +213,25 @@ PressureInfo::PressureInfo()
 
 PressureInfo::PressureInfo(ChannelID code, qint64 minTime, qint64 maxTime) : code(code), minTime(minTime), maxTime(maxTime)
 {
+    #if defined(TEST_MACROS_SAMPLE)
+    QString codes = schema::channel[ code  ].code(); DEBUGCI Q(code) Q(codes) O("__") NAME(codes) O("__") FULLNAME(codes);
+    DEBUGCIS;
+    DEBUGCI ;
+    DEBUGCT ;
+    DEBUGCI Q(code) QQ(Channelid,code);
+    DEBUGCI O(code) OO(Channelid,code);
+    DEBUGCI Z(code) ZZ(Channelid,code);
+    DEBUGCI FULLNAME(code) ;
+    DEBUGCI NAME(code) ;
+    DEBUGCI DATE(minTime) ;
+    DEBUGCI TIME(minTime) ;
+    DEBUGCI DATETIME(minTime) ;
+    DEBUGCI DATETIMEUTC(minTime) ;
+    DEBUGCI COMPILER ;
+    DEBUGCI FULLNAME(code) DATETIME(minTime) QQ(Minutes, ((maxTime-minTime)/60000) ) ;
+    #endif
     init();
     times.resize(tableSize);
-    //times = QVector<int>(tableSize,-1);
 }
 
 void PressureInfo::finishCalcs()
@@ -343,7 +298,6 @@ EventDataType PressureInfo:: rawToPressure ( EventStoreType raw,EventDataType ga
 EventStoreType PressureInfo:: rawToBucketId ( EventStoreType raw,EventDataType gain) {
     EventDataType pressure = rawToPressure(raw,gain)+sampleIntervalStart;
     EventStoreType ret = floor(pressure * bucketsPerPressure );
-    //DEBUG <<O(raw) <<O(gain) <<O(pressure) <<O(ret) ;
     return ret;
 }
 
@@ -370,7 +324,6 @@ void RecalcMAP::updateFlagData(int &currentLoc, int & currentEL,int& currentData
 {
     for (; currentEL<info.eventLists.size() ; currentEL++) {
         auto EL =info.eventLists[currentEL];
-        //DEBUG  << NAME(chanId) <<OO(EL,currentEL) <<OO(LOC,currentLoc) <<O(currentData) <<OO(C,info.eventLists.size()) <<OO(D,EL->count());
         for (; currentLoc<(int)EL->count() ; currentLoc++) {
             if (m_quit) return ;
             qint64 sampleTime = EL->time(currentLoc);
@@ -380,26 +333,13 @@ void RecalcMAP::updateFlagData(int &currentLoc, int & currentEL,int& currentData
             if (data>=tableSize) {
                 data=tableSize-1;
             }
-            if (sampleTime<=eventTime)  {   
+            if (sampleTime<=eventTime)  {
                 currentData=data;
                 if (sampleTime<eventTime) continue;
                 // Note: The equal part of the comparision allows the pressure graph and the TimeAtPressure to reference the same pressure.
             }
             if (currentData<0) currentData=data;
             if (currentData>=0) {
-                #if defined(MAP_LOG_EVENTS)
-                DEBUG << NAME(chanId)  
-                <<OO(EL,currentEL) 
-                <<OO(LOC,currentLoc) 
-                <<TIME(sampleTime)
-                <<TIMEO(E,eventTime)  
-                <<OO(same,bool(sampleTime==eventTime))
-                <<O(raw) 
-                <<O(gain) 
-                <<OO(bucket,currentData) 
-                <<OO(P,info.rawToPressure(raw,gain) )
-                ;
-                #endif
                 dataArray[currentData]++;
             }
             return ;
@@ -413,7 +353,6 @@ void RecalcMAP::updateSpanData(int &currentLoc, int & currentEL,int& currentData
     EventStoreType useddata = ~0;
     for (; currentEL<info.eventLists.size() ; currentEL++) {
         auto EL =info.eventLists[currentEL];
-        //DEBUG << NAME(chanId)  <<OO(EL,currentEL) <<OO(LOC,currentLoc) <<TIME(startSpan)<< TIME(eventTime) <<OO(D,currentData) <<OO(S,EL->count() );
         for (; currentLoc<(int)EL->count() ; currentLoc++) {
             if (m_quit) return ;
             qint64 sampleTime = EL->time(currentLoc);
@@ -433,19 +372,6 @@ void RecalcMAP::updateSpanData(int &currentLoc, int & currentEL,int& currentData
             }
             if (useddata!=currentData  && currentData>0) {
                 dataArray[currentData]++;
-                #if defined(MAP_LOG_EVENTS)
-                DEBUG 
-                << NAME(chanId)  
-                <<OO(EL,currentEL) 
-                <<OO(LOC,currentLoc) 
-                <<TIME(startSpan) 
-                <<TIMEO(S,sampleTime)
-                <<TIMEO(E,eventTime) 
-                <<OO(same,bool(sampleTime==eventTime))
-                <<OO(P,info.rawToPressure(raw,gain) ) 
-                <<OO(lastBucket,currentData) 
-                <<OO(bucket,data);
-                #endif
                 useddata=currentData;
             }
             if (data<=0) {
@@ -549,7 +475,6 @@ void RecalcMAP::updateTimes(PressureInfo & info) {
         ELsize = EL->count();
         if (ELsize < 1) continue;
         gain = EL->gain();
-        #if 1
         // Workaround for the popout function. when the MAP popout graph is created the time selction mixx and miny are both zero.
         // this indicates that there is no data to be displayed.   WHY ??
         // This workaround uses the session min/max times when the selection min/max times are zero.
@@ -563,7 +488,6 @@ void RecalcMAP::updateTimes(PressureInfo & info) {
                 if (info.maxTime<EL->last()) info.maxTime=EL->last();
             }
         }
-        #endif
 
         // Skip if outside of range
         if ((EL->first() > info.maxTime) || (EL->last() < info.minTime)) {
@@ -574,7 +498,7 @@ void RecalcMAP::updateTimes(PressureInfo & info) {
         // EL->first and last are for the current session while minTime and MaxTime are for a set of seesion for the day.
         minx = qMax(info.minTime , EL->first());
         maxx = qMin(info.maxTime , EL->last());
-        
+
         lasttime = 0;
         lastdata = 0;
         data = 0;
@@ -586,9 +510,7 @@ void RecalcMAP::updateTimes(PressureInfo & info) {
 
             time = EL->time(e);
             EventStoreType raw = EL->raw(e);
-            test_data(e,ELsize,raw, time ,info.minTime ,info.maxTime,gain,EL);
             data = ipap_info->rawToBucketId(raw,gain);
-            //DEBUG << OO(e=,e) << TIME(time) <<O(raw) << O(data) ; // <<TIMEO(EL,EL->first()) <<TIMEO(el,EL->last()) <<TIMEO(I,minx) <<TIMEO(i,maxx);
 
             if (data>=tableSize) {
                 data=tableSize-1;
@@ -640,20 +562,16 @@ void RecalcMAP::run()
 
     // Get the channels for specified Channel types
     QList<ChannelID> chans;
-    #if defined(ENABLE_DISPLAY_FLAG_EVENTS_AS_GRAPH) || defined(ENABLE_DISPLAY_FLAG_EVENTS_AS_TICKS)
     chans = day->getSortedMachineChannels(schema::FLAG);
     chans.removeAll(CPAP_VSnore);
     chans.removeAll(CPAP_VSnore2);
     chans.removeAll(CPAP_FlowLimit);
     chans.removeAll(CPAP_RERA);
-    #endif
 
     // Get the channels for specified Channel types
     QList<ChannelID> chansSpan ;
-    #ifdef ENABLE_DISPLAY_SPAN_EVENTS_AS_BACKGROUND
     chansSpan = day->getSortedMachineChannels(schema::SPAN);
     chansSpan.removeAll(CPAP_Ramp);
-    #endif
 
     ChannelID ipapcode = CPAP_Pressure;  // default
     for (auto & ch : { CPAP_IPAPSet, CPAP_IPAP, CPAP_PressureSet } ) {
@@ -670,7 +588,6 @@ void RecalcMAP::run()
             break;
         }
     }
-
     PressureInfo IPAP(ipapcode, minTime, maxTime), EPAP(epapcode, minTime, maxTime);
     ipap_info=&IPAP;
 
@@ -680,21 +597,6 @@ void RecalcMAP::run()
     EventDataType minP = HIGHEST_POSSIBLE_PRESSURE;
     EventDataType maxP = 0;
     auto & sessions = day->sessions;
-
-    #if defined(TEST_DURATION)
-    if (sessions.size()==1) 
-    {
-        auto & eventLists = sess->eventlist.value(ipapcode);
-        if (eventLists.size()==1) {
-            if (sess->first()!=minTime ) {
-            DEBUG << "Session" << DATETIME(sess->first()) << "sessFirst" << TIME(sess->first()) << "minTime.." << TIME(minTime) << OO(diffMs,sess->first()-minTime) << NAME(info.code) ;
-            }
-            if (sess->last() !=maxTime) {
-            DEBUG << "Session" << DATETIME(sess->first()) << "SessEnd.." << TIME(sess->last()) << "MaxTime,," << TIME(maxTime) << OO(diffMs,sess->last()-maxTime) << NAME(info.code) ;
-            }
-        }
-    }
-    #endif
 
     for ( int idx=0; idx<sessions.size() ; idx++ ) {
         auto & sess = sessions[idx];
@@ -706,7 +608,7 @@ void RecalcMAP::run()
 
             updateTimes(IPAP);
             updateTimes(EPAP);
-
+            // Pressure Min abd Max do not exist for CPAP machines
             EventDataType value = getSetting(sess, CPAP_PressureMin);
             if (value >=0.1 && minP >value)  minP=value;
             value = getSetting(sess, CPAP_PressureMax);
@@ -720,15 +622,6 @@ void RecalcMAP::run()
     }
     if (minP>maxP) minP=maxP;
     IPAP.setMachineTimes(minP,maxP);
-
-    #ifdef ENABLE_UNEVEN_MACHINE_MIN_MAX_TEST
-    int dayInMonth= day->date().day();
-    if ((dayInMonth&1)!=0)
-    {
-        machinePressureMin -= 0.05;
-        machinePressureMax += 0.05;
-    }
-    #endif
 
     if (m_quit) {
         m_done = true;
@@ -761,8 +654,12 @@ MinutesAtPressure::~MinutesAtPressure()
 
 void MinutesAtPressure::SetDay(Day *day)
 {
+    #if defined(TEST_MACROS_SAMPLE)
+    // TEST_MACROS_ENABLED examples. -- do not remove
+    IF (day) DEBUGCI O(day->date());
+    #endif
+
     Layer::SetDay(day);
-    //if (m_day)  DEBUGTF << day->date().toString("dd MMM yyyy hh:mm:ss.zzz");
 
     m_empty = false;
     m_recalculating = false;
@@ -854,13 +751,11 @@ void MinutesAtPressure::paint(QPainter &painter, gGraph &graph, const QRegion &r
 
     EventDataType minpressure = ipap.machinePressureMin;
     EventDataType maxpressure = ipap.machinePressureMax;
-    //DEBUG <<O(minpressure) <<O(maxpressure) ;
 
     if (maxpressure < 0.5 || minpressure > maxpressure) {
         minpressure  = HIGHEST_POSSIBLE_PRESSURE;
         maxpressure=0;
     }
-    //DEBUG <<O(minpressure) <<O(maxpressure) ;
 
     // Calculate pressure range for current display.
     if (display_pressure) {
@@ -868,14 +763,12 @@ void MinutesAtPressure::paint(QPainter &painter, gGraph &graph, const QRegion &r
         minpressure = qMin(ipap.minpressure, minpressure);
         peaktime = qMax(ipap.peaktime, peaktime);
     }
-    //DEBUG <<O(minpressure) <<O(maxpressure) ;
 
     if (display_epap) {
         maxpressure = qMax(epap.maxpressure, maxpressure);
         minpressure = qMin(epap.minpressure, minpressure);
         peaktime = qMax(epap.peaktime, peaktime);
     }
-    //DEBUG <<O(minpressure) <<O(maxpressure) ;
 
     // insure pressure range is above minumum. - especially for constant pressures.
     // software needs a range of pressures.
@@ -884,19 +777,10 @@ void MinutesAtPressure::paint(QPainter &painter, gGraph &graph, const QRegion &r
         minpressure-=(minPressureRange);
         maxpressure+=(minPressureRange);
     }
-    //DEBUG <<O(minpressure) <<O(maxpressure) << O(minPressureRange);
-
-    #ifdef ALIGN_X_AXIS_ON_INTEGER_BOUNDS
-        // align min and max on  integers pressures.
-        minpressure = floor(minpressure);
-        maxpressure = ceil(maxpressure);
-    #endif
-    //DEBUG <<O(minpressure) <<O(maxpressure) ;
 
     EventDataType startGraphBucket = pressureToBucket(minpressure,ipap.bucketsPerPressure);
     EventDataType endGraphBucket = pressureToBucket(maxpressure,ipap.bucketsPerPressure);
     EventDataType numGraphBucket = endGraphBucket - startGraphBucket;
-    //DEBUG << O(minpressure) <<O(maxpressure) << O(startGraphBucket) << O(endGraphBucket) << OO(min2,convertBucketToPressure(endGraphBucket,ipap.bucketsPerPressure));
 
     ////////////////////////////////////////////////////////////////////
     // Generate  drawing Info
@@ -914,25 +798,9 @@ void MinutesAtPressure::paint(QPainter &painter, gGraph &graph, const QRegion &r
     // Calculate drawing bounds
     ////////////////////////////////////////////////////////////////////
     EventDataType rectOffset   = 0.0;
-    #if defined( EXTRA_SPACE_ON_X_AXIS )
     rectOffset  = ((boundingRect.width() /numGraphBucket) * ipap.bucketsPerPressure)/ipap.numberXaxisDivisions;
-    #endif
-    //DEBUG << O(rectOffset);
 
-    #ifdef ENABLE_MAP_DRAWING_RECT_DEBUG
-        painter.setPen( QPen( QColor(70,70,70,60), 1.5, Qt::SolidLine));
-        int leftAdjustment =90;
-        int topAdjustment =30;
-        int heightAdjustment = topAdjustment+20;
-        int widthAdjustment =50;
-
-        rectOffset += leftAdjustment;
-        QRectF drawingRect = QRectF( boundingRect.left()+rectOffset,boundingRect.top()+topAdjustment,boundingRect.width()-(2*rectOffset)-widthAdjustment,boundingRect.height()-heightAdjustment );
-        painter.drawRect(drawingRect);
-        painter.setPen(Qt::black);
-    #else
-        QRectF drawingRect = QRectF( boundingRect.left()+rectOffset,boundingRect.top(),boundingRect.width()-(2*rectOffset),boundingRect.height()-2 );
-    #endif
+    QRectF drawingRect = QRectF( boundingRect.left()+rectOffset,boundingRect.top(),boundingRect.width()-(2*rectOffset),boundingRect.height()-2 );
 
 
     EventDataType pixelsPerBucket = EventDataType(drawingRect.width()) / EventDataType(numGraphBucket);
@@ -953,15 +821,13 @@ void MinutesAtPressure::paint(QPainter &painter, gGraph &graph, const QRegion &r
     // Draw Events and waveforms.
     ////////////////////////////////////////////////////////////////////
 
-    #if defined(ENABLE_DISPLAY_FLAG_EVENTS_AS_GRAPH) || defined(ENABLE_DISPLAY_FLAG_EVENTS_AS_TICKS) || defined(ENABLE_DISPLAY_SPAN_EVENTS_AS_BACKGROUND)
-        for (const auto ch : ipap.chans) {
-            // display Event H, CA, OA, UA, H as tick marks or CSR or LargeLeaks as background - based on Presssure graph configuration.
-            if (!isEnabled(ch) ) continue;  // skip if not enabled
-            if ( (schema::channel[ch].type() == schema::FLAG) && (ipap.numEvents[ch]==0) ) continue;
-            mapPainter.setChannelInfo(ch, ipap.events[ch], mapPainter.yPixelsPerEvent ,startGraphBucket,endGraphBucket);
-            mapPainter.drawEvent();
-        }
-    #endif
+    for (const auto ch : ipap.chans) {
+        // display Event H, CA, OA, UA, H as tick marks or CSR or LargeLeaks as background - based on Presssure graph configuration.
+        if (!isEnabled(ch) ) continue;  // skip if not enabled
+        if ( (schema::channel[ch].type() == schema::FLAG) && (ipap.numEvents[ch]==0) ) continue;
+        mapPainter.setChannelInfo(ch, ipap.events[ch], mapPainter.yPixelsPerEvent ,startGraphBucket,endGraphBucket);
+        mapPainter.drawEvent();
+    }
 
     if (display_pressure) {
         mapPainter.setChannelInfo(ipap.code, ipap.times, mapPainter.yPixelsPerMsec ,ipap.firstPlotBucket,ipap.lastPlotBucket);
@@ -1166,57 +1032,7 @@ int MapPainter::drawYaxis(int peaktime) {
     return widest_YAxis;
 }
 
-void MapPainter::drawEventYaxis(EventDataType peakEvents,int widest_YAxis) {
-
-    #ifdef ENABLE_DISPLAY_FLAG_EVENTS_AS_GRAPH
-    EventDataType eventHeight = drawingRect.height();
-    EventDataType yEventPerStep = 1.0;
-
-    QString label;
-    int reserveSpace = textHeight+=4;
-
-    ////////////////////////////////////////////////////////////////////
-    // Calculate vertical step for ploting events
-    ////////////////////////////////////////////////////////////////////
-    EventDataType yPixelsPerEventStep = (eventHeight*yEventPerStep) / peakEvents;
-    if (yPixelsPerEventStep < reserveSpace) {
-        yEventPerStep = 2.0;
-        yPixelsPerEventStep = (eventHeight*yEventPerStep) / peakEvents;
-        if (yPixelsPerEventStep < reserveSpace) {
-            yEventPerStep = 5.0;
-            yPixelsPerEventStep = (eventHeight*yEventPerStep) / peakEvents;
-            if (yPixelsPerEventStep < reserveSpace) {
-                yEventPerStep = 20.0;
-                yPixelsPerEventStep = (eventHeight*yEventPerStep) / peakEvents;
-                if (yPixelsPerEventStep < reserveSpace) {
-                    yEventPerStep = 50.0;
-                    yPixelsPerEventStep = (eventHeight*yEventPerStep) / peakEvents;
-                }
-            }
-        }
-    }
-    yPixelsPerEvent  =  EventDataType(eventHeight / peakEvents);
-    //DEBUG <<O(yPixelsPerEventStep) <<O(reserveSpace) << O(eventHeight) <<O(yEventPerStep) <<O(yPixelsPerEvent)  <<O(peakEvents);
-
-    ////////////////////////////////////////////////////////////////////
-    // Draw event y axis
-    ////////////////////////////////////////////////////////////////////
-
-    EventDataType bot = drawingRect.bottom() ;
-    EventDataType left= boundingRect.left()-widest_YAxis-4;
-    EventDataType limit = peakEvents+(yEventPerStep/2);
-    int  labelWidth , labelHeight ;
-
-    for (EventDataType f=0.0; f<=limit; f+=yEventPerStep,bot-=yPixelsPerEventStep) {
-        label = QString("%1-").arg(f);
-        GetTextExtent(label, labelWidth, labelHeight);
-        graph.renderText(label, left-labelWidth, bot+labelHeight/2-2 );
-    }
-
-    #else
-    Q_UNUSED(peakEvents);
-    Q_UNUSED(widest_YAxis);
-    #endif
+void MapPainter::drawEventYaxis(EventDataType ,int ) {
 }
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< MapPainter class      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -1237,20 +1053,15 @@ void MapPainter::drawXaxis(int numberXaxisDivisions , int startGraphBucket , int
     int jlabel        = 0;
     int accentTick= numberXaxisDivisions / 2 ;
 
-    #if defined(ALIGN_X_AXIS_ON_INTEGER_BOUNDS)
-        EventDataType pressurePerTick = 1.0 / numberXaxisDivisions ;
-        Q_UNUSED(pixelsPerPressure);
-    #else
-        EventDataType deltaSteps    = ( ceil(minpressure) - minpressure ) * pixelsPerPressure;
-        EventDataType pixelsFirstTick = fmod(deltaSteps , pixelsPerTick);
-        jlabel               = floor(deltaSteps / pixelsPerTick) ;
-        EventDataType presFirstTick = (pixelsFirstTick/pixelsPerPressure);
+    EventDataType deltaSteps    = ( ceil(minpressure) - minpressure ) * pixelsPerPressure;
+    EventDataType pixelsFirstTick = fmod(deltaSteps , pixelsPerTick);
+    jlabel               = floor(deltaSteps / pixelsPerTick) ;
+    EventDataType presFirstTick = (pixelsFirstTick/pixelsPerPressure);
 
-        xp += pixelsFirstTick;
-        tickPressure += presFirstTick ;
-        EventDataType pressurePerTick = pixelsPerTick / pixelsPerPressure;
-        accentTick=(jlabel+accentTick )%numberXaxisDivisions;
-    #endif
+    xp += pixelsFirstTick;
+    tickPressure += presFirstTick ;
+    EventDataType pressurePerTick = pixelsPerTick / pixelsPerPressure;
+    accentTick=(jlabel+accentTick )%numberXaxisDivisions;
 
     yp = boundingRect.bottom()+1;
     EventDataType ypEnd = yp+6;
@@ -1307,7 +1118,7 @@ void MapPainter::drawMetaData(QPoint& last_mouse , QString& topBarLabel,Pressure
     if ((mouse.x()<boundingRect.left() ||  mouse.x()>boundingRect.right() )) {
         graphSelected= false;
         // note until Session start times are synced with waveforms start time. there will be a difference in the total time displayed.
-        // so don't display the total waveform time, because the user can see the  difference between sessions times and the total duration 
+        // so don't display the total waveform time, because the user can see the  difference between sessions times and the total duration
         // calculated.  both the first and last times can be different for resmed machines. This can be confusing so don't display questionable data.
 
         topBarLabel = displayMetaData(ipap.chan.label(),minpressure, minpressure, maxpressure, timeString(ipap.totalDuration),"","");
@@ -1355,20 +1166,6 @@ void MapPainter::drawMetaData(QPoint& last_mouse , QString& topBarLabel,Pressure
             eventOccured=true;
         }
         toolTipLabel.remove(QRegularExpression("\\n+$"));
-
-        #if defined(ENABLE_MOUSE_DEBUG_INFO)
-            // Add debug for mouse position
-            QString debugInfo = QString("B(%1x%2) D(%3x%4)   bucket(%5)@%6:%7:%8     ")
-            .arg(boundingRect.left(),3,'f',0).arg(boundingRect.top(),3,'f',0).arg(drawingRect.left(),3,'f',0).arg(drawingRect.top(),3,'f',0)
-            .arg(mouseOverKey)
-            .arg(pMousePressure,3,'f',2)
-            .arg(bucketX)
-            .arg(pixelsPerPressure,3,'f',1)
-            ;
-            debugInfo += QString("mouse(%1 %2)@%3   ").arg(mouse.x()).arg(mouse.y()).arg(pMousePressure,3,'f',2);
-            topBarLabel.insert(0,debugInfo);
-        #endif
-
 
         // DRAW tooltip information
         if (!toolTipOff && graphSelected && eventOccured) {
@@ -1438,7 +1235,6 @@ void MapPainter::initCatmullRomSpline(EventDataType pixelsPerBucket,int numberOf
 EventDataType MapPainter::drawSegment( int bucket ,EventDataType lastxp,EventDataType lastyp)
 {
 
-    #if defined(ENABLE_SMOOTH_CURVES)
     EventDataType xp=lastxp;
     EventDataType dM1  = dataToYaxis(dataArray[bucket-1]);
     EventDataType yp  = dataToYaxis(dataArray[bucket +0]);
@@ -1469,12 +1265,6 @@ EventDataType MapPainter::drawSegment( int bucket ,EventDataType lastxp,EventDat
         lastxp = xp;
         lastyp = yp;
     }
-    #else
-        EventDataType yp  = dataToYaxis(dataArray[bucket +1]);
-        yp=verifyYaxis(yp);
-        EventDataType xp= lastxp+pixelsPerBucket;
-        painter.drawLine(lastxp, lastyp, xp, yp);
-    #endif
     return yp;
 }
 
@@ -1539,15 +1329,12 @@ void MapPainter::drawPlot() {
 }
 
 // Draw a an Event tick at the top of ther graph
-#ifdef ENABLE_DISPLAY_SPAN_EVENTS_AS_BACKGROUND
 void MapPainter::drawSpanEvents() {
     if (dataArray.isEmpty()) return;
     EventDataType xp = drawingRect.left();
     EventDataType pixelsPerBucket = this->pixelsPerBucket;
-    #ifdef ENABLE_BUCKET_PRESSURE_AVERAGE
-        EventDataType pixelsPerBucket2 = pixelsPerBucket/2;
-        pixelsPerBucket = pixelsPerBucket2;
-    #endif
+    EventDataType pixelsPerBucket2 = pixelsPerBucket/2;
+    pixelsPerBucket = pixelsPerBucket2;
     QRectF box= QRectF(xp,boundingRect.top(),pixelsPerBucket,boundingRect.height());
     int tickTop = boundingRect.top();
     int tickHeight =boundingRect.height();
@@ -1556,15 +1343,11 @@ void MapPainter::drawSpanEvents() {
 
     for (int i=startGraphBucket;  i<dataArray.size(); ++i) {
         if (i>=endGraphBucket) {
-            #ifdef ENABLE_BUCKET_PRESSURE_AVERAGE
                 if (i==endGraphBucket) {
                     pixelsPerBucket = pixelsPerBucket2;
                 } else {
                     return;
                 }
-            #else
-                return;
-            #endif
         }
         int data=dataArray[i];
         if (data>0) {
@@ -1572,14 +1355,10 @@ void MapPainter::drawSpanEvents() {
             painter.fillRect(box,color);
         }
         xp+=pixelsPerBucket;
-        #ifdef ENABLE_BUCKET_PRESSURE_AVERAGE
-            pixelsPerBucket=this->pixelsPerBucket;
-        #endif
+        pixelsPerBucket=this->pixelsPerBucket;
     }
 }
-#endif
 
-#ifdef ENABLE_DISPLAY_FLAG_EVENTS_AS_TICKS
 void MapPainter::drawEventTick() {
     EventDataType xp=drawingRect.left();
     int tickLength=drawTickLength;
@@ -1593,120 +1372,30 @@ void MapPainter::drawEventTick() {
         if ((i==mouseOverKey) && (graphSelected) ) {
             painter.setPen(tickEnhancePen);
             painter.drawLine(xp ,top, xp, top+tickLength);
-            #ifndef ENABLE_DISPLAY_FLAG_EVENTS_AS_GRAPH
             painter.drawLine(xp ,bottom, xp, bottom-tickLength);
             painter.setPen(tickEnhanceTransparentPen);
             painter.drawLine(xp ,top+tickLength, xp, bottom-tickLength);
-            #else
-            Q_UNUSED(bottom);
-            #endif
             painter.setPen(tickPen);
         } else {
-            #ifndef ENABLE_DISPLAY_FLAG_EVENTS_AS_GRAPH
             painter.setPen(QColor(128,128,128,30));
             painter.drawLine(xp ,top+tickLength, xp, bottom);
             painter.setPen(tickPen);
-            #endif
             painter.drawLine(xp ,top, xp, top+tickLength);
         }
     }
 }
-#endif
 
-#if defined(ENABLE_DISPLAY_FLAG_EVENTS_AS_GRAPH) || defined(ENABLE_DISPLAY_FLAG_EVENTS_AS_TICKS) || defined(ENABLE_DISPLAY_SPAN_EVENTS_AS_BACKGROUND)
 void MapPainter::drawEvent() {
     if (chanType == schema::FLAG) {
-        #ifdef ENABLE_DISPLAY_FLAG_EVENTS_AS_GRAPH
-        //setPenColorAlpha(channel->id(),70);
-        setPenColorAlpha(ChannelID(NoChannel),70);
-        drawPlot();
-        #endif
-        #ifdef ENABLE_DISPLAY_FLAG_EVENTS_AS_TICKS
         tickPen =                   QPen(Qt::black, 1);
         tickEnhancePen =            QPen(QColor(0,0,255),    3.5*AppSetting->lineThickness());
         tickEnhanceTransparentPen = QPen(QColor(0,0,255,60), 3.5*AppSetting->lineThickness());
         drawEventTick();
-        #endif
         return;
     }
     if (chanType == schema::SPAN) {
-        #ifdef ENABLE_DISPLAY_SPAN_EVENTS_AS_BACKGROUND
         drawSpanEvents();
-        #endif
         return;
     }
 }
-#endif
-
-
-
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< TEST DATA  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-#if defined(ENABLE_TEST_CPAP) || defined(ENABLE_TEST_SAWTOOTH) || defined(ENABLE_TEST_SINGLE) || defined(ENABLE_TEST_NODATA)
-EventDataType test_inc=0.0;
-EventDataType test_start;
-EventDataType test_mid;
-EventDataType test_end;
-EventDataType test_value;
-qint64 test_time;
-qint64 test_time_inc;
-int test_count;
-qint64 test_ELFirst;
-
-bool testdata(int e, int ELsize, EventStoreType& raw, qint64& time ,qint64 minTime ,qint64 maxTime , EventDataType gain, EventList* EL) {
-    if (e==0) {
-        test_ELFirst=EL->first();
-        test_start=(4.0f/gain);
-        test_mid=(7.07f/gain);
-        test_end=(15.0f/gain);
-        test_value=test_start;
-        test_inc=(test_end-test_start)/EventDataType(ELsize);
-
-        test_time=time;
-        //test_time_inc=(maxTime-minTime)/ELsize;
-        test_time_inc=(EL->last()-EL->first())/ELsize;
-        test_count=0;
-    }
-    if (test_ELFirst!=EL->first()) {
-        test_ELFirst=EL->first();
-    }
-    if (e>=ELsize) return false;
-    #if defined(ENABLE_TEST_CPAP)
-        raw= EventStoreType(test_mid);
-        return true;
-    #endif
-    #if defined(ENABLE_TEST_SINGLE)
-    int zz=ELsize-1;
-        if (e==zz) {
-            raw= (EventStoreType)test_mid;
-            time=(minTime+maxTime)/2;
-            return true;
-        }
-        return false;
-    #endif
-    #if defined(ENABLE_TEST_NODATA)
-        return  false;
-    #endif
-
-    // ENABLE_TEST_SAWTOOTH
-    if (test_value>=test_end) {
-        test_value=test_start;
-    } ;
-    raw=(EventStoreType)test_value;;
-    time=(qint64)test_time;
-
-    test_time+=test_time_inc;
-    test_value+= test_inc;
-    return true;
-
-    Q_UNUSED(test_count);
-    Q_UNUSED(e);
-    Q_UNUSED(ELsize);
-    Q_UNUSED(EL);
-    Q_UNUSED(raw);
-    Q_UNUSED(time);
-    Q_UNUSED(minTime);
-    Q_UNUSED(maxTime);
-}
-#endif
-
 
