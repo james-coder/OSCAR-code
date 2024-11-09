@@ -2017,31 +2017,47 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             } 
             if ((R.rms9_mode >= 2) && (R.rms9_mode <= 5)) {     // S, ST, or T modes
                 //qDebug() << "BiLevel Mode found" << R.rms9_mode;
+
+                QString sigprefix("S.") ;
+                if ( AS_eleven ) sigprefix.append("S.");
+
                 if (R.rms9_mode == 3) {     // S mode only
-                    if ((sig = str.lookupLabel("S.EasyBreathe"))) {
+                    QString signame =QString("%1%2").arg(sigprefix).arg("EasyBreathe");
+                    if ((sig = str.lookupLabel(signame))) {
                         R.s_EasyBreathe = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
+                        if ( AS_eleven ) --R.s_EasyBreathe;
                     } 
                 }
-                if ((sig = str.lookupLabel("S.RiseEnable"))) {
+
+                QString signame =QString("%1%2").arg(sigprefix).arg("RiseEnable");
+                if ((sig = str.lookupLabel(signame))) {
                     R.s_RiseEnable = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
+                    if ( AS_eleven ) --R.s_RiseEnable;
                 } 
-                if ((sig = str.lookupLabel("S.RiseTime"))) {
+                signame =QString("%1%2").arg(sigprefix).arg("RiseTime");
+                if ((sig = str.lookupLabel(signame))) {
                  R.s_RiseTime = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
                 } 
                 if ((R.rms9_mode ==3) || (R.rms9_mode ==4)) {       // S or ST mode
-                    if ((sig = str.lookupLabel("S.Cycle"))) {
-                       R.s_Cycle = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    } 
-                    if ((sig = str.lookupLabel("S.Trigger"))) {
+                    QString signame =QString("%1%2").arg(sigprefix).arg("Cycle");
+                    if ((sig = str.lookupLabel(signame))) {
+                        R.s_Cycle = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
+                        if ( AS_eleven ) --R.s_Cycle;
+                    }
+                    signame =QString("%1%2").arg(sigprefix).arg("Trigger");
+                    if ((sig = str.lookupLabel(signame))) {
                         R.s_Trigger = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    } 
-                    if ((sig = str.lookupLabel("S.TiMax"))) {
+                        if ( AS_eleven ) --R.s_Trigger;
+                    }
+                    signame =QString("%1%2").arg(sigprefix).arg("TiMax");
+                    if ((sig = str.lookupLabel(signame))) {
                         R.s_TiMax = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    } 
-                    if ((sig = str.lookupLabel("S.TiMin"))) {
+                    }
+                    signame =QString("%1%2").arg(sigprefix).arg("TiMin");
+                    if ((sig = str.lookupLabel(signame))) {
                         R.s_TiMin = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
-                    } 
-                }
+                    }
+             }
             }
             if (R.rms9_mode == 6) {     // vAuto mode
                 //qDebug() << "vAuto mode found" << 6;
@@ -2050,10 +2066,12 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
                 QString signame =QString("%1%2").arg(sigprefix).arg("Cycle");
                 if ((sig = str.lookupLabel(signame))) {
                     R.s_Cycle = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
+                    if ( AS_eleven ) --R.s_Cycle;
                 } 
                 signame =QString("%1%2").arg(sigprefix).arg("Trigger");
                 if ((sig = str.lookupLabel(signame))) {
                     R.s_Trigger = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
+                    if ( AS_eleven ) --R.s_Trigger;
                 } 
                 signame =QString("%1%2").arg(sigprefix).arg("TiMax");
                 if ((sig = str.lookupLabel(signame))) {
@@ -2546,6 +2564,13 @@ void StoreSettings(Session * sess, STRRecord & R)
             if (R.epap >= 0) sess->settings[CPAP_EPAP] = R.epap;
             if (R.ipap >= 0) sess->settings[CPAP_IPAP] = R.ipap;
             if (R.ps >= 0) sess->settings[CPAP_PS] = R.ps;
+            if (R.s_Cycle >= 0) sess->settings[ RMAS1x_Cycle ] = R.s_Cycle;
+            if (R.s_Trigger >= 0) sess->settings[ RMAS1x_Trigger ] = R.s_Trigger;
+            if (R.s_TiMax >= 0) sess->settings[ RMAS1x_TiMax ] = R.s_TiMax;
+            if (R.s_TiMin >= 0) sess->settings[ RMAS1x_TiMin ] = R.s_TiMin;
+            if (R.s_EasyBreathe >= 0) sess->settings[ RMAS1x_EasyBreathe ] = R.s_EasyBreathe;
+            if (R.s_RiseEnable >= 0) sess->settings[ RMAS1x_RiseEnable ] = R.s_RiseEnable;
+            if (R.s_RiseTime >= 0) sess->settings[ RMAS1x_RiseTime ] = R.s_RiseTime;
         } else if (R.mode == MODE_BILEVEL_AUTO_FIXED_PS) {
             if (R.min_epap >= 0) sess->settings[CPAP_EPAPLo] = R.min_epap;
             if (R.max_ipap >= 0) sess->settings[CPAP_IPAPHi] = R.max_ipap;
@@ -3949,6 +3974,5 @@ void setupResMedTranslationMap()
 //    26104, 26105, 26125, 26126 S8 Auto 25
 //    26102, 26103, 26106, 26107, 26108, 26109, 26123, 26127 VPAP IV
 //    26112, 26113, 26114, 26115, 26116, 26117, 26118, 26124 VPAP IV ST
-
 
 
