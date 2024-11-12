@@ -1183,6 +1183,7 @@ void MainWindow::updateFavourites()
         Day *journal = p_profile->GetDay(date, MT_JOURNAL);
 
         if (journal) {
+            int numBookmarks = 0;
             if (journal->size() > 0) {
                 Session *sess = journal->firstSession(MT_JOURNAL);
                 if (!sess) {
@@ -1196,12 +1197,13 @@ void MainWindow::updateFavourites()
                         //QVariantList start=sess->settings[Bookmark_Start].toList();
                         //QVariantList end=sess->settings[Bookmark_End].toList();
                         QStringList notes = sess->settings[Bookmark_Notes].toStringList();
-
                         if (notes.size() > 0) {
-                            tmp += QString("<tr><td><b><a href='daily=%1'>%2</a></b><br/>")
+                            if (numBookmarks++ > 1) {
+                                tmp += "<br/>";
+                            }
+                            tmp += QString("<tr><td><b><a href='daily=%1'>%2</a></b>")
                                     .arg(date.toString(Qt::ISODate))
                                     .arg(date.toString(MedDateFormat));
-
                             tmp += "<list>";
 
                             for (int i = 0; i < notes.size(); i++) {
