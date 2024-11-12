@@ -135,6 +135,7 @@ public:
     void setCalendarVisible(bool visible);
 
     void addBookmark(qint64 st, qint64 et, QString text);
+    void verifyBookMarkName(QTableWidgetItem *item);
     void hideSpaceHogs();
     void showSpaceHogs();
 

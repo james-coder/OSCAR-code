@@ -2440,7 +2440,28 @@ void Daily::on_evViewSlider_valueChanged(int value)
     GraphView->SetXBounds(st,et);
 }
 
-void Daily::on_bookmarkTable_currentItemChanged(QTableWidgetItem *item, QTableWidgetItem *) 
+static QRegularExpression emptyStr("^\\s*$") ;
+void Daily::verifyBookMarkName(QTableWidgetItem* item) {
+    if (!item) {
+        return;
+    }
+
+    int column=item->column();
+    if (column != 1) {
+        int row=item->row();
+        item = ui->bookmarkTable->item(row,1);
+    }
+    // item now points to bookmarks that has notes (text).
+    if (item->text().contains(emptyStr) ) {
+        bool ok=false;
+        qint64 start=item->data(Qt::UserRole).toLongLong(&ok);
+        QDateTime d=QDateTime::fromSecsSinceEpoch(start/1000L, Qt::LocalTime);
+        QString text = tr("Bookmark at %1").arg(d.time().toString("HH:mm:ss"));
+        item->setText(text);
+    }
+}
+
+void Daily::on_bookmarkTable_currentItemChanged(QTableWidgetItem *item, QTableWidgetItem *)
 {
     int row=item->row();
     qint64 st,et;
@@ -2516,9 +2537,9 @@ void Daily::on_addBookmarkButton_clicked()
     qint64 st,et;
     GraphView->GetXBounds(st,et);
     QDateTime d=QDateTime::fromSecsSinceEpoch(st/1000L, Qt::LocalTime);
-
-    addBookmark(st,et, tr("Bookmark at %1").arg(d.time().toString("HH:mm:ss")));
+    addBookmark(st,et,"" );
 }
+
 void Daily::update_Bookmarks()
 {
     QVariantList start;
@@ -2527,6 +2548,7 @@ void Daily::update_Bookmarks()
     QTableWidgetItem *item;
     for (int row=0;row<ui->bookmarkTable->rowCount();row++) {
         item=ui->bookmarkTable->item(row,1);
+        verifyBookMarkName(item);
 
         start.push_back(item->data(Qt::UserRole));
         end.push_back(item->data(Qt::UserRole+1));
@@ -2625,7 +2647,8 @@ void Daily::set_BookmarksUI( QVariantList& start , QVariantList& end , QStringLi
         ui->bookmarkTable->setItem(i,1,tw);
         tw->setData(Qt::UserRole,st);
         tw->setData(Qt::UserRole+1,et);
-    } // for (int i
+        verifyBookMarkName(tw);
+    }
     ui->bookmarkTable->blockSignals(false);
 }
 
@@ -2637,9 +2660,8 @@ void Daily::on_ZombieMeter_valueChanged(int value)
 }
 #endif
 
-void Daily::on_bookmarkTable_itemChanged(QTableWidgetItem *item)
+void Daily::on_bookmarkTable_itemChanged(QTableWidgetItem *)
 {
-    Q_UNUSED(item);
     update_Bookmarks();
 }
 
