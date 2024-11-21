@@ -1715,7 +1715,7 @@ Astuce : Changer d&apos;abord la date de début</translation>
     <message>
         <location filename="../oscar/mainwindow.ui" line="2574"/>
         <source>View Overview</source>
-        <translation>Afficher la vue Apreçus</translation>
+        <translation>Afficher la vue Aperçus</translation>
     </message>
     <message>
         <location filename="../oscar/mainwindow.ui" line="2585"/>
