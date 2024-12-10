@@ -41,9 +41,24 @@
   <property name="modal">
    <bool>true</bool>
   </property>
+  <!-- end qdialog setup-->
+
+  <!-- add scrollarea -->
+  <layout class="QVBoxLayout" name="mainlayout">
+  <item>
+  <widget class="QScrollArea" name="scrollArea">
+  <property name="widgetResizable">
+  <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="">
+  <item>
+  <widget class="QWidget" name="content">
+  <!-- end  scrollarea setup -->
+
+  <!-- start grid layout -->
   <layout class="QGridLayout" name="gridLayout_17">
    <item row="0" column="0" rowspan="2" colspan="4">
-    <widget class="QWidget" name="widget_2" native="true">
+    <widget class="QWidget" name="widget_2" native="true">  
      <layout class="QHBoxLayout" name="horizontalLayout_9">
       <property name="leftMargin">
        <number>0</number>
@@ -3444,8 +3459,17 @@ Try it and see if you like it.</string>
      </property>
     </spacer>
    </item>
+  </layout> <!-- terminate grid layout -->
+
+  <!-- terminat  scrollarea setup -->
+  </widget>
+  </item>
   </layout>
- </widget>
+  </widget>
+  </item>
+  </layout>
+  <!-- terminat  scrollarea setup -->
+</widget>
  <resources>
   <include location="Resources.qrc"/>
  </resources>
