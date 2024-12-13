@@ -1604,7 +1604,8 @@ as this is the only value available on summary-only days.</string>
                 <item row="0" column="0">
                  <widget class="QRadioButton" name="clinicalMode">
                   <property name="toolTip">
-                   <string>Clinical Mode does not allow disabled sessions.\nDisabled Session are not used for graphing or Statistics.</string>
+                   <string>Clinical Mode does not allow disabled sessions.
+Disabled Session are not used for graphing or Statistics.</string>
                   </property>
                   <property name="text">
                    <string>Clinical Mode</string>
@@ -1620,7 +1621,8 @@ as this is the only value available on summary-only days.</string>
                 <item row="1" column="0">
                  <widget class="QRadioButton" name="permissiveMode">
                   <property name="toolTip">
-                   <string>permissive Mode allows disabled sessions.\nDisabled Session are used for graphing and Statistics.</string>
+                   <string>Permissive Mode allows disabled sessions.
+Disabled Sessions are used for graphing and Statistics.</string>
                   </property>
                   <property name="text">
                    <string>Permissive Mode</string>
