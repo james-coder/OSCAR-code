@@ -310,6 +310,7 @@ const QString STR_OS_OxiDiscardThreshold = "OxiDiscardThreshold";
 // CPAPSettings Strings
 const QString STR_CS_ComplianceHours = "ComplianceHours";
 const QString STR_CS_ClinicalMode = "ClinicalMode";
+const QString STR_CS_ZombieMode = "ZombieMode";
 const QString STR_CS_ShowLeaksMode = "ShowLeaksMode";
 const QString STR_CS_MaskStartDate = "MaskStartDate";
 const QString STR_CS_MaskDescription = "MaskDescription";
@@ -742,15 +743,19 @@ class AppearanceSettings : public PrefSettings
       : PrefSettings(profile)
     {
         m_eventFlagSessionBar = initPref(STR_AS_EventFlagSessionBar, false).toBool();
+        m_zombieMode = initPref(STR_CS_ZombieMode, false).toBool();
     }
 
     //Getters
     bool eventFlagSessionBar() const { return m_eventFlagSessionBar; }
+    bool zombieMode() const { return m_zombieMode; }
 
     //Setters
     void setEventFlagSessionBar(bool b) { setPref(STR_AS_EventFlagSessionBar, m_eventFlagSessionBar = b); }
+    void setZombieMode(bool mode) { setPref(STR_CS_ZombieMode, m_zombieMode=mode); }
 
     bool m_eventFlagSessionBar;
+    bool m_zombieMode;
 };
 
 /*! \class UserSettings

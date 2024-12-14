@@ -1,7 +1,7 @@
 ﻿/* Daily GUI Headers
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (C) 2011-2018 Mark Watkins 
+ * Copyright (C) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -238,7 +238,7 @@ private slots:
         \param QTableWidgetItem *item
         \param QTableWidgetItem *previous
         */
-   
+
    void on_bookmarkTable_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
 
     /*! \fn on_bookmarkTable_itemChanged(QTableWidgetItem *item);
@@ -248,19 +248,24 @@ private slots:
 
     void on_graphCombo_activated(int index);
 
+    void set_NotesUI(QString htmlNote);
+    void set_BookmarksUI( QVariantList& start , QVariantList& end , QStringList& notes, qint64 drift=0);
+
 #ifndef REMOVE_FITNESS
     /*! \fn on_ouncesSpinBox_valueChanged(int arg1);
         \brief Called when the zombie slider has been moved.. Updates the BMI dislpay and journal objects.
 
         Also Refreshes the Overview charts
         */
-    void on_ZombieMeter_valueChanged(int value);
 
-    void set_ZombieUI(int value);
+    void setup_ZombieUIWidgets(int zombieValue, bool zombieMode, bool setup);
+    void set_ZombieUI(int ,bool init=false);
+    void on_ZombieSlider_valueChanged(int value);
+    void on_ZombieSpinBox_editingFinished();
+    void on_Units10_100_clicked();
+
     void set_WeightUI(double weight_kg);
     void set_BmiUI(double weight_kg);                               // should be a part of weight.
-    void set_NotesUI(QString htmlNote);
-    void set_BookmarksUI( QVariantList& start , QVariantList& end , QStringList& notes, qint64 drift=0);
 
     /*! \fn on_weightSpinBox_editingFinished();
         \brief Called when weight has changed.. Updates the BMI dislpay and journal objects.
@@ -382,8 +387,8 @@ private:
 #ifndef REMOVE_FITNESS
     double user_weight_kg;
     double user_height_cm;
-    constexpr static double zeroD = 0.0001 ;
 #endif
+    constexpr static double zeroD = 0.0001 ;
     bool BookmarksChanged;
 
     SaveGraphLayoutSettings* saveGraphLayoutSettings=nullptr;

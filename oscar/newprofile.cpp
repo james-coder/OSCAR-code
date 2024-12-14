@@ -7,7 +7,7 @@
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
 
-#define TEST_MACROS_ENABLEDoff
+#define TEST_MACROS_ENABLED
 #include <test_macros.h>
 
 #include <QMessageBox>
@@ -141,16 +141,18 @@ QString NewProfile::getIntroHTML()
            "</body>"
            "</html>";
 }
+
 #include <cmath>
 int cmToFeetInch( double cm, double& inches ) {
-    inches = cm * inches_per_cm;
-    int feet = std::round(inches / 12);
-    inches -=   (double)(feet *12);
+    int tenthInches = std::round(cm * inches_per_cm * 10);
+    int feet = std::floor(((double)tenthInches) / 120);
+    inches = double(tenthInches - (feet *120))/10;
     return feet;
 }
 
 double feetInchToCm( int feet , double inches ) {
-    return cms_per_inch*(inches + (double)(feet *12));
+    double mm = std::round(10*cms_per_inch*(inches + (double)(feet *12)));
+    return mm/10;
 }
 
 void NewProfile::on_nextButton_clicked()

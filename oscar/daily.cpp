@@ -533,6 +533,9 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
     saveGraphLayoutSettings=nullptr;
     dailySearchTab = new DailySearchTab(this,ui->searchTab,ui->tabWidget);
     htmlLsbSectionHeaderInit(false);
+#ifndef REMOVE_FITNESS
+    set_ZombieUI(0,true);
+#endif
 }
 
 Daily::~Daily()
@@ -2588,13 +2591,12 @@ void Daily::set_NotesUI(QString htmlNote) {
 void Daily::set_BmiUI(double user_weight_kg) {
     if ((user_height_cm>zeroD) && (user_weight_kg>zeroD)) {
         double bmi = calculateBMI(user_weight_kg, user_height_cm);
-        ui->BMI->display(bmi);
-        ui->BMI->setVisible(true);
+        QString label=QString("B.M.I   %1").arg(bmi,0,'f',2);
+        ui->BMIlabel->setText(label);
         ui->BMIlabel->setVisible(true);
     } else {
         // BMI now zero - remove it
         // And make it invisible
-        ui->BMI->setVisible(false);
         ui->BMIlabel->setVisible(false);
     }
     mainwin->updateOverview();
@@ -2614,18 +2616,6 @@ void Daily::set_WeightUI(double kg) {
     ui->weightSpinBox->blockSignals(false);
     set_BmiUI(kg);
 };
-
-void Daily::set_ZombieUI(int value)
-{
-    ui->ZombieMeter->blockSignals(true);
-    if (value==0 ) {
-        ui->ZombieValue->setText(tr("No Value Selected"));
-    } else {
-        ui->ZombieValue->setText(QString("%1:%2").arg(tr("Value")).arg(value) );
-    }
-    ui->ZombieMeter->setValue(value);
-    ui->ZombieMeter->blockSignals(false);
-}
 
 void Daily::set_BookmarksUI( QVariantList& start , QVariantList& end , QStringList& notes, qint64 drift) {
     ui->bookmarkTable->blockSignals(true);
@@ -2652,20 +2642,93 @@ void Daily::set_BookmarksUI( QVariantList& start , QVariantList& end , QStringLi
     ui->bookmarkTable->blockSignals(false);
 }
 
-void Daily::on_ZombieMeter_valueChanged(int value)
-{
-    set_ZombieUI(value);
-    set_JournalZombie(previous_date,value);
-    mainwin->updateOverview();
-}
-#endif
-
 void Daily::on_bookmarkTable_itemChanged(QTableWidgetItem *)
 {
     update_Bookmarks();
 }
 
-#ifndef REMOVE_FITNESS
+/*
+Feelings (Zombie originally used in Code)
+Originally had a range for 1-10. with 0 being null.
+the value stored on disk was just an integer.
+Adding a new range of 1-100 without destroying the original range of 1-10
+the value 1-10 are the min/max for the original feature.
+the value displayed are called uiValues, which are seen by the end user.
+the value stored on disk and used are call ZombieValues.
+ZombieValues have
+    0          null
+    1-10       range 1-10
+    N+(1-100)  range 1-100
+The user will have a double spinBox to display the value.
+    and a push button that display the range and toggles range
+The slider will be display the current range.
+in the range 1-10  the user can input a number between 0-10 with tenths
+in the range 1-100  the user can input a number between 0-100
+ZombieValue saved in journal
+
+*/
+static int ZombieModeOffset = 20;
+
+void Daily::setup_ZombieUIWidgets(int zombieValue, bool zombieMode, bool setup) {
+    ui->ZombieSpinBox->blockSignals(true);
+    ui->ZombieSlider->blockSignals(true);
+    int value100;
+    if (zombieValue<ZombieModeOffset) {
+        value100 = zombieValue * 10;
+    } else {
+        value100= zombieValue-ZombieModeOffset;
+    }
+    if (value100<0||value100>100) {
+        // illegal value detected.
+        value100=0;
+    }
+
+    ui->ZombieSlider->setValue(value100);
+
+    // new setup spin box
+    double spinValue = value100;
+    if (setup) {
+        ui->ZombieSpinBox->setMaximum(zombieMode ?  100 : 10);
+        ui->ZombieSpinBox->setDecimals(zombieMode ?  0 : 1);
+        ui->ZombieSpinBox->setSingleStep(zombieMode ?  10 : 1);
+        ui->Units10_100->setText(zombieMode ?  QStringLiteral("/100") : QStringLiteral("/10"));
+    }
+    ui->ZombieSpinBox->setValue(zombieMode ? spinValue  : (spinValue/10.0));
+
+    ui->ZombieSlider->blockSignals(false);
+    ui->ZombieSpinBox->blockSignals(false);
+}
+
+void Daily::set_ZombieUI(int zombieValue, bool init)
+{
+    setup_ZombieUIWidgets(zombieValue, p_profile->appearance->zombieMode(),init );
+}
+
+void Daily::on_ZombieSlider_valueChanged(int uiValue)
+{
+    int zombieValue = uiValue+ZombieModeOffset;
+    set_ZombieUI(zombieValue);
+    set_JournalZombie(previous_date,zombieValue);
+    mainwin->updateOverview();
+}
+
+void Daily::on_ZombieSpinBox_editingFinished()
+{
+    double spinValue=ui->ZombieSpinBox->value();
+    if (ui->ZombieSpinBox->decimals() == 1) {
+        spinValue *=10;
+    }
+    on_ZombieSlider_valueChanged(spinValue);
+}
+
+void Daily::on_Units10_100_clicked(){
+    bool mode=p_profile->appearance->zombieMode();
+    p_profile->appearance->setZombieMode(!mode);
+    int uiValue = ui->ZombieSlider->value();
+    int zombieValue = uiValue+ZombieModeOffset;
+    set_ZombieUI(zombieValue,true);
+}
+
 void Daily::on_weightSpinBox_valueChanged(double )
 {
     on_weightSpinBox_editingFinished();

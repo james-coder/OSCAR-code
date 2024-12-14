@@ -1166,8 +1166,8 @@ QToolButton:pressed {
              <number>2</number>
             </property>
             <item row="0" column="0" colspan="2">
-             <layout class="QGridLayout" name="bioMetrics">
-              <item row="0" column="3" colspan="5">
+             <layout class="QVBoxLayout" name="bioMetrics">
+              <item alignment="Qt::AlignHCenter">
                <widget class="QLabel" name="label_1">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -1180,98 +1180,143 @@ QToolButton:pressed {
                   <bold>true</bold>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>Feelings have a range 1-10 or 1-100. clicking on the range change the range.</string>
+                </property>
                 <property name="text">
                  <string>Feelings</string>
                 </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <item alignment="Qt::AlignLeft">
+                 <widget class="QLabel" name="poor">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Poor</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item alignment="Qt::AlignRight">
+                 <widget class="QDoubleSpinBox" name="ZombieSpinBox">
                 <property name="toolTip">
-                 <string>Feelings have a range 1 - 10. 1 is the worst feeling and 10 is the Best.</string>
+                 <string>Feelings have a range 1-10 or 1-100. A dash "-" indicates no value has been selected</string>
                 </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_2">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Poor</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1" colspan="6">
-               <widget class="QLabel" name="ZombieValue">
-                <property name="font">
-                 <font>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>I'm feeling ...</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="7">
-               <widget class="QLabel" name="label_10">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Awesome</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_8">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Weight</string>
-                </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {
+    text-align: left;
+    padding: 0px;
+    margin: 0px;
+}</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="specialValueText">
+                   <string>-</string>
+                  </property>
+                  <property name="prefix">
+                   <string notr="true"/>
+                  </property>
+                  <property name="suffix">
+                   <string notr="true"/>
+                  </property>
+                 </widget>
+                </item>
+                <item alignment="Qt::AlignLeft">
+                 <widget class="QPushButton" name="Units10_100">
                 <property name="toolTip">
-                 <string>If height is greater than zero in Preferences Dialog, setting weight here will show Body Mass Index (BMI) value</string>
+                 <string>Feelings have a range 1-10 or 1-100. clicking on the range change the range.</string>
                 </property>
-               </widget>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {
+    text-align: left;
+    padding: 0px;
+    margin: 0px;
+    border: none;
+}</string>
+                  </property>
+                  <property name="text">
+                   <string>/10</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item alignment="Qt::AlignRight">
+                 <widget class="QLabel" name="awesome">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Awesome</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
-              <item row="3" column="1" colspan="2">
-               <widget class="QDoubleSpinBox" name="weightSpinBox">
+              <item>
+               <widget class="QSlider" name="ZombieSlider">
                 <property name="toolTip">
-                 <string>If height is greater than zero in Preferences Dialog, setting weight here will show Body Mass Index (BMI) value</string>
-                </property>
-                <property name="maximum">
-                 <double>1499.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0" colspan="8">
-               <widget class="QSlider" name="ZombieMeter">
-                <property name="toolTip">
-                 <string>Feelings have a range 1 - 10. 1 is the worst feeling and 10 is the Best.</string>
+                 <string>Feelings have a range 1-10 or 1-100. clicking on the range change the range.</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QSlider::groove:horizontal  {
@@ -1293,13 +1338,19 @@ QSlider::handle:horizontal  {
 </string>
                 </property>
                 <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="singleStep">
                  <number>10</number>
                 </property>
                 <property name="pageStep">
-                 <number>1</number>
+                 <number>10</number>
                 </property>
                 <property name="value">
-                 <number>5</number>
+                 <number>0</number>
+                </property>
+                <property name="tracking">
+                 <bool>true</bool>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -1308,47 +1359,73 @@ QSlider::handle:horizontal  {
                  <enum>QSlider::TicksAbove</enum>
                 </property>
                 <property name="tickInterval">
-                 <number>1</number>
+                 <number>10</number>
                 </property>
                </widget>
               </item>
-              <item row="3" column="7">
-               <widget class="QLCDNumber" name="BMI">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="smallDecimalPoint">
-                 <bool>false</bool>
-                </property>
-                <property name="digitCount">
-                 <number>4</number>
-                </property>
-                <property name="segmentStyle">
-                 <enum>QLCDNumber::Flat</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="4" colspan="3">
-               <widget class="QLabel" name="BMIlabel">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>B.M.I.</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_7">
+                <item alignment="Qt::AlignLeft">
+                 <widget class="QLabel" name="WeightLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="toolTip">
+                   <string>If height is greater than zero in Preferences Dialog, setting weight here will show Body Mass Index (BMI) value</string>
+                  </property>
+                  <property name="text">
+                   <string>Weight</string>
+                  </property>
+                 </widget>
+                </item>
+                <item alignment="Qt::AlignLeft">
+                 <widget class="QDoubleSpinBox" name="weightSpinBox">
+                  <property name="toolTip">
+                   <string>If height is greater than zero in Preferences Dialog, setting weight here will show Body Mass Index (BMI) value</string>
+                  </property>
+                  <property name="maximum">
+                   <double>1499.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item alignment="Qt::AlignRight">
+                 <widget class="QLabel" name="BMIlabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QLabel {
+    text-align: right;
+}</string>
+                  </property>
+                  <property name="text">
+                   <string>B.M.I.</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </item>
@@ -1511,6 +1588,9 @@ QSlider::handle:horizontal  {
           </item>
           <item>
            <widget class="QPushButton" name="graphHelp">
+            <property name="toolTip">
+             <string>Graphing Help</string>
+            </property>
             <property name="text">
              <string>Hint</string>
             </property>
@@ -1518,22 +1598,19 @@ QSlider::handle:horizontal  {
              <iconset resource="Resources.qrc">
               <normaloff>:/icons/question_mark.png</normaloff>:/icons/question_mark.png</iconset>
             </property>
-            <property name="toolTip">
-             <string>Graphing Help</string>
-            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="layout">
+            <property name="toolTip">
+             <string>Save and Restore Graph Layout Settings</string>
+            </property>
             <property name="text">
              <string>Layout</string>
             </property>
             <property name="icon">
              <iconset resource="Resources.qrc">
               <normaloff>:/icons/cog.png</normaloff>:/icons/cog.png</iconset>
-            </property>
-            <property name="toolTip">
-             <string>Save and Restore Graph Layout Settings</string>
             </property>
            </widget>
           </item>
