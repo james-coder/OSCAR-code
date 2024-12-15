@@ -1,11 +1,14 @@
 ﻿/* SleepLib Preferences Implementation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
+
+#define TEST_MACROS_ENABLEDoff
+#include <test_macros.h>
 
 #include <QString>
 #include <QDomDocument>
@@ -19,6 +22,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QTranslator>
+#include <QStandardPaths>
 
 #ifdef Q_OS_WIN
 #include "windows.h"
@@ -127,8 +131,12 @@ const QString Preferences::Get(QString name)
     if (p_preferences.find(name) != p_preferences.end()) {
         temp = "";
         t = p_preferences[name].toString();
-
-        if (p_preferences[name].type() != QVariant::String) {
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            if (p_preferences[name].type() != QVariant::String)
+        #else
+            if (p_preferences[name].typeId() != QMetaType::QString)
+        #endif
+        {
             return t;
         }
     } else {
@@ -344,22 +352,39 @@ bool Preferences::Save(QString filename)
 
     QDomElement root = doc.createElement(p_name);
     droot.appendChild(root);
-
     for (QHash<QString, QVariant>::iterator i = p_preferences.begin(); i != p_preferences.end(); i++) {
-        QVariant::Type type = i.value().type();
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            QVariant::Type type = i.value().type();
+        #else
+            int type = i.value().typeId();
+        #endif
 
-        if (type == QVariant::Invalid) { continue; }
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            if (type == QVariant::Invalid) { continue; }
+        #else
+            if (type == QMetaType::UnknownType) { continue; }
+        #endif
 
         QDomElement cn = doc.createElement(i.key());
         cn.setAttribute("type", i.value().typeName());
 
-        if (type == QVariant::DateTime) {
-            cn.appendChild(doc.createTextNode(i.value().toDateTime().toString("yyyy-MM-dd HH:mm:ss")));
-        } else if (type == QVariant::Time) {
-            cn.appendChild(doc.createTextNode(i.value().toTime().toString("hh:mm:ss")));
-        } else {
-            cn.appendChild(doc.createTextNode(i.value().toString()));
-        }
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            if (type == QVariant::DateTime) {
+                cn.appendChild(doc.createTextNode(i.value().toDateTime().toString("yyyy-MM-dd HH:mm:ss")));
+            } else if (type == QVariant::Time) {
+                cn.appendChild(doc.createTextNode(i.value().toTime().toString("hh:mm:ss")));
+            } else {
+                cn.appendChild(doc.createTextNode(i.value().toString()));
+            }
+        #else
+            if (type == QMetaType::QDateTime) {
+                cn.appendChild(doc.createTextNode(i.value().toDateTime().toString("yyyy-MM-dd HH:mm:ss")));
+            } else if (type == QMetaType::QTime) {
+                cn.appendChild(doc.createTextNode(i.value().toTime().toString("hh:mm:ss")));
+            } else {
+                cn.appendChild(doc.createTextNode(i.value().toString()));
+            }
+        #endif
 
         root.appendChild(cn);
     }
@@ -372,7 +397,11 @@ bool Preferences::Save(QString filename)
     }
 
     QTextStream ts(&file);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     ts.setCodec("UTF-8");
+    #else
+    // UTF-8 is default for qt6
+    #endif
     ts.setGenerateByteOrderMark(true);
     ts << doc.toString();
     file.close();

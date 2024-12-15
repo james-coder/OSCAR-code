@@ -1,13 +1,13 @@
 /* Create New Profile Implementation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
 
-#define TEST_MACROS_ENABLED
+#define TEST_MACROS_ENABLEDoff
 #include <test_macros.h>
 
 #include <QMessageBox>
@@ -21,6 +21,7 @@
 #include "SleepLib/profiles.h"
 
 #include "newprofile.h"
+#include "staticQMessageBox.h"
 #include "ui_newprofile.h"
 #include "mainwindow.h"
 #include "version.h"
@@ -172,7 +173,7 @@ void NewProfile::on_nextButton_clicked()
 
     case 1:
         if (ui->userNameEdit->text().trimmed().isEmpty()) {
-            QMessageBox::information(this, STR_MessageBox_Error, tr("Please provide a username for this profile"), QMessageBox::Ok);
+            staticQMessageBox::information(this, STR_MessageBox_Error, tr("Please provide a username for this profile"), QMessageBox::Ok);
             return;
         }
 
@@ -182,7 +183,7 @@ void NewProfile::on_nextButton_clicked()
 
         if (ui->passwordGroupBox->isChecked()) {
             if (ui->passwordEdit1->text() != ui->passwordEdit2->text()) {
-                QMessageBox::information(this, STR_MessageBox_Error, tr("Passwords don't match"), QMessageBox::Ok);
+                staticQMessageBox::information(this, STR_MessageBox_Error, tr("Passwords don't match"), QMessageBox::Ok);
                 return;
             }
 
@@ -221,7 +222,7 @@ void NewProfile::on_nextButton_clicked()
         }
         //QString profileName = originalProfileName.isEmpty()? newProfileName : originalProfileName;
 
-        if (QMessageBox::question(this, tr("Profile Changes"), tr("Accept and save this information?"),
+        if ( staticQMessageBox::question(this, tr("Profile Changes"), tr("Accept and save this information?"),
                                   QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes) {
 
             Profile *profile = Profiles::Get(profileName);
@@ -295,7 +296,10 @@ void NewProfile::on_nextButton_clicked()
                         QCoreApplication::processEvents();
                         exit(0);
                     } else {
-                        QMessageBox::question(this, tr("Duplicate or Invalid User Name"), tr("Please Change User Name "), QMessageBox::Ok);
+                        staticQMessageBox::question(this,
+                            tr("Duplicate or Invalid User Name"),
+                            tr("Please Change User Name "),
+                            QMessageBox::Ok);
                         index=1;
                         ui->stackedWidget->setCurrentIndex(index);
                         ui->userNameEdit->setText(newProfileName);

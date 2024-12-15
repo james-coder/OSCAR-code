@@ -19,7 +19,9 @@
 #include <QElapsedTimer>
 #include <QSettings>
 #include <QPixmap>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QDesktopWidget>
+#endif
 #include <QListView>
 #include <QPrinter>
 #include <QPrintDialog>
@@ -47,6 +49,7 @@
 #include "SleepLib/journal.h"
 #include "SleepLib/common.h"
 #include "notifyMessageBox.h"
+#include "staticQMessageBox.h"
 
 
 // Custom loaders that don't autoscan..
@@ -458,7 +461,7 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
 
     if (!lockhost.isEmpty()) {
         if (lockhost.compare(QHostInfo::localHostName()) != 0) {
-            if (QMessageBox::warning(nullptr, STR_MessageBox_Warning,
+            if (staticQMessageBox::warning(nullptr, STR_MessageBox_Warning,
                     QObject::tr("There is a lockfile already present for this profile '%1', claimed on '%2'.").arg(prof->user->userName()).arg(lockhost)+"\n\n"+
                     QObject::tr("You can only work with one instance of an individual OSCAR profile at a time.")+"\n\n"+
                     QObject::tr("If you are using cloud storage, make sure OSCAR is closed and syncing has completed first on the other computer before proceeding."),
@@ -919,7 +922,7 @@ QList<ImportPath> MainWindow::detectCPAPCards()
                 }
             }
             else {
-                QMessageBox::warning(nullptr, STR_MessageBox_Warning,
+                staticQMessageBox::warning(nullptr, STR_MessageBox_Warning,
                     QObject::tr("Chromebook file system detected, but no removable device found\n") +
                     QObject::tr("You must share your SD card with Linux using the ChromeOS Files program"));
                 break;                                    // break out of the 20 second wait loop
@@ -1029,7 +1032,7 @@ QList<ImportPath> MainWindow::selectCPAPDataCards(const QString & prompt, bool a
                 prompt,
                 QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, this);
             mbox.setDefaultButton(QMessageBox::Yes);
-            mbox.setButtonText(QMessageBox::No, tr("Specify"));
+            mbox.addButton(tr("Specify"), QMessageBox::NoRole);
 
             QPixmap pixmap = datacards[0].loader->getPixmap(datacards[0].loader->PeekInfo(datacards[0].path).series).scaled(64,64);
 
@@ -1197,6 +1200,7 @@ void MainWindow::updateFavourites()
                         //QVariantList start=sess->settings[Bookmark_Start].toList();
                         //QVariantList end=sess->settings[Bookmark_End].toList();
                         QStringList notes = sess->settings[Bookmark_Notes].toStringList();
+
                         if (notes.size() > 0) {
                             if (numBookmarks++ > 1) {
                                 tmp += "<br/>";
@@ -1204,6 +1208,7 @@ void MainWindow::updateFavourites()
                             tmp += QString("<tr><td><b><a href='daily=%1'>%2</a></b>")
                                     .arg(date.toString(Qt::ISODate))
                                     .arg(date.toString(MedDateFormat));
+
                             tmp += "<list>";
 
                             for (int i = 0; i < notes.size(); i++) {
@@ -1378,7 +1383,7 @@ void MainWindow::CheckForUpdates(bool showWhenCurrent)
     updateChecker = new CheckUpdates(this);
 #ifdef NO_CHECKUPDATES
     if (showWhenCurrent)
-        QMessageBox::information(nullptr, STR_MessageBox_Information, tr("Check for updates not implemented"));
+        staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("Check for updates not implemented"));
 #else
     updateChecker->checkForUpdates(showWhenCurrent);
 #endif
@@ -1409,11 +1414,25 @@ void MainWindow::DelayedScreenshot()
 
     auto screenshotRect = geometry();
     auto titleBarHeight = QApplication::style()->pixelMetric(QStyle::PM_TitleBarHeight);
+
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     auto pixmap = QApplication::primaryScreen()->grabWindow(QDesktopWidget().winId(),
                                                             screenshotRect.left(),
                                                             screenshotRect.top() - titleBarHeight,
                                                             screenshotRect.width(),
                                                             screenshotRect.height() + titleBarHeight);
+    #else
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QPixmap pixmap;
+    if (screen) {
+        pixmap = screen->grabWindow(0,  // 0 means grab the entire screen
+                                            screenshotRect.left(),
+                                            screenshotRect.top() - titleBarHeight,
+                                            screenshotRect.width(),
+                                            screenshotRect.height() + titleBarHeight);
+        // Use the pixmap as needed
+    }
+    #endif
 
     QString default_filename = "/screenshot-" + QDateTime::currentDateTime().toString("yyyyMMdd-hhmmss") + ".png";
 
@@ -1499,14 +1518,14 @@ void MainWindow::on_action_CycleTabs_triggered()
 
 void MainWindow::on_actionOnline_Users_Guide_triggered()
 {
-    if (QMessageBox::question(nullptr, STR_MessageBox_Question, tr("The User's Guide will open in your default browser"),
+    if (staticQMessageBox::question(nullptr, STR_MessageBox_Question, tr("The User's Guide will open in your default browser"),
             QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok )
         QDesktopServices::openUrl(QUrl("https://www.apneaboard.com/wiki/index.php?title=OSCAR_Help"));
 }
 
 void MainWindow::on_action_Frequently_Asked_Questions_triggered()
 {
-    QMessageBox::information(nullptr, STR_MessageBox_Information, tr("The FAQ is not yet implemented"));
+    staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("The FAQ is not yet implemented"));
 }
 
 void MainWindow::on_action_Rebuild_Oximetry_Index_triggered()
@@ -1648,7 +1667,7 @@ void MainWindow::RestartApplication(bool force_login, QString cmdline)
     if (QProcess::startDetached("/usr/bin/open", args)) {
         QApplication::instance()->exit();
     } else {
-        QMessageBox::warning(nullptr, STR_MessageBox_Error,
+        staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
             tr("If you can read this, the restart command didn't work. You will have to do it yourself manually."), QMessageBox::Ok);
     }
 
@@ -1675,7 +1694,7 @@ void MainWindow::RestartApplication(bool force_login, QString cmdline)
 
 //        ::exit(0);
     } else {
-        QMessageBox::warning(nullptr,  STR_MessageBox_Error,
+        staticQMessageBox::warning(nullptr,  STR_MessageBox_Error,
             tr("If you can read this, the restart command didn't work. You will have to do it yourself manually."), QMessageBox::Ok);
     }
 
@@ -1811,7 +1830,7 @@ void MainWindow::on_actionRebuildCPAP(QAction *action)
     bool backups = (dirCount(bpath) > 0) ? true : false;
 
     if (backups) {
-        if (QMessageBox::question(this, STR_MessageBox_Question,
+        if (staticQMessageBox::question(this, STR_MessageBox_Question,
                 tr("Are you sure you want to rebuild all CPAP data for the following device:\n\n") +
                 mach->brand() + " " + mach->model() + " " +
                 mach->modelnumber() + " (" + mach->serial() + ")\n\n" +
@@ -1820,7 +1839,7 @@ void MainWindow::on_actionRebuildCPAP(QAction *action)
             return;
         }
     } else {
-        if (QMessageBox::question(this,
+        if (staticQMessageBox::question(this,
                 STR_MessageBox_Warning,
                 "<p><b>"+STR_MessageBox_Warning+": </b>"+tr("For some reason, OSCAR does not have any backups for the following device:")+ "</p>" +
                 "<p>"+mach->brand() + " " + mach->model() + " " + mach->modelnumber() + " (" + mach->serial() + ")</p>"+
@@ -1839,7 +1858,7 @@ void MainWindow::on_actionRebuildCPAP(QAction *action)
     if (backups) {
         importCPAP(ImportPath(path, loader), tr("Please wait, importing from backup folder(s)..."));
     } else {
-        if (QMessageBox::information(this, STR_MessageBox_Warning,
+        if (staticQMessageBox::information(this, STR_MessageBox_Warning,
                 tr("Because there are no internal backups to rebuild from, you will have to restore from your own.")+"\n\n"+
                 tr("Would you like to import from your own backups now? (you will have no data visible for this device until you do)"),
                 QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes) {
@@ -1897,7 +1916,7 @@ void MainWindow::on_actionPurgeMachine(QAction *action)
                                   "<font size=+2>you will lose this device's data <b>permanently</b>!</font>") + "</p>";
     }
 
-    if (QMessageBox::question(this, STR_MessageBox_Warning,
+    if (staticQMessageBox::question(this, STR_MessageBox_Warning,
             "<p><b>"+STR_MessageBox_Warning+":</b> "  +
             tr("You are about to <font size=+2>obliterate</font> OSCAR's device database for the following device:</p>") +
             "<p><font size=+2>" + machname + "</font></p>" +
@@ -1956,7 +1975,7 @@ void MainWindow::purgeMachine(Machine * mach)
         PopulatePurgeMenu();
         p_profile->StoreMachines();
     } else {
-        QMessageBox::warning(this, STR_MessageBox_Error,
+        staticQMessageBox::warning(this, STR_MessageBox_Error,
             tr("A file permission error caused the purge process to fail; you will have to delete the following folder manually:") +
             "\n\n" + QDir::toNativeSeparators(mach->getDataPath()), QMessageBox::Ok, QMessageBox::Ok);
 
@@ -2007,7 +2026,7 @@ void MainWindow::on_helpButton_clicked()
 #ifndef helpless
     ui->tabWidget->setCurrentWidget(help);
 #else
-    QMessageBox::information(nullptr, STR_MessageBox_Error, tr("No help is available."));
+    staticQMessageBox::information(nullptr, STR_MessageBox_Error, tr("No help is available."));
 #endif
 }
 
@@ -2218,7 +2237,7 @@ void MainWindow::on_actionImport_RemStar_MSeries_Data_triggered()
 
 void MainWindow::on_actionSleep_Disorder_Terms_Glossary_triggered()
 {
-    if (QMessageBox::question(nullptr, STR_MessageBox_Question, tr("The Glossary will open in your default browser"),
+    if (staticQMessageBox::question(nullptr, STR_MessageBox_Question, tr("The Glossary will open in your default browser"),
             QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok )
         QDesktopServices::openUrl(QUrl("https://www.apneaboard.com/wiki/index.php?title=Definitions"));
 }
@@ -2226,13 +2245,13 @@ void MainWindow::on_actionSleep_Disorder_Terms_Glossary_triggered()
 /*
 void MainWindow::on_actionHelp_Support_OSCAR_Development_triggered()
 {
-    QMessageBox::information(nullptr, STR_MessageBox_Information, tr("Donations are not implemented"));
+    staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("Donations are not implemented"));
 }
 */
 
 void MainWindow::on_actionChange_Language_triggered()
 {
-//    if (QMessageBox::question(this,STR_MessageBox_Warning,tr("Changing the language will reset custom Event and Waveform names/labels/descriptions.")+"\n\n"+tr("Are you sure you want to do this?"), QMessageBox::Yes, QMessageBox::No) == QMessageBox::No) {
+//    if (staticQMessageBox::question(this,STR_MessageBox_Warning,tr("Changing the language will reset custom Event and Waveform names/labels/descriptions.")+"\n\n"+tr("Are you sure you want to do this?"), QMessageBox::Yes, QMessageBox::No) == QMessageBox::No) {
 //        return;
 //    }
 
@@ -2334,7 +2353,7 @@ void MainWindow::importNonCPAP(MachineLoader &loader)
             // res is used as an index to an array and will cause a crash if not handled.
             // Negative numbers indicate a problem with the file format or the file does not exist.
             //QString fileName = QFileInfo(files[0]).fileName();
-            QString msg = QString(tr("There was a problem parsing %1 \nData File: %2") 
+            QString msg = QString(tr("There was a problem parsing %1 \nData File: %2")
                 .arg(name, QFileInfo( files[0]).fileName() ) );
             //QString msg = QString(tr("There was a problem parsing %1 \nData File: %2") .arg(name, fileName) );
             Notify(msg,"",20*1000 /* convert sec to ms */);
@@ -2538,9 +2557,17 @@ void MainWindow::on_actionPurgeCurrentDaysOximetry_triggered()
     QDate date = daily->getDate();
     Day * day = p_profile->GetDay(date, MT_OXIMETER);
     if (day) {
-        if (QMessageBox::question(this, STR_MessageBox_Warning,
+        QLocale locale;
+        if (staticQMessageBox::question(this, STR_MessageBox_Warning,
             tr("Are you sure you want to delete oximetry data for %1").
-                arg(daily->getDate().toString(Qt::DefaultLocaleLongDate))+"<br/><br/>"+
+                arg(
+                    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        daily->getDate().toString(Qt::DefaultLocaleLongDate)
+                    #else
+                        locale.toString(QDate::currentDate(), QLocale::LongFormat)
+                    #endif
+                    ) +"<br/><br/>"
+                +
             tr("<b>Please be aware you can not undo this operation!</b>"),
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No) {
             return;
@@ -2570,7 +2597,7 @@ void MainWindow::on_actionPurgeCurrentDaysOximetry_triggered()
         if (overview) overview->ReloadGraphs();
         if (welcome) welcome->refreshPage();
     } else {
-        QMessageBox::information(this, STR_MessageBox_Information,
+        staticQMessageBox::information(this, STR_MessageBox_Information,
             tr("Select the day with valid oximetry data in daily view first."),QMessageBox::Ok);
     }
 }
@@ -2618,7 +2645,7 @@ void MainWindow::on_actionShowPersonalData_toggled(bool visible)
         if ( ! setupRunning )
             GenerateStatistics();
     } else {
-        QMessageBox::information(this, "OSCAR", tr("You must select and open the profile you wish to modify"),
+       staticQMessageBox::information(this, "OSCAR", tr("You must select and open the profile you wish to modify"),
                     QMessageBox::Ok);
     }
 }
@@ -2649,7 +2676,7 @@ void MainWindow::on_actionExport_Journal_triggered()
 	}
     QFileInfo fi(folder);
 	if (!fi.isDir() ) {
-        folder = QStandardPaths::StandardLocation(QStandardPaths::DocumentsLocation);
+        folder = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     }
     folder += QDir::separator() + tr("%1's Journal").arg(p_profile->user->userName()) + ".xml";
 
@@ -2679,7 +2706,7 @@ void MainWindow::on_actionExport_CSV_triggered()
 
 void MainWindow::on_actionExport_Review_triggered()
 {
-    QMessageBox::information(nullptr, STR_MessageBox_Information, tr("Export review is not yet implemented"));
+    staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("Export review is not yet implemented"));
 }
 
 void MainWindow::on_mainsplitter_splitterMoved(int, int)
@@ -2720,7 +2747,7 @@ void MainWindow::on_actionCreate_Card_zip_triggered()
             // Try again if the selected filename is within the SD card itself.
             QString selectedPath = QFileInfo(filename).dir().canonicalPath();
             if (selectedPath.startsWith(cardPath)) {
-                if (QMessageBox::warning(nullptr, STR_MessageBox_Error,
+                if (staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
                         QObject::tr("Please select a location for your zip other than the data card itself!"),
                         QMessageBox::Ok)) {
                     continue;
@@ -2767,7 +2794,7 @@ void MainWindow::on_actionCreate_Card_zip_triggered()
             qWarning() << "Unable to open" << filename;
         }
         if (!ok) {
-            QMessageBox::warning(nullptr, STR_MessageBox_Error,
+            staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
                 QObject::tr("Unable to create zip!"),
                 QMessageBox::Ok);
         }
@@ -2817,7 +2844,7 @@ void MainWindow::on_actionCreate_Log_zip_triggered()
         qWarning() << "Unable to open" << filename;
     }
     if (!ok) {
-        QMessageBox::warning(nullptr, STR_MessageBox_Error,
+        staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
             QObject::tr("Unable to create zip!"),
             QMessageBox::Ok);
     }
@@ -2876,7 +2903,7 @@ void MainWindow::on_actionCreate_OSCAR_Data_zip_triggered()
         qWarning() << "Unable to open" << filename;
     }
     if (!ok) {
-        QMessageBox::warning(nullptr, STR_MessageBox_Error,
+        staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
             QObject::tr("Unable to create zip!"),
             QMessageBox::Ok);
     }
@@ -2888,7 +2915,7 @@ void MainWindow::on_actionReport_a_Bug_triggered()
 //    QSettings settings;
 //    QString language = settings.value(LangSetting).toString();
 //
-    QMessageBox::information(nullptr, STR_MessageBox_Error, tr("Reporting issues is not yet implemented"));
+    staticQMessageBox::information(nullptr, STR_MessageBox_Error, tr("Reporting issues is not yet implemented"));
 }
 
 void MainWindow::on_actionSystem_Information_triggered()
@@ -2897,7 +2924,7 @@ void MainWindow::on_actionSystem_Information_triggered()
     QStringList info = getBuildInfo();
     for (int i = 0; i < info.size(); ++i)
         text += info.at(i) + "<br/>";
-    QMessageBox::information(nullptr, tr("OSCAR Information"), text);
+    staticQMessageBox::information(nullptr, tr("OSCAR Information"), text);
 }
 
 void MainWindow::on_profilesButton_clicked()

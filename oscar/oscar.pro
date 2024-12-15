@@ -46,12 +46,31 @@ contains(DEFINES, NoGL) {
     DEFINES-=BrokenGL
 } else {
     QT += opengl
+    greaterThan(QT_MAJOR_VERSION, 5) {
+        QT += openglwidgets
+    }
     message("Building with regular OpenGL gGraphView")
+}
+
+## qt6 requires c++17
+greaterThan(QT_MAJOR_VERSION, 5) {
+    CONFIG += c++17
+} else {
+    CONFIG += c++11
+    #keep old configuration for qt5.
+    #needs verification to use higher compiler.
+    if (false) {
+        greaterThan(QT_MINOR_VERSION, 11) {
+            CONFIG += c++17
+        } else {
+            CONFIG += c++1z
+            QMAKE_CXXFLAGS += -std=c++17
+        }
+    }
 }
 
 DEFINES += LOCK_RESMED_SESSIONS
 
-CONFIG += c++11
 CONFIG += rtti
 CONFIG -= debug_and_release
 
@@ -254,99 +273,98 @@ lessThan(QT_MAJOR_VERSION,5)|lessThan(QT_MINOR_VERSION,12) {
 }
 
 SOURCES += \
+    aboutdialog.cpp \
     checkupdates.cpp \
-    notifyMessageBox.cpp \
-    highresolution.cpp \
-    Graphs/gGraph.cpp \
-    Graphs/gGraphView.cpp \
-    dailySearchTab.cpp \
-    daily.cpp \
-    saveGraphLayoutSettings.cpp \
-    overview.cpp \
     common_gui.cpp \
     cprogressbar.cpp \
+    csv.cpp \
+    daily.cpp \
+    dailySearchTab.cpp \
     exportcsv.cpp \
+    highresolution.cpp \
+    logger.cpp \
     main.cpp \
     mainwindow.cpp \
     newprofile.cpp \
+    notifyMessageBox.cpp \
+    overview.cpp \
+    oximeterimport.cpp \
     preferencesdialog.cpp \
-#    psettings.cpp \
+    profileselector.cpp \
+    rawdata.cpp \
     reports.cpp \
+    saveGraphLayoutSettings.cpp \
     sessionbar.cpp \
-#    updateparser.cpp \
+    staticQMessageBox.cpp \
+    statistics.cpp \
+    translation.cpp \
     version.cpp \
+    welcome.cpp \
+    zip.cpp \
+    Graphs/gAHIChart.cpp \
+    Graphs/gdailysummary.cpp \
     Graphs/gFlagsLine.cpp \
     Graphs/gFooBar.cpp \
+    Graphs/gGraph.cpp \
+    Graphs/gGraphView.cpp \
     Graphs/glcommon.cpp \
     Graphs/gLineChart.cpp \
     Graphs/gLineOverlay.cpp \
+    Graphs/gOverviewGraph.cpp \
+    Graphs/gPressureChart.cpp \
     Graphs/gSegmentChart.cpp \
+    Graphs/gSessionTimesChart.cpp \
     Graphs/gspacer.cpp \
     Graphs/gStatsLine.cpp \
     Graphs/gSummaryChart.cpp \
-    Graphs/gAHIChart.cpp \
     Graphs/gTTIAChart.cpp \
     Graphs/gUsageChart.cpp \
-    Graphs/gSessionTimesChart.cpp \
-    Graphs/gPressureChart.cpp \
-    Graphs/gOverviewGraph.cpp \
     Graphs/gXAxis.cpp \
     Graphs/gYAxis.cpp \
     Graphs/layer.cpp \
+    Graphs/MinutesAtPressure.cpp \
+    SleepLib/appsettings.cpp \
     SleepLib/calcs.cpp \
     SleepLib/common.cpp \
     SleepLib/day.cpp \
+    SleepLib/deviceconnection.cpp \
     SleepLib/event.cpp \
-    SleepLib/machine.cpp \
-    SleepLib/machine_loader.cpp \
     SleepLib/importcontext.cpp \
-    SleepLib/preferences.cpp \
-    SleepLib/profiles.cpp \
-    SleepLib/schema.cpp \
-    SleepLib/session.cpp \
+    SleepLib/journal.cpp \
+    SleepLib/loader_plugins/cms50f37_loader.cpp \
     SleepLib/loader_plugins/cms50_loader.cpp \
     SleepLib/loader_plugins/dreem_loader.cpp \
+    SleepLib/loader_plugins/edfparser.cpp \
     SleepLib/loader_plugins/icon_loader.cpp \
-    SleepLib/loader_plugins/sleepstyle_loader.cpp \
-    SleepLib/loader_plugins/sleepstyle_EDFinfo.cpp \
     SleepLib/loader_plugins/intellipap_loader.cpp \
+    SleepLib/loader_plugins/md300w1_loader.cpp \
     SleepLib/loader_plugins/mseries_loader.cpp \
     SleepLib/loader_plugins/prisma_loader.cpp \
     SleepLib/loader_plugins/prs1_loader.cpp \
-    SleepLib/loader_plugins/prs1_parser.cpp \
-    SleepLib/loader_plugins/prs1_parser_xpap.cpp \
-    SleepLib/loader_plugins/prs1_parser_vent.cpp \
     SleepLib/loader_plugins/prs1_parser_asv.cpp \
-    SleepLib/loader_plugins/resmed_loader.cpp \
+    SleepLib/loader_plugins/prs1_parser.cpp \
+    SleepLib/loader_plugins/prs1_parser_vent.cpp \
+    SleepLib/loader_plugins/prs1_parser_xpap.cpp \
     SleepLib/loader_plugins/resmed_EDFinfo.cpp \
+    SleepLib/loader_plugins/resmed_loader.cpp \
+    SleepLib/loader_plugins/resvent_loader.cpp \
+    SleepLib/loader_plugins/sleepstyle_EDFinfo.cpp \
+    SleepLib/loader_plugins/sleepstyle_loader.cpp \
     SleepLib/loader_plugins/somnopose_loader.cpp \
     SleepLib/loader_plugins/viatom_loader.cpp \
-    SleepLib/loader_plugins/zeo_loader.cpp \
-    SleepLib/loader_plugins/resvent_loader.cpp \
-    zip.cpp \
-    SleepLib/thirdparty/miniz.c \
-    csv.cpp \
-    rawdata.cpp \
-    translation.cpp \
-    statistics.cpp \
-    oximeterimport.cpp \
-    SleepLib/deviceconnection.cpp \
-    SleepLib/xmlreplay.cpp \
-    SleepLib/serialoximeter.cpp \
-    SleepLib/loader_plugins/md300w1_loader.cpp \
-    logger.cpp \
-    SleepLib/machine_common.cpp \
     SleepLib/loader_plugins/weinmann_loader.cpp \
-    Graphs/gdailysummary.cpp \
-    Graphs/MinutesAtPressure.cpp \
-    SleepLib/journal.cpp \
+    SleepLib/loader_plugins/zeo_loader.cpp \
+    SleepLib/machine_common.cpp \
+    SleepLib/machine.cpp \
+    SleepLib/machine_loader.cpp \
+    SleepLib/preferences.cpp \
+    SleepLib/profiles.cpp \
     SleepLib/progressdialog.cpp \
-    SleepLib/loader_plugins/cms50f37_loader.cpp \
-    profileselector.cpp \
-    SleepLib/appsettings.cpp \
-    SleepLib/loader_plugins/edfparser.cpp \
-    aboutdialog.cpp \
-    welcome.cpp
+    SleepLib/schema.cpp \
+    SleepLib/serialoximeter.cpp \
+    SleepLib/session.cpp \
+    SleepLib/thirdparty/miniz.c \
+    SleepLib/xmlreplay.cpp
 !contains(DEFINES, helpless) {
     SOURCES += help.cpp
 }
@@ -461,6 +479,7 @@ HEADERS  += \
     aboutdialog.h \
     welcome.h \
     mytextbrowser.h \
+    staticQMessageBox.h \
     git_info.h
 !contains(DEFINES, helpless) {
     HEADERS += help.h

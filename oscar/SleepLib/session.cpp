@@ -2,7 +2,7 @@
  * This stuff contains the base calculation smarts
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -795,7 +795,11 @@ bool Session::StoreEvents()
 
     if (compress) {
         // This checksum is hideously slow.. only using during compression, and not sure I should at all :-/
-        chk = qChecksum(databytes.data(), databytes.size());
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            chk = qChecksum(databytes.data(), databytes.size());
+        #else
+            chk = qChecksum(QByteArrayView(databytes));
+        #endif
     }
 
     header << datasize;
@@ -890,7 +894,12 @@ bool Session::LoadEvents(QString filename, bool debug)
                     return false;
                 }
 
-                quint16 crc = qChecksum(databytes.data(), databytes.size());
+                quint16 crc = 0;
+                #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    crc = qChecksum(databytes.data(), databytes.size());
+                #else
+                    crc = qChecksum(QByteArrayView(databytes));
+                #endif
 
                 if (crc != crc16) {
                     qDebug() << "CRC Doesn't match in" << filename;
@@ -1088,8 +1097,8 @@ void Session::updateCountSummary(ChannelID code)
     QHash<EventStoreType, EventStoreType> valsum;
     QHash<EventStoreType, quint32> timesum;
 
-    QHash<EventStoreType, EventStoreType>::iterator it;
-    QHash<EventStoreType, EventStoreType>::iterator valsum_end;
+    //QHash<EventStoreType, EventStoreType>::iterator it;
+    //QHash<EventStoreType, EventStoreType>::iterator valsum_end;
 
     EventDataType raw, lastraw = 0;
     qint64 start, time, lasttime = 0;

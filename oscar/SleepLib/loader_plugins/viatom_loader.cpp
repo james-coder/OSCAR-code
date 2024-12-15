@@ -165,7 +165,12 @@ Session* ViatomLoader::ParseFile(const QString & filename, bool *existing)
     QString foldername = QFileInfo(filename).dir().dirName();
     if (foldername.length() >= 9) {
         bool numeric;
-        foldername.rightRef(4).toInt(&numeric);
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            foldername.rightRef(4).toInt(&numeric);
+        #else
+            foldername.right(4).toInt(&numeric);
+        #endif
+
         if (numeric) {
             info.serial = foldername;
         }
@@ -329,7 +334,7 @@ bool ViatomFile::ParseHeader()
 
     switch (sig) { //Viatom database version number  - Crimson Nape
     case 0x0003:
-    case 0x0005:  
+    case 0x0005:
         break;
     default:
         qDebug() << m_file.fileName() << "Unrecognized DB version number in Viatom data file" << sig;
@@ -431,7 +436,7 @@ QList<ViatomFile::Record> ViatomFile::ReadData()
     in.setByteOrder(QDataStream::LittleEndian);
 
     QList<ViatomFile::Record> records;
-    
+
     // Read all Pulse, SPO2 and Motion data
     do {
         ViatomFile::Record rec;

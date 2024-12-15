@@ -1,7 +1,7 @@
 /* Profile Selector Implementation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2018 Mark Watkins 
+ * Copyright (c) 2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -39,12 +39,20 @@ bool MySortFilterProxyModel2::filterAcceptsRow(int sourceRow,
     QModelIndex index1 = sourceModel()->index(sourceRow, 1, sourceParent);
     QModelIndex index2 = sourceModel()->index(sourceRow, 2, sourceParent);
     QModelIndex index5 = sourceModel()->index(sourceRow, 5, sourceParent);
-
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     return (sourceModel()->data(index0).toString().contains(filterRegExp())
-            || sourceModel()->data(index1).toString().contains(filterRegExp())
-            || sourceModel()->data(index2).toString().contains(filterRegExp())
-            || sourceModel()->data(index5).toString().contains(filterRegExp())
+        || sourceModel()->data(index1).toString().contains(filterRegExp())
+        || sourceModel()->data(index2).toString().contains(filterRegExp())
+        || sourceModel()->data(index5).toString().contains(filterRegExp())
+        );
+#else
+    QRegularExpression filterExp = filterRegularExpression();
+    return (sourceModel()->data(index0).toString().contains(filterExp)
+            || sourceModel()->data(index1).toString().contains(filterExp)
+            || sourceModel()->data(index2).toString().contains(filterExp)
+            || sourceModel()->data(index5).toString().contains(filterExp)
            );
+#endif
 }
 
 
@@ -278,8 +286,13 @@ void ProfileSelector::on_profileView_doubleClicked(const QModelIndex &index)
 
 void ProfileSelector::on_profileFilter_textChanged(const QString &arg1)
 {
-    QRegExp regExp("*"+arg1+"*", Qt::CaseInsensitive, QRegExp::Wildcard);
-    proxy->setFilterRegExp(regExp);
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        QRegExp regExp("*"+arg1+"*", Qt::CaseInsensitive, QRegExp::Wildcard);
+        proxy->setFilterRegExp(regExp);
+    #else
+        QRegularExpression regExp = QRegularExpression::fromWildcard("*" + arg1 + "*", Qt::CaseInsensitive);
+        proxy->setFilterRegularExpression(regExp);
+    #endif
 }
 
 // Clear filter list
