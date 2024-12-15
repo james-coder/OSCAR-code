@@ -6,6 +6,10 @@
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
 
+#include <QtGlobal>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
 #define TEST_MACROS_ENABLEDoff
 #include <test_macros.h>
 
@@ -119,3 +123,4 @@ namespace HighResolution {
         }
     }
 }
+#endif

@@ -1,7 +1,7 @@
 /* OSCAR Main
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -9,6 +9,7 @@
 
 #define TEST_MACROS_ENABLEDoff
 #include <test_macros.h>
+#include <QtGlobal>
 
 #ifdef UNITTEST_MODE
 #include "tests/AutoTest.h"
@@ -32,7 +33,9 @@
 #include "translation.h"
 #include "SleepLib/common.h"
 #include "SleepLib/deviceconnection.h"
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include "highresolution.h"
+#endif
 
 #include <ctime>
 #include <chrono>
@@ -301,8 +304,10 @@ void optionExit(int exitCode, QString error) {
     --datadir  <folderName>  Use folderName as Oscar Data folder. For relatve paths: <Documents folder>/<relative path>.
                              If folder does not exist then prompts user.
     --help                   Displays this menu and exits.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     --hires                  Enables high Resolution
     --hiresoff               Disables high Resolution
+#endif
     -l                       Force login option. Internal OSCAR call from RestartApplication.
     )" );
     exit (exitCode);
@@ -314,6 +319,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName(getDeveloperName());
     QCoreApplication::setOrganizationDomain(getDeveloperDomain());
 
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     HighResolution::init();
     bool hiResEnabled=false;
 
@@ -330,6 +336,9 @@ int main(int argc, char *argv[]) {
         hiResEnabled=true;
         QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     }
+    #else
+        // high resolution is enable by default
+    #endif
 
     QSettings settings;
 
@@ -445,7 +454,9 @@ int main(int argc, char *argv[]) {
     qDebug() << "APP-NAME:" << QCoreApplication::applicationName();
     qDebug() << "APP-PATH:" << QCoreApplication::applicationDirPath();
     qDebug() << "APP-RESOURCES:" << appResourcePath();
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     HighResolution::display(hiResEnabled);
+    #endif
 
 #ifdef QT_DEBUG
     QString relinfo = " debug";
@@ -476,8 +487,9 @@ int main(int argc, char *argv[]) {
 // Moved buildInfo calls to after translation is available as makeBuildInfo includes tr() calls
 
     QStringList info = makeBuildInfo(forcedEngine);
-    for (int i = 0; i < info.size(); ++i)
+    for (int i = 0; i < info.size(); ++i) {
         qDebug().noquote() << info.at(i);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
     // OpenGL Detection

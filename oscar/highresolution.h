@@ -5,7 +5,7 @@
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #ifndef HIGHRESOLUTION_H
 #define HIGHRESOLUTION_H
 
@@ -23,4 +23,5 @@ namespace HighResolution {
 }
 
 #endif // HIGHRESOLUTION_H
+#endif
 

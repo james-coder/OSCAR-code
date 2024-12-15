@@ -249,9 +249,13 @@ PreferencesDialog::PreferencesDialog(QWidget *parent, Profile *_profile) :
     // clinicalMode and permissiveMode are radio buttons and must be set to opposite values. Once clinicalMode is used.
     // Radio Buttons illustrate the operating mode.
     ui->permissiveMode->setChecked(!profile->cpap->clinicalMode());
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     HighResolution::checkBox(false,ui->highResolution);
+    #else
+    ui->highResolution->setChecked(true);
+    ui->highResolution->setEnabled(false);
+    #endif
     ui->alternatingColorsCombo->setCurrentIndex(AppSetting->alternatingColorsCombo());
-
     ui->autoLaunchImporter->setChecked(AppSetting->autoLaunchImport());
 #ifndef NO_CHECKUPDATES
     ui->updateCheckEvery->setValue(AppSetting->updateCheckFrequency());
@@ -386,6 +390,10 @@ PreferencesDialog::PreferencesDialog(QWidget *parent, Profile *_profile) :
 
     ui->waveView->sortByColumn(0, Qt::AscendingOrder);
     ui->chanView->sortByColumn(0, Qt::AscendingOrder);
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    ui->highResolution->setChecked(true);
+    ui->highResolution->setEnabled(false);
+    #endif
 
 }
 
@@ -868,11 +876,12 @@ bool PreferencesDialog::Save()
     bool clicicalModeChanged = profile->cpap->clinicalMode() != ui->clinicalMode->isChecked() ;
     p_profile->cpap->setClinicalMode(ui->clinicalMode->isChecked());
 
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (HighResolution::checkBox(true,ui->highResolution) ) {
-        //needs_restart = true;
         QTimer::singleShot(0, mainwin, SLOT(RestartApplication(true, "-p")));
         return true; // save profile
     }
+    #endif
     
     if (ui->alternatingColorsCombo->currentIndex() != AppSetting->alternatingColorsCombo()) {
         AppSetting->setAlternatingColorsCombo(ui->alternatingColorsCombo->currentIndex());
