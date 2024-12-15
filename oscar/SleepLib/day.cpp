@@ -358,7 +358,7 @@ EventDataType Day::percentile(ChannelID code, EventDataType percentile)
 
     QHash<EventStoreType, qint64> wmap; // weight map
 
-    QHash<EventStoreType, qint64>::iterator wmapit;
+    // not used: QHash<EventStoreType, qint64>::iterator wmapit;
     qint64 SN = 0;
 
     EventDataType lastgain = 0, gain = 0;

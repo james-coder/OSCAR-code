@@ -1,7 +1,7 @@
 /* Custom CPAP/Oximetry Calculations Header
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (C) 2011-2018 Mark Watkins 
+ * Copyright (C) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -58,18 +58,30 @@ struct BreathPeak {
         start = _start;
         middle = _middle;
         end = _end;
-        //peakmax=_peakmax;
-        //peakmin=_peakmin;
     }
+
+    //error: definition of implicit copy assignment operator for 'BreathPeak' is deprecated because it has a user-provided copy constructor
     BreathPeak(const BreathPeak &copy) {
         min = copy.min;
         max = copy.max;
         start = copy.start;
         middle = copy.middle;
         end = copy.end;
-        //peakmin=copy.peakmin;
-        //peakmax=copy.peakmax;
+    };
+
+    bool operator<(const BreathPeak &p) ;
+
+    BreathPeak& operator=(const BreathPeak &other) {
+        if (this != &other) {  // Self-assignment check
+            min = other.min;
+            max = other.max;
+            start = other.start;
+            middle = other.middle;
+            end = other.end;
+        }
+        return *this;
     }
+
     int samplelength() { return end - start; }
     int upperLength() { return middle - start; }
     int lowerLength() { return end - middle; }
@@ -79,8 +91,6 @@ struct BreathPeak {
     qint32 start;       // beginning zero cross
     qint32 middle;         // ending zero cross
     qint32 end;         // ending zero cross
-    //qint64 peakmin;     // min peak index
-    //qint64 peakmax;     // max peak index
 };
 
 bool operator<(const BreathPeak &p1, const BreathPeak &p2);

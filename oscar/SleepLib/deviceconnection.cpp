@@ -298,7 +298,9 @@ QXmlStreamWriter & operator<<(QXmlStreamWriter & xml, const SerialPortInfo & inf
 
 QXmlStreamReader & operator>>(QXmlStreamReader & xml, SerialPortInfo & info)
 {
-    if (xml.atEnd() == false && xml.isStartElement() && xml.name() == "serial") {
+    //if (xml.atEnd() == false && xml.isStartElement() && xml.name() == "serial") 
+    // error: result of comparison against a string literal is unspecified 
+    if (xml.atEnd() == false && xml.isStartElement() && xml.name() == QStringLiteral("serial")) {
         for (auto & attribute : xml.attributes()) {
             QString name = attribute.name().toString();
             QString value = attribute.value().toString();

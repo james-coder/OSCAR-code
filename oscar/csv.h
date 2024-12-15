@@ -7,6 +7,9 @@
  * for more details. */
 
 #include <QTextStream>
+#include <QIODevice>
+#include <QString>   //error: field m_delmin had incomplete type 'QString'
+#include <QStringList>  //error: field m_field_names had incomplete type
 
 class CSVReader
 {

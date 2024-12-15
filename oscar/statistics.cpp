@@ -1760,7 +1760,8 @@ QString Statistics::UpdateRecordsBox()
 
                 html += "<b>"+tr("Worst AHI")+"</b><br>";
 
-                it = ahilist.end() - 1;
+                // it = ahilist.end() - 1; error: 'operator-' is deprecated: 
+                it = ahilist.end(); --it;
                 it_end = ahilist.begin();
                 for (int i=0; (i<show_records) && (it != it_end); ++i, --it) {
                     html += QString("<a href='daily=%1'>").arg(it.value().toString(Qt::ISODate))
@@ -1807,7 +1808,7 @@ QString Statistics::UpdateRecordsBox()
 
                 html += "<b>"+tr("Worst Flow Limtation")+"</b><br>";
 
-                it = ahilist.end() - 1;
+                it = ahilist.end(); --it;
                 it_end = ahilist.begin();
                 for (int i=0; (i<show_records) && (it != it_end); ++i, --it) {
                     if (it.key() > 0) {
@@ -1840,7 +1841,7 @@ QString Statistics::UpdateRecordsBox()
             if (ahilist.size() > (show_records * 2)) {
                 html += "<b>"+tr("Worst Large Leaks")+"</b><br>";
 
-                it = ahilist.end() - 1;
+                it = ahilist.end(); --it;
                 it_end = ahilist.begin();
 
                 for (int i=0; (i<show_records) && (it != it_end); ++i, --it) {
@@ -1877,7 +1878,7 @@ QString Statistics::UpdateRecordsBox()
                 if (ahilist.size() > (show_records * 2)) {
                     html += "<b>"+tr("Worst CSR")+"</b><br>";
 
-                    it = ahilist.end() - 1;
+                    it = ahilist.end(); --it;
                     it_end = ahilist.begin();
                     for (int i=0; (i<show_records) && (it != it_end); ++i, --it) {
 
@@ -1907,7 +1908,7 @@ QString Statistics::UpdateRecordsBox()
                 if (ahilist.size() > (show_records * 2)) {
                     html += "<b>"+tr("Worst PB")+"</b><br>";
 
-                    it = ahilist.end() - 1;
+                    it = ahilist.end(); --it;
                     it_end = ahilist.begin();
                     for (int i=0; (i < show_records) && (it != it_end); ++i, --it) {
 

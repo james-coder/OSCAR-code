@@ -407,7 +407,8 @@ void XmlReplayEvent::read(QXmlStreamReader & xml)
 {
     QXmlStreamAttributes attribs = xml.attributes();
     for (auto & attrib : attribs) {
-        if (attrib.name() != "time") {    // skip outer timestamp, which is decoded by operator>>
+        //error: result of comparison against a string literal is unspecified
+        if (attrib.name() != QStringLiteral("time")) {    // skip outer timestamp, which is decoded by operator>>
             set(attrib.name().toString(), attrib.value().toString());
         }
     }

@@ -28,6 +28,15 @@ struct OxiRecord
     OxiRecord(quint8 p, quint8 s): pulse(p), spo2(s) {}
     OxiRecord(quint8 p, quint8 s, quint16 pi): pulse(p), spo2(s), perf(pi) {} // with perfusion index
     OxiRecord(const OxiRecord & copy) { pulse = copy.pulse; spo2 = copy.spo2; perf = copy.perf; }
+    //OxiRecord' is deprecated because it has a user-provided copy constructor
+    OxiRecord& operator=(const OxiRecord& other) {
+        if (this != &other) {  // Self-assignment check
+            pulse = other.pulse;
+            spo2 = other.spo2;
+            perf = other.perf;
+        }
+        return *this;
+    }
 };
 
 class SerialOximeter : public MachineLoader

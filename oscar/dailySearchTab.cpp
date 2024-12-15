@@ -387,7 +387,7 @@ void DailySearchTab::showOnlyAhiChannels(bool ahiOnly) {
         QAbstractButton* topicButton = dynamic_cast<QAbstractButton*>(commandList->itemWidget(item));
         if (!topicButton) continue;
         int topic = buttonGroup->id(topicButton);
-        if (apneaLikeChannels.contains(topic)) {
+        if (apneaLikeChannels.contains((ChannelID)topic)) {
             item->setHidden(false);
         } else {
             if (topic == ST_CLEAR) {
@@ -578,8 +578,8 @@ void    DailySearchTab::setState(STATE newState) {
                     break;
             };
         };
-
-QRegExp Match::searchPatterToRegex (QString searchPattern) {
+// QRegexp is obsoluted.
+QRegularExpression Match::searchPatterToRegex (QString searchPattern) {
 
         const static QChar bSlash('\\');
         const static QChar asterisk('*');
@@ -611,11 +611,11 @@ QRegExp Match::searchPatterToRegex (QString searchPattern) {
 
 
         static const QString metaClass = QString( "[ / \\\\ \\[ \\]  ( ) { } | + ^ . $ ? * - ]").replace(" ",""); // slash,bSlash,[,],(,),{,},+,^,.,$,?,*,-,|
-        static const QRegExp metaCharRegex(metaClass);
+        static const QRegularExpression metaCharRegex(metaClass);
         #if 0
         // Verify search pattern
         if (!metaCharRegex.isValid()) {
-            return QRegExp();
+            return QRegularExpression();
         }
         #endif
 
@@ -669,12 +669,16 @@ QRegExp Match::searchPatterToRegex (QString searchPattern) {
         }
 
 
+        // from AI
+        // QRegex convertedRegex =QRegex(searchPattern,Qt::CaseInsensitive, QRegex::RegExp);
+        // QRegularExpression convertedRegex(QRegularExpression::escape(searchPattern), QRegularExpression::CaseInsensitiveOption);
+
         // searchPattern = QString("^.*%1.*$").arg(searchPattern);       // add asterisk to end end points.
-        QRegExp convertedRegex =QRegExp(searchPattern,Qt::CaseInsensitive, QRegExp::RegExp);
+        QRegularExpression convertedRegex =QRegularExpression(searchPattern,QRegularExpression::CaseInsensitiveOption);
         // verify convertedRegex to use
         if (!convertedRegex.isValid()) {
             qWarning() << QFileInfo( __FILE__).baseName() <<"[" << __LINE__ << "] " <<  convertedRegex.errorString() << convertedRegex ;
-            return QRegExp();
+            return QRegularExpression();
         }
         return convertedRegex;
 }
@@ -686,7 +690,7 @@ bool    Match::compare(QString find , QString target)
         if (opCode==OP_CONTAINS) {
             ret =  target.contains(find,Qt::CaseInsensitive);
         } else if (opCode==OP_WILDCARD) {
-            QRegExp regex =  searchPatterToRegex(find);
+            QRegularExpression regex =  searchPatterToRegex(find);
             ret =  target.contains(regex);
         }
         return ret;

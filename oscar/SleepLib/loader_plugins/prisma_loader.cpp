@@ -695,7 +695,8 @@ MachineInfo PrismaLoader::PeekInfoFromConfig(const QString & selectedPath)
         }
         MachineInfo info = newInfo();
         prismaLineConfigFile.close();
-        info.modelnumber=42;
+        // info.modelnumber=42     error: conversion from 'int' to 'QChar' is ambiguous
+        info.modelnumber="42";
         info.model = "Unknown PrismaLine";
         info.serial = "0x42424242";
         // TODO AXT load props

@@ -18,7 +18,9 @@
 #include <QDate>
 #include <QDebug>
 #include <QXmlStreamReader>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QDesktopWidget>
+#endif
 #include <QProcess>
 
 #include "checkupdates.h"
@@ -101,18 +103,18 @@ VersionInfo getVersionInfo (QString type, QString platform) {
     QXmlStreamReader reader(versionXML);
 
        if (reader.readNextStartElement()) {
-           if (reader.name() == "oscar"){
+           if (reader.name() == QStringLiteral("oscar")){
                 //qDebug() << "expecting oscar, read" << reader.name();
                while(reader.readNextStartElement()){
                     //qDebug() << "expecting group, read" << reader.name() << "with id" << reader.attributes().value("id").toString();
-                   if(reader.name() == "group" &&
+                   if(reader.name() == QStringLiteral("group") &&
                         reader.attributes().hasAttribute("id")){
                         if (reader.attributes().value("id").toString() == type) {
                             while(reader.readNextStartElement()) {
                                 //qDebug() << "expecting url or platform, read" << reader.name();
-                                if (reader.name() == "installers")
+                                if (reader.name() == QStringLiteral("installers"))
                                     foundInfo.urlInstaller = reader.readElementText();
-                                if (reader.name() == "platform") {
+                                if (reader.name() == QStringLiteral("platform")) {
                                     QString plat=reader.attributes().value("id").toString();
                                     //qDebug() << "expecting platform, read " << reader.name()  << "with id" << reader.attributes().value("id").toString();
 
@@ -120,7 +122,7 @@ VersionInfo getVersionInfo (QString type, QString platform) {
                                         foundInfo.platform = plat;
                                         while(reader.readNextStartElement()) {
                                             //qDebug() << "expecting version or notes, read" << reader.name();
-                                            if (reader.name() == "version") {
+                                            if (reader.name() == QStringLiteral("version")) {
                                                 QString fileVersion = reader.readElementText();
                                                 Version fv(fileVersion);
                                                 if (!fv.IsValid()) {
@@ -130,7 +132,7 @@ VersionInfo getVersionInfo (QString type, QString platform) {
                                                         foundInfo.version = fileVersion;  // We found a more recent version
                                                 }
                                             }
-                                            else if (reader.name() == "notes") {
+                                            else if (reader.name() == QStringLiteral("notes")) {
                                                 foundInfo.notes = reader.readElementText();
                                             }
                                             else

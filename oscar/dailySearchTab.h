@@ -13,6 +13,7 @@
 #include <QTextDocument>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QRegularExpression>       // QRegexp is obsoluted.
 #include <QList>
 #include <QFrame>
 #include <QWidget>
@@ -86,7 +87,7 @@ class Match
     void        updateMinMaxValues(qint32 value) ;
     bool        compare(int,int);
     bool        compare(QString aa , QString bb);
-    QRegExp     searchPatterToRegex (QString searchPattern);
+    QRegularExpression     searchPatterToRegex (QString searchPattern);
     QString     formatTime (qint32) ;
     int         nextTab;
     QString     valueToString(int value, QString empty = "");
@@ -256,7 +257,7 @@ private:
 
     QString     helpStr();
     QString     centerLine(QString line);
-    QRegExp     searchPatterToRegex (QString wildcard);
+    QRegularExpression     searchPatterToRegex (QString wildcard);
     void        addCommandItem(QString str,int topic);
     float       commandListItemMaxWidth = 0;
     float       commandListItemHeight = 0;

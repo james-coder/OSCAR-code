@@ -160,7 +160,13 @@ bool Journal::BackupJournal(QString filename)
     }
 
     QTextStream ts(&file);
-    ts.setCodec("UTF-8");
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        ts.setCodec("UTF-8");
+    #else
+        // Qt6 version utf-8 is the default
+        // or if not utf-8
+        // ts.setEncoding(QStringConverter::Utf8);
+    #endif
     ts.setGenerateByteOrderMark(true);
     ts << outBuf;
     file.close();

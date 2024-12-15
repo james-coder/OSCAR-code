@@ -116,9 +116,9 @@ bool SearchApnea(Session *session, qint64 time, double dur)
 }
 
 // Sort BreathPeak by peak index
-bool operator<(const BreathPeak &p1, const BreathPeak &p2)
+bool BreathPeak::operator<(const BreathPeak &other)
 {
-    return p1.start < p2.start;
+    return this->start <other.start;
 }
 
 //! \brief Filters input to output with a percentile filter with supplied width.
