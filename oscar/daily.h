@@ -17,7 +17,12 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QLabel>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)  || defined (NEEDS_WORK)
 #include <QtOpenGL/QGLContext>
+#else
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
+#endif
 #include <QScrollBar>
 #include <QTableWidgetItem>
 #include <QTextBrowser>
@@ -354,7 +359,11 @@ private:
     QHash<QString, gGraph *> graphlist;
 
     QHash<QString,QPushButton *> GraphToggles;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)  || defined (NEEDS_WORK)
     QGLContext *offscreen_context;
+#else
+    QOpenGLContext *offscreen_context;
+#endif
 
     QList<int> splitter_sizes;
 

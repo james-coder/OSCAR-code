@@ -12,8 +12,13 @@
 
 #include <QMainWindow>
 #ifndef BROKEN_OPENGL_BUILD
-#include <QGLContext>
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        #include <QGLContext>
+    #else
+        // #include <QtOpenGLWidgets/QOpenGLWidget>
+    #endif
 #endif
+
 #include <QSystemTrayIcon>
 #include <QTimer>
 

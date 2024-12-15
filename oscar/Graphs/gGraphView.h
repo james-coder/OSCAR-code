@@ -33,11 +33,12 @@
 #ifndef BROKEN_OPENGL_BUILD
 #if QT_VERSION < QT_VERSION_CHECK(5,4,0)
 #include <QGLWidget>
-#else
+#elif  QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QOpenGLWidget>
+#else
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #endif
 #endif
-
 #include <Graphs/gGraph.h>
 #include <Graphs/glcommon.h>
 #include <SleepLib/day.h>
@@ -134,6 +135,17 @@ struct TextQue {
         antialias=copy.antialias;
     }
 
+    TextQue& operator=(const TextQue & copy) {
+        x=copy.x;
+        y=copy.y;
+        text=copy.text;
+        angle=copy.angle;
+        color=copy.color;
+        font=copy.font;
+        antialias=copy.antialias;
+        return *this;
+    }
+
     //! \variable contains the x axis screen position to draw the text
     short x;
     //! \variable contains the y axis screen position to draw the text
@@ -151,6 +163,7 @@ struct TextQue {
 };
 
 struct TextQueRect {
+public:
     TextQueRect() {
     }
     TextQueRect(QRectF r, quint32 flags, QString text, float angle, QColor color, QFont * font, bool antialias):
@@ -165,6 +178,16 @@ struct TextQueRect {
         color = copy.color;
         font = copy.font;
         antialias = copy.antialias;
+    }
+    TextQueRect& operator=(const TextQueRect& copy) {
+        rect = copy.rect;
+        flags = copy.flags;
+        text = copy.text;
+        angle = copy.angle;
+        color = copy.color;
+        font = copy.font;
+        antialias = copy.antialias;
+        return *this;
     }
 
     //! \variable contains the QRect containing the text object

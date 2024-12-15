@@ -200,6 +200,22 @@ QString getCompilerVersion()
     #endif
 }
 
+QString getCppVersion() {
+    #if __cplusplus > 202002L
+        return  "Using C++23 or later";
+    #elif __cplusplus == 202002L
+        return  "Using C++20";
+    #elif __cplusplus >= 201703L
+        return "Using C++17";
+    #elif __cplusplus >= 201402L
+        return "Using C++14";
+    #elif __cplusplus >= 201103L
+        return "Using C++11";
+    #else
+        return QString();
+    #endif
+}
+
 QStringList buildInfo;
 
 QStringList makeBuildInfo (QString forcedEngine){
@@ -212,6 +228,8 @@ QStringList makeBuildInfo (QString forcedEngine){
     QString compiler = getCompilerVersion();
     if (compiler.length() >0 )
         buildInfo << (QObject::tr("Compiler:") + " " + compiler);
+    if (!getCppVersion().isEmpty())
+        buildInfo << getCppVersion();
 
     if (forcedEngine != "")
         buildInfo << forcedEngine;

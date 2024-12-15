@@ -149,8 +149,14 @@ bool gSummaryChart::mouseReleaseEvent(QMouseEvent *event, gGraph *graph)
 {
     if (!(event->modifiers() & Qt::ShiftModifier)) return false;
 
-    float x = event->x() - m_rect.left();
-    float y = event->y() - m_rect.top();
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        float x = event->x();
+        float y = event->y();
+    #else   
+        float x = event->position().x();
+        float y = event->position().y();
+    #endif  
+
     qDebug() << x << y;
 
     EventDataType miny;
@@ -715,3 +721,69 @@ QString gSummaryChart::durationInSecondsToHhMmSs(double duration) {
         return "-" + result;
     }
 }
+
+
+
+
+
+    SummaryCalcItem SummaryCalcItem::operator=(const SummaryCalcItem & copy) {
+        code = copy.code;
+        type = copy.type;
+        color = copy.color;
+
+        wavg_sum = 0;
+        avg_sum = 0;
+        cnt = 0;
+        divisor = 0;
+        min = 0;
+        max = 0;
+        midcalc = p_profile->general->prefCalcMiddle();
+        return *this;
+    }
+
+    SummaryCalcItem::SummaryCalcItem(const SummaryCalcItem & copy) {
+        code = copy.code;
+        type = copy.type;
+        color = copy.color;
+
+        wavg_sum = 0;
+        avg_sum = 0;
+        cnt = 0;
+        divisor = 0;
+        min = 0;
+        max = 0;
+        midcalc = p_profile->general->prefCalcMiddle();
+    }
+
+
+    SummaryChartSlice::SummaryChartSlice(const SummaryChartSlice & copy) {
+        calc = copy.calc;
+        value = copy.value;
+        height = copy.height;
+        name = copy.name;
+        color = copy.color;
+//        brush = copy.brush;
+    }
+    
+    SummaryChartSlice& SummaryChartSlice::operator=(SummaryChartSlice & other) {
+        if (this != &other) {  // Self-assignment check
+            calc = other.calc;
+            value = other.value;
+            height = other.height;
+            name = other.name;
+            color = other.color;
+        }
+        return *this;
+    }
+
+    SummaryChartSlice& SummaryChartSlice::operator=(const SummaryChartSlice & other) {
+        if (this != &other) {  // Self-assignment check
+            calc = other.calc;
+            value = other.value;
+            height = other.height;
+            name = other.name;
+            color = other.color;
+        }
+        return *this;
+    }
+

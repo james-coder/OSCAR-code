@@ -892,7 +892,6 @@ void gGraphView::dumpInfo()
             }
         }
 
-        QHash<schema::ChanType, QList<schema::Channel *> >::iterator lit;
         for (auto lit = list.begin(), end=list.end(); lit != end; ++lit) {
             switch (lit.key()) {
             case schema::DATA:
@@ -1595,9 +1594,14 @@ void gGraphView::paintGL()
 
 // Create QPainter object, note this is only valid from paintGL events!
     QPainter painter(this);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+        painter.setRenderHint(QPainter::TextAntialiasing, true);
+    #else
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setRenderHint(QPainter::TextAntialiasing, true);
+    #endif
 
-    painter.setRenderHint(QPainter::TextAntialiasing, true);
 
     QRect bgrect(0, 0, width(), height());
     painter.fillRect(bgrect,QBrush(QColor(255,255,255)));
@@ -1848,8 +1852,13 @@ void gGraphView::mouseMoveEvent(QMouseEvent *event)
 {
     grabKeyboard();
 
-    int x = event->x();
-    int y = event->y();
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int x = event->x();
+        int y = event->y();
+    #else
+        int x = event->position().x();
+        int y = event->position().y();
+    #endif
 
     m_mouse = QPoint(x, y);
 
@@ -2739,8 +2748,13 @@ void gGraphView::onLinesClicked(QAction *action)
 
 void gGraphView::mousePressEvent(QMouseEvent *event)
 {
-    int x = event->x();
-    int y = event->y();
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int x = event->x();
+        int y = event->y();
+    #else
+        int x = event->position().x();
+        int y = event->position().y();
+    #endif
 
     float h, pinned_height = 0, py = 0;
 
@@ -2792,7 +2806,11 @@ void gGraphView::mousePressEvent(QMouseEvent *event)
                     popout_graph = g;
 
                     populateMenu(g);
-                    context_menu->popup(event->globalPos());
+                    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        context_menu->popup(event->globalPos());
+                    #else
+                        context_menu->popup(event->globalPosition().toPoint());
+                    #endif
                     //done=true;
                 } else if (!g->blockSelect()) {
                     if (m_metaselect) {
@@ -2801,7 +2819,11 @@ void gGraphView::mousePressEvent(QMouseEvent *event)
                         }
                     }
                     // send event to graph..
-                    m_point_clicked = QPoint(event->x(), event->y());
+                    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        m_point_clicked = QPoint(event->x(), event->y());
+                    #else
+                        m_point_clicked = event->position().toPoint();
+                    #endif
 
                     //QMouseEvent e(event->type(),m_point_clicked,event->button(),event->buttons(),event->modifiers());
 
@@ -2869,7 +2891,11 @@ void gGraphView::mousePressEvent(QMouseEvent *event)
                         pin_graph = g;
                         populateMenu(g);
 
-                        context_menu->popup(event->globalPos());
+                        #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                            context_menu->popup(event->globalPos());
+                        #else
+                            context_menu->popup(event->globalPosition().toPoint());
+                        #endif
                         //done=true;
                     } else if (!g->blockSelect()) {
                        if (m_metaselect) {
@@ -2878,7 +2904,11 @@ void gGraphView::mousePressEvent(QMouseEvent *event)
                             }
                         }
                         // send event to graph..
-                        m_point_clicked = QPoint(event->x(), event->y());
+                        #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                            m_point_clicked = QPoint(event->x(), event->y());
+                        #else
+                            m_point_clicked = event->position().toPoint();
+                        #endif
                         //QMouseEvent e(event->type(),m_point_clicked,event->button(),event->buttons(),event->modifiers());
                         m_button_down = true;
                         m_metaselect = event->modifiers() & Qt::AltModifier;
@@ -2908,8 +2938,13 @@ void gGraphView::mousePressEvent(QMouseEvent *event)
 void gGraphView::mouseReleaseEvent(QMouseEvent *event)
 {
 
-    int x = event->x();
-    int y = event->y();
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int x = event->x();
+        int y = event->y();
+    #else
+        int x = event->position().x();
+        int y = event->position().y();
+    #endif
 
     float h, py = 0, pinned_height = 0;
     bool done = false;
@@ -3027,7 +3062,17 @@ void gGraphView::mouseReleaseEvent(QMouseEvent *event)
 void gGraphView::keyReleaseEvent(QKeyEvent *event)
 {
     if (m_metaselect && !(event->modifiers() & Qt::AltModifier)) {
-        QMouseEvent mevent(QEvent::MouseButtonRelease, m_point_released, Qt::LeftButton, Qt::LeftButton, event->modifiers());
+        #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            QMouseEvent mevent(QEvent::MouseButtonRelease, 
+                m_point_released, 
+                Qt::LeftButton, Qt::LeftButton, event->modifiers());
+        #else
+            QMouseEvent mevent(QEvent::MouseButtonRelease, 
+                m_point_released, m_point_released,  
+                Qt::LeftButton, Qt::LeftButton, event->modifiers()
+                //,Qt::MouseEventNotSynthesized 
+                ); 
+        #endif
         if (m_graph_index>=0) {
             m_graphs[m_graph_index]->mouseReleaseEvent(&mevent);
         }
@@ -3061,8 +3106,13 @@ void gGraphView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     mousePressEvent(event); // signal missing.. a qt change might "fix" this if we are not careful.
 
-    int x = event->x();
-    int y = event->y();
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int x = event->x();
+        int y = event->y();
+    #else
+        int x = event->position().x();
+        int y = event->position().y();
+    #endif
 
     float h, py = 0, pinned_height = 0;
     bool done = false;

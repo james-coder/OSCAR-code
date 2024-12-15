@@ -1,4 +1,4 @@
-/* gSessionTimesChart Header
+ /* gSessionTimesChart Header
  *
  * Copyright (c) 2019-2024 The Oscar Team
  * Copyright (C) 2011-2018 Mark Watkins 
@@ -42,7 +42,10 @@ struct SummaryCalcItem {
         min = 0;
         max = 0;
     }
-    SummaryCalcItem(const SummaryCalcItem & copy) {
+
+    SummaryCalcItem operator=(const SummaryCalcItem & copy) ;
+    #if 0
+    {
         code = copy.code;
         type = copy.type;
         color = copy.color;
@@ -54,8 +57,26 @@ struct SummaryCalcItem {
         min = 0;
         max = 0;
         midcalc = p_profile->general->prefCalcMiddle();
-
+        return *this;
     }
+    #endif
+
+    SummaryCalcItem(const SummaryCalcItem & copy) ;
+    #if 0
+    {
+        code = copy.code;
+        type = copy.type;
+        color = copy.color;
+
+        wavg_sum = 0;
+        avg_sum = 0;
+        cnt = 0;
+        divisor = 0;
+        min = 0;
+        max = 0;
+        midcalc = p_profile->general->prefCalcMiddle();
+    }
+    #endif
 
     SummaryCalcItem(ChannelID code, SummaryType type, QColor color)
         :code(code), type(type), color(color) {
@@ -128,10 +149,14 @@ struct SummaryChartSlice {
         calc = nullptr;
         height = 0;
         value = 0;
-        name = ST_CNT;
+        //name = ST_CNT;
+        name = "";
         color = Qt::black;
     }
-    SummaryChartSlice(const SummaryChartSlice & copy) {
+
+    SummaryChartSlice(const SummaryChartSlice & copy) ;
+    #if 0
+    {
         calc = copy.calc;
         value = copy.value;
         height = copy.height;
@@ -139,6 +164,34 @@ struct SummaryChartSlice {
         color = copy.color;
 //        brush = copy.brush;
     }
+    #endif
+    SummaryChartSlice& operator=(SummaryChartSlice & other) ;
+    #if 0
+    {
+        if (this != &other) {  // Self-assignment check
+            calc = other.calc;
+            value = other.value;
+            height = other.height;
+            name = other.name;
+            color = other.color;
+        }
+        return *this;
+    }
+    #endif
+
+    SummaryChartSlice& operator=(const SummaryChartSlice & other) ;
+    #if 0
+    {
+        if (this != &other) {  // Self-assignment check
+            calc = other.calc;
+            value = other.value;
+            height = other.height;
+            name = other.name;
+            color = other.color;
+        }
+        return *this;
+    }
+    #endif
 
     SummaryChartSlice(SummaryCalcItem * calc, EventDataType value, EventDataType height, QString name, QColor color)
         :calc(calc), value(value), height(height), name(name), color(color) {

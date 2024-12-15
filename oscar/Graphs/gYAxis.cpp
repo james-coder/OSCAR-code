@@ -306,8 +306,14 @@ bool gYAxis::mouseMoveEvent(QMouseEvent *event, gGraph *graph)
 
     graph->timedRedraw(0);
 
-    int x = event->x();
-    int y = event->y();
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        int x = event->x();
+        int y = event->y();
+    #else
+        int x = event->position().x();
+        int y = event->position().y();
+    #endif
+
 
     if (!graph->units().isEmpty()) {
         graph->ToolTip(graph->unitsTooltip(), x+10, y+10, TT_AlignLeft);

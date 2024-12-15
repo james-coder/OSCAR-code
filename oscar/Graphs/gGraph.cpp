@@ -150,9 +150,15 @@ bool InitGraphGlobals()
                         (*p_pref)["Fonts_Big_Italic"].toBool()
                        );
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     defaultfont->setStyleHint(QFont::AnyStyle, QFont::OpenGLCompatible);
     mediumfont->setStyleHint(QFont::AnyStyle, QFont::OpenGLCompatible);
     bigfont->setStyleHint(QFont::AnyStyle, QFont::OpenGLCompatible);
+#else
+    defaultfont->setStyleHint(QFont::AnyStyle);
+    mediumfont->setStyleHint(QFont::AnyStyle);
+    bigfont->setStyleHint(QFont::AnyStyle);
+#endif
 
     //images["mask"] = new QImage(":/icons/mask.png");
     images["oximeter"] = new QImage(":/icons/cubeoximeter.png");
@@ -849,8 +855,13 @@ void gGraph::mouseMoveEvent(QMouseEvent *event)
 {
 //    qDebug() << m_title << "Move" << event->pos() << m_graphview->pointClicked();
     if (m_rect.width() == 0) return;
-    int y = event->y();
-    int x = event->x();
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        int y = event->y();
+        int x = event->x();
+    #else
+        int y = event->position().y();
+        int x = event->position().x();
+    #endif
 
     //bool doredraw = false;
 
@@ -1000,8 +1011,13 @@ bool gGraph::selectingArea() { return m_selecting_area || m_graphview->metaSelec
 
 void gGraph::mousePressEvent(QMouseEvent *event)
 {
-    int y = event->pos().y();
-    int x = event->pos().x();
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        int y = event->pos().y();
+        int x = event->pos().x();
+    #else
+        int y = event->position().y();
+        int x = event->position().x();
+    #endif
 
 //    qDebug() << m_title << "gGraph mousePressEvent, x=" << x << " y=" << y;
 
@@ -1015,9 +1031,13 @@ void gGraph::mousePressEvent(QMouseEvent *event)
 
 void gGraph::mouseReleaseEvent(QMouseEvent *event)
 {
-
-    int y = event->pos().y();
-    int x = event->pos().x();
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        int y = event->pos().y();
+        int x = event->pos().x();
+    #else
+        int y = event->position().y();
+        int x = event->position().x();
+    #endif
 //    qDebug() << m_title << "gGraph mouseReleaseEvent at x,y"  << x << y;
 
     for (const auto & layer : m_layers) {

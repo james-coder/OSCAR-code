@@ -263,20 +263,27 @@ bool gFlagsGroup::mouseMoveEvent(QMouseEvent *event, gGraph *graph)
     if (!AppSetting->graphTooltips()) {
         return false;
     }
+   #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        double event_x = event->x();
+        double event_y = event->y();
+    #else
+        double event_x = event->position().x();
+        double event_y = event->position().y();
+    #endif
 
     for (int i=0, end=lvisible.size(); i < end; i++) {
         gFlagsLine *fl = lvisible.at(i);
 
-        if (fl->m_rect.contains(event->x(), event->y())) {
+        if (fl->m_rect.contains(event_x, event_y)) {
             if (fl->mouseMoveEvent(event, graph)) { return true; }
         } else {
             // Inside main graph area?
-            if ((event->y() > fl->m_rect.y()) && (event->y()) < (fl->m_rect.y() + fl->m_rect.height())) {
-                if (event->x() < fl->m_rect.x()) {
+            if ((event_y > fl->m_rect.y()) && (event_y) < (fl->m_rect.y() + fl->m_rect.height())) {
+                if (event_x < fl->m_rect.x()) {
                     // Display tooltip
                     QString ttip = schema::channel[fl->code()].fullname() + "\n" +
                                    schema::channel[fl->code()].description();
-                    graph->ToolTip(ttip, event->x()+15, event->y(), TT_AlignLeft);
+                    graph->ToolTip(ttip, event_x+15, event_y, TT_AlignLeft);
                     graph->timedRedraw(0);
                 }
             }

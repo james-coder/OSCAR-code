@@ -130,6 +130,14 @@ QColor brighten(QColor, float f);
 
 void SessionBar::mousePressEvent(QMouseEvent *ev)
 {
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        double evx = ev->x();
+        double evy = ev->y();
+    #else
+        double evx = ev->position().x();
+        double evy = ev->position().y();
+    #endif
+
     SegType mn = min();
     SegType mx = max();
 
@@ -154,8 +162,8 @@ void SessionBar::mousePressEvent(QMouseEvent *ev)
 
         //ex-=sx;
 
-        if ((ev->x() >= sx) && (ev->x() < ex)
-                && (ev->y() > 0) && (ev->y() < height())) {
+        if ((evx >= sx) && (evx < ex)
+                && (evy > 0) && (evy < height())) {
             m_selectIDX = cnt;
             emit sessionClicked((*i).session);
             break;
@@ -172,6 +180,14 @@ void SessionBar::mousePressEvent(QMouseEvent *ev)
 
 void SessionBar::mouseMoveEvent(QMouseEvent *ev)
 {
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        double evx = ev->x();
+        double evy = ev->y();
+    #else
+        double evx = ev->position().x();
+        double evy = ev->position().y();
+    #endif
+
     SegType mn = min();
     SegType mx = max();
 
@@ -194,8 +210,8 @@ void SessionBar::mouseMoveEvent(QMouseEvent *ev)
 
         //ex-=sx;
 
-        if ((ev->x() > sx) && (ev->x() < ex)
-                && (ev->y() > 0) && (ev->y() < height())) {
+        if ((evx > sx) && (evx < ex)
+                && (evy > 0) && (evy < height())) {
             seg.highlight = true;
         } else { seg.highlight = false; }
     }
