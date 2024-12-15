@@ -3053,8 +3053,10 @@ bool ResmedLoader::LoadCSL(Session *sess, const QString & path)
     time.start();
 #endif
 
-    QString filename = path.section(-2, -1);
+    //QString filename = path.section(-2, -1); generates error: conversion from ‘int’ to ‘QChar’ is ambiguous
+    // Filename is only used for display purposes.
     ResMedEDFInfo edf;
+    QString filename = path.section("/",-2, -1);
     if ( ! edf.Open(path) ) {
         qDebug() << "LoadCSL failed to open" << filename;
         return false;
@@ -3133,8 +3135,8 @@ bool ResmedLoader::LoadEVE(Session *sess, const QString & path)
     QTime time;
     time.start();
 #endif
-    QString filename = path.section(-2, -1);
     ResMedEDFInfo edf;
+    QString filename = path.section("/",-2, -1);
     if ( ! edf.Open(path) ) {
         qDebug() << "LoadEVE failed to open" << filename;
         return false;
@@ -3227,10 +3229,10 @@ bool ResmedLoader::LoadBRP(Session *sess, const QString & path)
     QTime time;
     time.start();
 #endif
-    QString filename = path.section(-2, -1);
     ResMedEDFInfo edf;
+    QString filename = path.section("/",-2, -1);
     if ( ! edf.Open(path) ) {
-        qDebug() << "LoadBRP failed to open" << filename.section("/", -2, -1);
+        qDebug() << "LoadBRP failed to open" << filename;
         return false;
     }
 #ifdef DEBUG_EFFICIENCY
@@ -3331,10 +3333,10 @@ bool ResmedLoader::LoadSAD(Session *sess, const QString & path)
     time.start();
 #endif
 
-    QString filename = path.section(-2, -1);
     ResMedEDFInfo edf;
+    QString filename = path.section("/",-2, -1);
     if ( ! edf.Open(path) ) {
-        qDebug() << "LoadSAD failed to  open" << filename.section("/", -2, -1);
+        qDebug() << "LoadSAD failed to open" << filename;
         return false;
     }
 
@@ -3408,11 +3410,10 @@ bool ResmedLoader::LoadPLD(Session *sess, const QString & path)
     QTime time;
     time.start();
 #endif
-    QString filename = path.section(-2, -1);
-//  qDebug() << "LoadPLD opening" << filename.section("/", -2, -1);
     ResMedEDFInfo edf;
+    QString filename = path.section("/",-2, -1);
     if ( ! edf.Open(path) ) {
-        qDebug() << "LoadPLD failed to open" << filename.section("/", -2, -1);
+        qDebug() << "LoadPLD failed to open" << filename;
         return false;
     }
 #ifdef DEBUG_EFFICIENCY

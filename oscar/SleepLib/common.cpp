@@ -1,18 +1,29 @@
 /* SleepLib Common Functions
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
 
+#define TEST_MACROS_ENABLEDoff
+#include <test_macros.h>
+
 #include <QDateTime>
 #include <QDir>
 #include <QThread>
 #ifndef BROKEN_OPENGL_BUILD
-#include <QGLWidget>
-#endif
+    #if QT_VERSION < QT_VERSION_CHECK(5,4,0)
+        #include <QGLWidget>
+    #elif  QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        #include <QOpenGLWidget>
+    #else
+        #include <QtOpenGLWidgets/QOpenGLWidget>
+        #include <QOpenGLFunctions>
+        #include <QSurfaceFormat>
+    #endif
+#endif //BROKEN_OPENGL_BUILD
 #include <QOpenGLFunctions>
 #include <QDebug>
 #include <QDir>
@@ -125,23 +136,30 @@ void setCurrentGFXEngine(GFXEngine e)
 QString getOpenGLVersionString()
 {
     static QString glversion;
-   if (glversion.isEmpty()) {
+    if (glversion.isEmpty()) {
 
-#ifdef BROKEN_OPENGL_BUILD
+    #ifdef BROKEN_OPENGL_BUILD
         glversion="LegacyGFX";
         qDebug() << "This LegacyGFX build has been created without the need for OpenGL";
-#else
-
-        QGLWidget w;
-        w.makeCurrent();
-
-        QOpenGLFunctions f;
-        f.initializeOpenGLFunctions();
-        glversion = QString(QLatin1String(reinterpret_cast<const char*>(f.glGetString(GL_VERSION))));
-//        qDebug() << "Graphics Engine:" << glversion;
-#endif
-   }
-   return glversion;
+    #else
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            QGLWidget w;
+            w.makeCurrent();
+            QOpenGLFunctions f;
+            f.initializeOpenGLFunctions();
+            glversion = QString(QLatin1String(reinterpret_cast<const char*>(f.glGetString(GL_VERSION))));
+        #else
+            QOpenGLWidget w;
+            w.show();
+            w.makeCurrent();
+            QOpenGLFunctions f;
+            f.initializeOpenGLFunctions();
+            glversion = QString(QLatin1String(reinterpret_cast<const char*>(f.glGetString(GL_VERSION))));
+            w.doneCurrent();
+        #endif
+    #endif
+    }
+    return glversion;
 }
 
 float getOpenGLVersion()
@@ -263,16 +281,16 @@ QString appResourcePath()
 //    QStringList paths = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
     // Check the Appiication Path first, so we can execute out of the build directory
     QStringList paths;
-    // This one will be used if the Html and Translations folders 
+    // This one will be used if the Html and Translations folders
     // are in the same folder as  the OSCAR executable
     paths.append( QCoreApplication::applicationDirPath() );
-#ifdef Q_OS_LINUX    
+#ifdef Q_OS_LINUX 
     QString appName = QCoreApplication::applicationName();
     if (appName != QString("OSCAR"))
         appName = QString("OSCAR-test");
     paths.append( QString( "/usr/share/" ) + appName );
     paths.append( QString( "/usr/local/share/" ) + appName );
-#endif    
+#endif
     for (auto p = begin(paths); p != end(paths); ++p ) {
         QString fname = *p+QString("/Html/about.html"); // was "/Translations/oscar_qt_fr.qm"  - Crimson Nape
         qDebug() << "Trying" << fname;
@@ -285,7 +303,7 @@ QString appResourcePath()
     if ( path.size() == 0 )
         path = QCoreApplication::applicationDirPath();
 #endif
-        
+     
     return path;
 }
 
@@ -367,9 +385,15 @@ void validateFont (QString which, int size, bool bold, bool italic) {
     // Get list of installed font families, including system font
     // Do this just once so we don't have to call font functions repeatedly
     // (This list includes private fonts)
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QFontDatabase fontdatabase;
+    #endif
     if (installedFontFamilies.isEmpty()) {
-        installedFontFamilies = fontdatabase.families();
+        #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            installedFontFamilies = fontdatabase.families();
+        #else
+            installedFontFamilies = QFontDatabase::families();
+        #endif
         }
     qDebug() << "validateFont found" << installedFontFamilies.count() << "installed font families";
 
