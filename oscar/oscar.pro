@@ -574,30 +574,15 @@ gcc | clang {
     message("$$QMAKE_CXX major version $$COMPILER_MAJOR")
 }
 
-gcc:!clang {
-    message("Building for $$QMAKE_HOST.os")
-    # this section removedi. stringop-overread was only trigger by mseries_loader:: OPen method
-    #greaterThan(COMPILER_MAJOR, 10) : {
-    #    QMAKE_CFLAGS += -Wno-error=stringop-overread
-    #    QMAKE_CXXFLAGS += -Wno-error=stringop-overread
-    #    message("Making stringop-overread a non-error")
-    #}
-}
-
-clang {
-    message("Building for $$QMAKE_HOST.os")
-    # this section removedi. all deprecated-copy  errors have been removed
-    #greaterThan(COMPILER_MAJOR, 9) : {
-    #	QMAKE_CFLAGS_WARN_ON += -Wno-error=deprecated-copy
-    #	QMAKE_CXXFLAGS_WARN_ON += -Wno-error=deprecated-copy
-    #	message("Making deprecated-copy a non-error")
-    #}
-}
-
-# Make deprecation warnings just warnings
-# these two  removed. all deprecated-declarations errors have been removed
-#QMAKE_CFLAGS += -Wno-error=deprecated-declarations
-#QMAKE_CXXFLAGS += -Wno-error=deprecated-declarations
+if (false) {
+  if (equals(QT_MAJOR_VERSION,6)) {
+   if (greaterThan(QT_MINOR_VERSION,8)) {
+    ## allow deprecated warings for TESTING
+    message("ALLOW DEPRECATED WARNINGS FOR TESTING ")
+    # Make deprecation warnings just warnings
+    QMAKE_CFLAGS += -Wno-error=deprecated-declarations
+    QMAKE_CXXFLAGS += -Wno-error=deprecated-declarations
+} } }
 
 message("CXXFLAGS post-mods $$QMAKE_CXXFLAGS ")
 message("CXXFLAGS_WARN_ON $$QMAKE_CXXFLAGS_WARN_ON")

@@ -15,6 +15,7 @@
 
 #include <QTextCharFormat>
 #include <QPalette>
+#include <QTimeZone>
 #include <QTextBlock>
 #include <QColorDialog>
 #include <QSpacerItem>
@@ -2267,7 +2268,7 @@ void Daily::on_LineCursorUpdate(double time)
 {
     if (time > 1) {
         // use local time since this string is displayed to the user
-        QDateTime dt = QDateTime::fromMSecsSinceEpoch(time, Qt::LocalTime);
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch(time, QTimeZone::systemTimeZone());
         QString txt = dt.toString("MMM dd HH:mm:ss.zzz");
         dateDisplay->setText(txt);
     } else dateDisplay->setText(QString(GraphView->emptyText()));
@@ -2458,7 +2459,7 @@ void Daily::verifyBookMarkName(QTableWidgetItem* item) {
     if (item->text().contains(emptyStr) ) {
         bool ok=false;
         qint64 start=item->data(Qt::UserRole).toLongLong(&ok);
-        QDateTime d=QDateTime::fromSecsSinceEpoch(start/1000L, Qt::LocalTime);
+        QDateTime d=QDateTime::fromSecsSinceEpoch(start/1000L, QTimeZone::systemTimeZone());
         QString text = tr("Bookmark at %1").arg(d.time().toString("HH:mm:ss"));
         item->setText(text);
     }
@@ -2511,7 +2512,7 @@ void Daily::on_bookmarkTable_currentItemChanged(QTableWidgetItem *item, QTableWi
 void Daily::addBookmark(qint64 st, qint64 et, QString text)
 {
     ui->bookmarkTable->blockSignals(true);
-    QDateTime d=QDateTime::fromSecsSinceEpoch(st/1000L, Qt::LocalTime);
+    QDateTime d=QDateTime::fromSecsSinceEpoch(st/1000L, QTimeZone::systemTimeZone());
     int row=ui->bookmarkTable->rowCount();
     ui->bookmarkTable->insertRow(row);
     QTableWidgetItem *tw=new QTableWidgetItem(text);
@@ -2539,7 +2540,7 @@ void Daily::on_addBookmarkButton_clicked()
 {
     qint64 st,et;
     GraphView->GetXBounds(st,et);
-    QDateTime d=QDateTime::fromSecsSinceEpoch(st/1000L, Qt::LocalTime);
+    QDateTime d=QDateTime::fromSecsSinceEpoch(st/1000L, QTimeZone::systemTimeZone());
     addBookmark(st,et,"" );
 }
 

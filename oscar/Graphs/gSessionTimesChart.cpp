@@ -13,6 +13,7 @@
 #include <math.h>
 #include <QLabel>
 #include <QDateTime>
+#include <QTimeZone>
 
 #include "mainwindow.h"
 #include "SleepLib/profiles.h"
@@ -116,8 +117,8 @@ void gSessionTimesChart::paint(QPainter &painter, gGraph &graph, const QRegion &
     m_minx = graph.min_x;
     m_maxx = graph.max_x;
 
-    QDateTime date2 = QDateTime::fromMSecsSinceEpoch(m_minx, Qt::LocalTime);
-    QDateTime enddate2 = QDateTime::fromMSecsSinceEpoch(m_maxx, Qt::LocalTime);
+    QDateTime date2 = QDateTime::fromMSecsSinceEpoch(m_minx, QTimeZone::systemTimeZone());
+    QDateTime enddate2 = QDateTime::fromMSecsSinceEpoch(m_maxx, QTimeZone::systemTimeZone());
 
     QDate date = date2.date();
     QDate enddate = enddate2.date();
@@ -211,7 +212,7 @@ void gSessionTimesChart::paint(QPainter &painter, gGraph &graph, const QRegion &
                 if (sess->m_slices.size() > 0) {
                     // segments
                     for (const auto & slice : sess->m_slices) {
-                        QDateTime st = QDateTime::fromMSecsSinceEpoch(slice.start, Qt::LocalTime);
+                        QDateTime st = QDateTime::fromMSecsSinceEpoch(slice.start, QTimeZone::systemTimeZone());
 
                         float s1 = float(splittime.secsTo(st)) / 3600.0;
 
@@ -227,7 +228,7 @@ void gSessionTimesChart::paint(QPainter &painter, gGraph &graph, const QRegion &
                 } else {
                     // otherwise just show session duration
                     qint64 sf = sess->first();
-                    QDateTime st = QDateTime::fromMSecsSinceEpoch(sf, Qt::LocalTime);
+                    QDateTime st = QDateTime::fromMSecsSinceEpoch(sf, QTimeZone::systemTimeZone());
                     float s1 = float(splittime.secsTo(st)) / 3600.0;
 
                     float s2 = sess->hours();

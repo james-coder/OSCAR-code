@@ -11,6 +11,7 @@
 #include <test_macros.h>
 
 #include <QDateTime>
+#include <QTimeZone>
 #include <QDir>
 #include <QThread>
 #ifndef BROKEN_OPENGL_BUILD
@@ -323,7 +324,7 @@ qint64 timezoneOffset()
 
     QDateTime d1 = QDateTime::currentDateTime();
     QDateTime d2 = d1;
-    d1.setTimeSpec(Qt::UTC);
+    d1.setTimeZone(QTimeZone("UTC"));
     _TZ_offset = d2.secsTo(d1);
     _TZ_offset *= 1000L;
     return _TZ_offset;

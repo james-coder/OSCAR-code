@@ -11,6 +11,7 @@
 
 #include <QDir>
 #include <QCoreApplication>
+#include <QTimeZone>
 
 #include "intellipap_loader.h"
 
@@ -282,7 +283,7 @@ int IntellipapLoader::OpenDV5(const QString & path)
     //unsigned char cs;
     f.open(QFile::ReadOnly);
     int cnt = 0;
-    QDateTime epoch(QDate(2002, 1, 1), QTime(0, 0, 0), Qt::UTC); // Intellipap Epoch
+    QDateTime epoch(QDate(2002, 1, 1), QTime(0, 0, 0), QTimeZone("UTC")); // Intellipap Epoch
     int ep = epoch.toSecsSinceEpoch();
 
     do {
@@ -902,7 +903,7 @@ unsigned int convertNum (unsigned char num[]) {
 // Convert a timestamp in DV6 data file to a standard Unix epoch timestamp as used in OSCAR
 unsigned int convertTime (unsigned char time[]) {
     if (ep == 0) {
-        QDateTime epoch(QDate(2002, 1, 1), QTime(0, 0, 0), Qt::UTC); // Intellipap Epoch
+        QDateTime epoch(QDate(2002, 1, 1), QTime(0, 0, 0), QTimeZone("UTC")); // Intellipap Epoch
         ep = epoch.toSecsSinceEpoch();
     }
     return ((time[3] << 24) + (time[2] << 16) + (time[1] << 8) + time[0]) + ep; // Time as Unix epoch time

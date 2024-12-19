@@ -103,7 +103,7 @@ QDateTime SleepStyleEDFInfo::getStartDT( QString dateTimeStr )
         qDate = qDate.addYears(100);
     }
     qTime = QTime::fromString(dateTimeStr.right(8), "HH.mm.ss");
-    return QDateTime(qDate, qTime, Qt::UTC);
+    return QDateTime(qDate, qTime, QTimeZone("UTC"));
 }
 
 

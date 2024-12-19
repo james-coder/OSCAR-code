@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QDataStream>
 #include <QTextStream>
+#include <QTimeZone>
 #include <cmath>
 
 #include "icon_loader.h"
@@ -424,7 +425,7 @@ quint32 convertDate(quint32 timestamp)
     minute = (timestamp >> 6) & 0x3f;
     hour = (timestamp >> 12);
 
-    QDateTime dt = QDateTime(QDate(year, month, day), QTime(hour, minute, second),Qt::UTC);
+    QDateTime dt = QDateTime(QDate(year, month, day), QTime(hour, minute, second),QTimeZone("UTC"));
 
 //    Q NO!!! _ASSERT(dt.isValid());
 //    if ((year == 2013) && (month == 9) && (day == 18)) {
@@ -455,7 +456,7 @@ quint32 convertFLWDate(quint32 timestamp) // Bit format: hhhhhmmmmmmssssssYYYYYY
     minute = (timestamp >> 6) & 0x3f;
     hour = (timestamp >> 12);
 
-    QDateTime dt = QDateTime(QDate(year, month, day), QTime(hour, minute, second), Qt::UTC);
+    QDateTime dt = QDateTime(QDate(year, month, day), QTime(hour, minute, second), QTimeZone("UTC"));
 
     if(!dt.isValid()){
         // make this date too early, then change test later

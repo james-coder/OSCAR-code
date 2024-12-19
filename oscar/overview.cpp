@@ -16,6 +16,7 @@
 
 #include <QCalendarWidget>
 #include <QTextCharFormat>
+#include <QTimeZone>
 #include <QDebug>
 #include <QDateTimeEdit>
 #include <QCalendarWidget>
@@ -79,6 +80,13 @@ Overview::Overview(QWidget *parent, gGraphView *shared) :
 
     ui->dateStart->setDisplayFormat(shortformat);
     ui->dateEnd->setDisplayFormat(shortformat);
+    #if QT_VERSION < QT_VERSION_CHECK(6,7,0)
+        ui->dateStart->setTimeSpec(Qt::UTC);
+        ui->dateEnd->setTimeSpec(Qt::UTC);
+    #else
+        ui->dateStart->setTimeZone(QTimeZone("UTC"));
+        ui->dateEnd->setTimeZone(QTimeZone("UTC"));
+    #endif
 
     Qt::DayOfWeek dow = firstDayOfWeekFromLocale();
 
@@ -423,7 +431,7 @@ void Overview::on_LineCursorUpdate(double time)
         // even though the generated string is displayed to the user
         // no time zone conversion is neccessary, so pass UTC
         // to prevent QT from automatically converting to local time
-        QDateTime dt = QDateTime::fromMSecsSinceEpoch(time, Qt::LocalTime/*, Qt::UTC*/);
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch(time, QTimeZone::systemTimeZone()/*, Qt::UTC*/);
         QString txt = dt.toString("dd MMM yyyy (dddd)");
         dateLabel->setText(txt);
     } else dateLabel->setText(QString(GraphView->emptyText()));

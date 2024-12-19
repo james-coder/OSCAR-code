@@ -20,7 +20,7 @@ This will have minimal impact on code changes.
 #include <QMessageBox>
 #include <QtGlobal>
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,2,0)
     #define staticQMessageBox QMessageBox
 #else
 

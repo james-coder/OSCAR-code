@@ -391,7 +391,7 @@ quint32 ssconvertDate(quint32 timestamp)
     minute = (ts2 >> 6) & 0x3f;
     hour = (ts2 >> 12);
 
-    QDateTime dt = QDateTime(QDate(year, month, day), QTime(hour, minute, second), Qt::UTC);
+    QDateTime dt = QDateTime(QDate(year, month, day), QTime(hour, minute, second), QTimeZone("UTC"));
 
 #ifdef DEBUGSS
 //    qDebug().noquote() << "SS timestamp" << timestamp << year << month << day << dt << hour << minute << second;

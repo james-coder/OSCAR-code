@@ -13,6 +13,7 @@
 #include <math.h>
 #include <QLabel>
 #include <QDateTime>
+#include <QTimeZone>
 #include "gYAxis.h"
 #include "gOverviewGraph.h"
 
@@ -29,7 +30,7 @@ gOverviewGraph::gOverviewGraph(QString label, GraphType type)
 
     QDateTime d1 = QDateTime::currentDateTime();
     QDateTime d2 = d1;
-    d1.setTimeSpec(Qt::UTC);
+    d1.setTimeZone(QTimeZone("UTC"));
     tz_offset = d2.secsTo(d1);
     tz_hours = tz_offset / 3600.0;
     m_layertype = LT_SummaryChart;
@@ -138,7 +139,7 @@ void gOverviewGraph::SetDay(Day * nullday)
         Day * day = d.value();
 
         // get the timestamp of this day.
-        tt = QDateTime(d.key(), QTime(0, 0, 0), Qt::UTC).toSecsSinceEpoch();
+        tt = QDateTime(d.key(), QTime(0, 0, 0), QTimeZone("UTC")).toSecsSinceEpoch();
 
         // calculate day number
         dn = tt / 86400;
@@ -388,7 +389,7 @@ void gOverviewGraph::SetDay(Day * nullday)
     }
 
     // m_minx=qint64(QDateTime(p_profile->FirstDay(),QTime(0,0,0),Qt::UTC).toSecsSinceEpoch())*1000L;
-    m_maxx = qint64(QDateTime(p_profile->LastDay(), QTime(23, 59, 0), Qt::UTC).toSecsSinceEpoch()) * 1000L;
+    m_maxx = qint64(QDateTime(p_profile->LastDay(), QTime(23, 59, 0), QTimeZone("UTC")).toSecsSinceEpoch()) * 1000L;
     m_physmaxy = m_maxy;
     m_physminy = m_miny;
 }

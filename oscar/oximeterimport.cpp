@@ -11,6 +11,7 @@
 #include <test_macros.h>
 
 #include <QThread>
+#include <QTimeZone>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -576,7 +577,7 @@ void OximeterImport::on_calendarWidget_clicked(const QDate &date)
 
         sessbar->clear();
         if (day) {
-            QDateTime time=QDateTime::fromMSecsSinceEpoch(day->first(), Qt::LocalTime);
+            QDateTime time=QDateTime::fromMSecsSinceEpoch(day->first(), QTimeZone::systemTimeZone());
             sessbar->clear();
             QList<QColor> colors;
             colors.push_back("#ffffe0");
@@ -612,7 +613,7 @@ void OximeterImport::on_calendarWidget_selectionChanged()
 
 void OximeterImport::onSessionSelected(Session * session)
 {
-    QDateTime time=QDateTime::fromMSecsSinceEpoch(session->first(), Qt::LocalTime);
+    QDateTime time=QDateTime::fromMSecsSinceEpoch(session->first(), QTimeZone::systemTimeZone());
     qDebug() << "oximod - Selected session starts at " << time.toString("yyyy-MMM-dd hh:mm:ssap");
     ui->dateTimeEdit->setDateTime(time);
 }
@@ -623,7 +624,7 @@ void OximeterImport::on_sessionBackButton_clicked()
     int idx = (sessbar->selected()-1);
     if (idx >= 0) {
         sessbar->setSelected(idx);
-        QDateTime datetime = QDateTime::fromMSecsSinceEpoch(sessbar->session(idx)->first(), Qt::LocalTime);
+        QDateTime datetime = QDateTime::fromMSecsSinceEpoch(sessbar->session(idx)->first(), QTimeZone::systemTimeZone());
         ui->dateTimeEdit->setDateTime(datetime);
         sessbar->update();
     }
@@ -635,7 +636,7 @@ void OximeterImport::on_sessionForwardButton_clicked()
     int idx = (sessbar->selected()+1);
     if (idx < sessbar->count()) {
         sessbar->setSelected(idx);
-        QDateTime datetime = QDateTime::fromMSecsSinceEpoch(sessbar->session(idx)->first(), Qt::LocalTime);
+        QDateTime datetime = QDateTime::fromMSecsSinceEpoch(sessbar->session(idx)->first(), QTimeZone::systemTimeZone());
         ui->dateTimeEdit->setDateTime(datetime);
         sessbar->update();
     }

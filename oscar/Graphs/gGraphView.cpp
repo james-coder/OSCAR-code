@@ -14,6 +14,7 @@
 #include "Graphs/gGraphView.h"
 
 #include <QDir>
+#include <QTimeZone>
 #include <QFontMetrics>
 #include <QLabel>
 #include <QPixmapCache>
@@ -674,7 +675,7 @@ void gGraphView::popoutGraph()
             // append the date of the graph's left edge to the snapshot name
             // so the user knows what day the snapshot starts
             // because the name is displayed to the user, use local time
-            QDateTime date = QDateTime::fromMSecsSinceEpoch(graph->min_x, Qt::LocalTime);
+            QDateTime date = QDateTime::fromMSecsSinceEpoch(graph->min_x, QTimeZone::systemTimeZone());
             basename += date.date().toString(QLocale::system().dateFormat(QLocale::LongFormat));
         }
         QString newname = basename;
@@ -879,7 +880,7 @@ void gGraphView::dumpInfo()
 
     Day * day = p_profile->GetGoodDay(date, MT_CPAP);
     if (day) {
-        QDateTime dt=QDateTime::fromMSecsSinceEpoch(day->first(), Qt::LocalTime);
+        QDateTime dt=QDateTime::fromMSecsSinceEpoch(day->first(), QTimeZone::systemTimeZone());
 
         mainwin->log(QString("Available Channels for %1").arg(dt.toString("MMM dd yyyy")));
         QHash<schema::ChanType, QList<schema::Channel *> > list;
@@ -2524,7 +2525,7 @@ void gGraphView::onSnapshotGraphToggle()
             // append the date of the graph's left edge to the snapshot name
             // so the user knows what day the snapshot starts
             // because the name is displayed to the user, use local time
-            QDateTime date = QDateTime::fromMSecsSinceEpoch(graph->min_x, Qt::LocalTime);
+            QDateTime date = QDateTime::fromMSecsSinceEpoch(graph->min_x, QTimeZone::systemTimeZone());
             basename += date.date().toString(QLocale::system().dateFormat(QLocale::LongFormat));
         }
         QString newname;
@@ -3400,7 +3401,7 @@ void gGraphView::keyPressEvent(QKeyEvent *event)
                 m_metaselect=false;
                 qint64 start,end;
                 getSelectionTimes(start,end);
-                QDateTime d1 = QDateTime::fromMSecsSinceEpoch(start, Qt::LocalTime);
+                QDateTime d1 = QDateTime::fromMSecsSinceEpoch(start, QTimeZone::systemTimeZone());
 
                 mainwin->getDaily()->addBookmark(start, end, QString("Bookmark at %1").arg(d1.time().toString("HH:mm:ss")));
                 m_graphs[m_graph_index]->cancelSelection();

@@ -1,7 +1,7 @@
 /* Channel / Schema Implementation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -484,17 +484,11 @@ bool ChannelList::Load(QString filename)
         return false;
     }
 
-    QString errorMsg;
-    int errorLine;
-
-    if (!doc.setContent(&file, false, &errorMsg, &errorLine)) {
+    if (! doc.setContent(&file) ){
         qWarning() << "Invalid XML Content in" << filename;
-        qWarning() << "Error line" << errorLine << ":" << errorMsg;
         return false;
     }
-
     file.close();
-
 
     QDomElement root = doc.documentElement();
 

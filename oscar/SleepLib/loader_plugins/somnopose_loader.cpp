@@ -17,6 +17,7 @@
 
 #include <QDir>
 #include <QTextStream>
+#include <QTimeZone>
 #include "somnopose_loader.h"
 #include "SleepLib/machine.h"
 
@@ -95,7 +96,7 @@ int SomnoposeLoader::OpenFile(const QString & filename)
     }
 
      #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-         QDateTime epoch(QDate(2001, 1, 1).startOfDay(Qt::OffsetFromUTC));
+         QDateTime epoch(QDate(2001, 1, 1).startOfDay(QTimeZone("UTC")));
          qint64 ep = epoch.toMSecsSinceEpoch() , time=0;
      #else
         QDateTime epoch(QDate(2001, 1, 1));

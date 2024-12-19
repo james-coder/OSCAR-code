@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <QFontMetrics>
 
+#include <QTimeZone>
 #include <math.h>
 
 #include "Graphs/gXAxis.h"
@@ -428,7 +429,7 @@ void gXAxisDay::paint(QPainter &painter, gGraph &graph, const QRegion &region)
     minx = graph.min_x;
     maxx = graph.max_x;
 
-    QDateTime date2 = QDateTime::fromMSecsSinceEpoch(minx, Qt::LocalTime);
+    QDateTime date2 = QDateTime::fromMSecsSinceEpoch(minx, QTimeZone::systemTimeZone());
  //   QDateTime enddate2 = QDateTime::fromMSecsSinceEpoch(maxx, Qt::UTC);
 
     //qInfo() << "Drawing date axis from " << date2 << " to " << enddate2;

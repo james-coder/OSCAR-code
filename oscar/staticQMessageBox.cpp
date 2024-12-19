@@ -32,8 +32,6 @@ QMessageBox::StandardButton staticQMessageBox::custom(
 {
     QMessageBox box( icon, title, text, buttons, parent);
     box.setDefaultButton(defaultButton);
-    box.setWindowModality(Qt::ApplicationModal);
-    box.setWindowFlags(Qt::WindowStaysOnTopHint);
     QMessageBox::StandardButton result = (QMessageBox::StandardButton)box.exec();
     return result;
 };

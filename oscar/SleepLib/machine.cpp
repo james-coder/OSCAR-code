@@ -927,14 +927,11 @@ bool Machine::LoadSummary(ProgressDialog * progress)
     QByteArray uncompressed = gUncompress(data);
 
     QString errorMsg;
-    int errorLine;
 
-    if (!doc.setContent(uncompressed, false, &errorMsg, &errorLine)) {
+    if (! doc.setContent(&file) ){
         qWarning() << "Invalid XML Content in" << filename;
-        qWarning() << "Error line" << errorLine << ":" << errorMsg;
         return false;
     }
-
     file.close();
 
     QDomElement root = doc.documentElement();

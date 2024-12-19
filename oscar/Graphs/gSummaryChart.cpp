@@ -13,6 +13,7 @@
 #include <math.h>
 #include <QLabel>
 #include <QDateTime>
+#include <QTimeZone>
 
 #include "mainwindow.h"
 #include "SleepLib/profiles.h"
@@ -31,7 +32,7 @@ gSummaryChart::gSummaryChart(QString label, MachineType machtype)
     m_layertype = LT_Overview;
     QDateTime d1 = QDateTime::currentDateTime();
     QDateTime d2 = d1;
-    d1.setTimeSpec(Qt::UTC);  // CHECK: Does this deal with DST?
+    d1.setTimeZone(QTimeZone("UTC"));  // CHECK: Does this deal with DST?
     tz_offset = d2.secsTo(d1);
     tz_hours = tz_offset / 3600.0;
     expected_slices = 5;
@@ -46,7 +47,7 @@ gSummaryChart::gSummaryChart(ChannelID code, MachineType machtype)
     m_layertype = LT_Overview;
     QDateTime d1 = QDateTime::currentDateTime();
     QDateTime d2 = d1;
-    d1.setTimeSpec(Qt::UTC);  // CHECK: Does this deal with DST?
+    d1.setTimeZone(QTimeZone("UTC"));  // CHECK: Does this deal with DST?
     tz_offset = d2.secsTo(d1);
     tz_hours = tz_offset / 3600.0;
     expected_slices = 5;
@@ -101,8 +102,8 @@ void gSummaryChart::SetDay(Day *unused_day)
         date = date.addDays(1);
     } while (date <= lastday);
 
-    m_minx = QDateTime(firstday, QTime(0,0,0), Qt::LocalTime).toMSecsSinceEpoch();
-    m_maxx = QDateTime(lastday, QTime(23,59,59), Qt::LocalTime).toMSecsSinceEpoch();
+    m_minx = QDateTime(firstday, QTime(0,0,0), QTimeZone::systemTimeZone()).toMSecsSinceEpoch();
+    m_maxx = QDateTime(lastday, QTime(23,59,59), QTimeZone::systemTimeZone()).toMSecsSinceEpoch();
     m_miny = 0;
     m_maxy = 20;
 
@@ -164,7 +165,7 @@ bool gSummaryChart::mouseReleaseEvent(QMouseEvent *event, gGraph *graph)
 
     graph->roundY(miny, maxy);
 
-    QDate date = QDateTime::fromMSecsSinceEpoch(m_minx, Qt::LocalTime).date();
+    QDate date = QDateTime::fromMSecsSinceEpoch(m_minx, QTimeZone::systemTimeZone()).date();
 
     int days = ceil(double(m_maxx - m_minx) / 86400000.0);
 
@@ -432,8 +433,8 @@ void gSummaryChart::paint(QPainter &painter, gGraph &graph, const QRegion &regio
     m_minx = graph.min_x;
     m_maxx = graph.max_x;
 
-    QDateTime date2 = QDateTime::fromMSecsSinceEpoch(m_minx, Qt::LocalTime);
-    QDateTime enddate2 = QDateTime::fromMSecsSinceEpoch(m_maxx, Qt::LocalTime);
+    QDateTime date2 = QDateTime::fromMSecsSinceEpoch(m_minx, QTimeZone::systemTimeZone());
+    QDateTime enddate2 = QDateTime::fromMSecsSinceEpoch(m_maxx, QTimeZone::systemTimeZone());
 
     QDate date = date2.date();
     QDate enddate = enddate2.date();

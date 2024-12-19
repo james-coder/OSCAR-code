@@ -16,6 +16,7 @@
 #include <QDomNode>
 #include <QVariant>
 #include <QDateTime>
+#include <QTimeZone>
 #include <QDir>
 #include <QDesktopServices>
 #include <QDebug>
@@ -191,15 +192,10 @@ bool Preferences::Open(QString filename)
         return false;
     }
 
-    QString errorMsg;
-    int errorLine;
-    int errorColumn;
-    if (!doc.setContent(&file,false, &errorMsg, &errorLine, &errorColumn)) {
+    if (! doc.setContent(&file)) {
         qWarning() << "Invalid XML Content in" << p_filename.toLocal8Bit().data();
-        qWarning() << "Error:" << errorMsg << "in line" << errorLine << ":" << errorColumn;
         return false;
     }
-
     file.close();
 
 

@@ -461,7 +461,7 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
 
     if (!lockhost.isEmpty()) {
         if (lockhost.compare(QHostInfo::localHostName()) != 0) {
-            if (staticQMessageBox::warning(nullptr, STR_MessageBox_Warning,
+            if (staticQMessageBox::warning(this, STR_MessageBox_Warning,
                     QObject::tr("There is a lockfile already present for this profile '%1', claimed on '%2'.").arg(prof->user->userName()).arg(lockhost)+"\n\n"+
                     QObject::tr("You can only work with one instance of an individual OSCAR profile at a time.")+"\n\n"+
                     QObject::tr("If you are using cloud storage, make sure OSCAR is closed and syncing has completed first on the other computer before proceeding."),
@@ -922,7 +922,7 @@ QList<ImportPath> MainWindow::detectCPAPCards()
                 }
             }
             else {
-                staticQMessageBox::warning(nullptr, STR_MessageBox_Warning,
+                staticQMessageBox::warning(this, STR_MessageBox_Warning,
                     QObject::tr("Chromebook file system detected, but no removable device found\n") +
                     QObject::tr("You must share your SD card with Linux using the ChromeOS Files program"));
                 break;                                    // break out of the 20 second wait loop
@@ -1383,7 +1383,7 @@ void MainWindow::CheckForUpdates(bool showWhenCurrent)
     updateChecker = new CheckUpdates(this);
 #ifdef NO_CHECKUPDATES
     if (showWhenCurrent)
-        staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("Check for updates not implemented"));
+        staticQMessageBox::information(this, STR_MessageBox_Information, tr("Check for updates not implemented"));
 #else
     updateChecker->checkForUpdates(showWhenCurrent);
 #endif
@@ -1518,14 +1518,14 @@ void MainWindow::on_action_CycleTabs_triggered()
 
 void MainWindow::on_actionOnline_Users_Guide_triggered()
 {
-    if (staticQMessageBox::question(nullptr, STR_MessageBox_Question, tr("The User's Guide will open in your default browser"),
+    if (staticQMessageBox::question(this, STR_MessageBox_Question, tr("The User's Guide will open in your default browser"),
             QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok )
         QDesktopServices::openUrl(QUrl("https://www.apneaboard.com/wiki/index.php?title=OSCAR_Help"));
 }
 
 void MainWindow::on_action_Frequently_Asked_Questions_triggered()
 {
-    staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("The FAQ is not yet implemented"));
+    staticQMessageBox::information(this, STR_MessageBox_Information, tr("The FAQ is not yet implemented"));
 }
 
 void MainWindow::on_action_Rebuild_Oximetry_Index_triggered()
@@ -1667,7 +1667,7 @@ void MainWindow::RestartApplication(bool force_login, QString cmdline)
     if (QProcess::startDetached("/usr/bin/open", args)) {
         QApplication::instance()->exit();
     } else {
-        staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
+        staticQMessageBox::warning(this, STR_MessageBox_Error,
             tr("If you can read this, the restart command didn't work. You will have to do it yourself manually."), QMessageBox::Ok);
     }
 
@@ -1694,7 +1694,7 @@ void MainWindow::RestartApplication(bool force_login, QString cmdline)
 
 //        ::exit(0);
     } else {
-        staticQMessageBox::warning(nullptr,  STR_MessageBox_Error,
+        staticQMessageBox::warning(this,  STR_MessageBox_Error,
             tr("If you can read this, the restart command didn't work. You will have to do it yourself manually."), QMessageBox::Ok);
     }
 
@@ -2026,7 +2026,7 @@ void MainWindow::on_helpButton_clicked()
 #ifndef helpless
     ui->tabWidget->setCurrentWidget(help);
 #else
-    staticQMessageBox::information(nullptr, STR_MessageBox_Error, tr("No help is available."));
+    staticQMessageBox::information(this, STR_MessageBox_Error, tr("No help is available."));
 #endif
 }
 
@@ -2237,7 +2237,7 @@ void MainWindow::on_actionImport_RemStar_MSeries_Data_triggered()
 
 void MainWindow::on_actionSleep_Disorder_Terms_Glossary_triggered()
 {
-    if (staticQMessageBox::question(nullptr, STR_MessageBox_Question, tr("The Glossary will open in your default browser"),
+    if (staticQMessageBox::question(this, STR_MessageBox_Question, tr("The Glossary will open in your default browser"),
             QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok )
         QDesktopServices::openUrl(QUrl("https://www.apneaboard.com/wiki/index.php?title=Definitions"));
 }
@@ -2245,7 +2245,7 @@ void MainWindow::on_actionSleep_Disorder_Terms_Glossary_triggered()
 /*
 void MainWindow::on_actionHelp_Support_OSCAR_Development_triggered()
 {
-    staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("Donations are not implemented"));
+    staticQMessageBox::information(this, STR_MessageBox_Information, tr("Donations are not implemented"));
 }
 */
 
@@ -2706,7 +2706,7 @@ void MainWindow::on_actionExport_CSV_triggered()
 
 void MainWindow::on_actionExport_Review_triggered()
 {
-    staticQMessageBox::information(nullptr, STR_MessageBox_Information, tr("Export review is not yet implemented"));
+    staticQMessageBox::information(this, STR_MessageBox_Information, tr("Export review is not yet implemented"));
 }
 
 void MainWindow::on_mainsplitter_splitterMoved(int, int)
@@ -2747,7 +2747,7 @@ void MainWindow::on_actionCreate_Card_zip_triggered()
             // Try again if the selected filename is within the SD card itself.
             QString selectedPath = QFileInfo(filename).dir().canonicalPath();
             if (selectedPath.startsWith(cardPath)) {
-                if (staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
+                if (staticQMessageBox::warning(this, STR_MessageBox_Error,
                         QObject::tr("Please select a location for your zip other than the data card itself!"),
                         QMessageBox::Ok)) {
                     continue;
@@ -2794,7 +2794,7 @@ void MainWindow::on_actionCreate_Card_zip_triggered()
             qWarning() << "Unable to open" << filename;
         }
         if (!ok) {
-            staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
+            staticQMessageBox::warning(this, STR_MessageBox_Error,
                 QObject::tr("Unable to create zip!"),
                 QMessageBox::Ok);
         }
@@ -2844,7 +2844,7 @@ void MainWindow::on_actionCreate_Log_zip_triggered()
         qWarning() << "Unable to open" << filename;
     }
     if (!ok) {
-        staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
+        staticQMessageBox::warning(this, STR_MessageBox_Error,
             QObject::tr("Unable to create zip!"),
             QMessageBox::Ok);
     }
@@ -2903,7 +2903,7 @@ void MainWindow::on_actionCreate_OSCAR_Data_zip_triggered()
         qWarning() << "Unable to open" << filename;
     }
     if (!ok) {
-        staticQMessageBox::warning(nullptr, STR_MessageBox_Error,
+        staticQMessageBox::warning(this, STR_MessageBox_Error,
             QObject::tr("Unable to create zip!"),
             QMessageBox::Ok);
     }
@@ -2915,16 +2915,21 @@ void MainWindow::on_actionReport_a_Bug_triggered()
 //    QSettings settings;
 //    QString language = settings.value(LangSetting).toString();
 //
-    staticQMessageBox::information(nullptr, STR_MessageBox_Error, tr("Reporting issues is not yet implemented"));
+    staticQMessageBox::information(this, STR_MessageBox_Error, tr("Reporting issues is not yet implemented"));
 }
 
 void MainWindow::on_actionSystem_Information_triggered()
 {
     QString text = ""; // tr("OSCAR version:") + "<br/>";
     QStringList info = getBuildInfo();
-    for (int i = 0; i < info.size(); ++i)
+    for (int i = 0; i < info.size(); ++i) {
         text += info.at(i) + "<br/>";
-    staticQMessageBox::information(nullptr, tr("OSCAR Information"), text);
+    }
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        // qt 6 vertically truncates last line in messagebox.
+        text += ".<br/>";
+    #endif
+    staticQMessageBox::information(this, tr("OSCAR Information"), text);
 }
 
 void MainWindow::on_profilesButton_clicked()
