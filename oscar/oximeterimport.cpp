@@ -146,7 +146,7 @@ void OximeterImport::on_nextButton_clicked()
     switch (i) {
     case 0:
         ui->nextButton->setVisible(true);
-        ui->nextButton->setText("&Start");
+        ui->nextButton->setText(tr("Start"));
         break;
     case 1:
         ui->nextButton->setVisible(false);

@@ -772,11 +772,11 @@ void initializeStrings()
 
 
     // Dialog box options
-    STR_MessageBox_Yes = QObject::tr("&Yes");
-    STR_MessageBox_No = QObject::tr("&No");
-    STR_MessageBox_Cancel = QObject::tr("&Cancel");
-    STR_MessageBox_Destroy = QObject::tr("&Destroy");;
-    STR_MessageBox_Save = QObject::tr("&Save");
+    STR_MessageBox_Yes = QObject::tr("Yes");
+    STR_MessageBox_No = QObject::tr("No");
+    STR_MessageBox_Cancel = QObject::tr("Cancel");
+    STR_MessageBox_Destroy = QObject::tr("Destroy");;
+    STR_MessageBox_Save = QObject::tr("Save");
 
     STR_TR_BMI = QObject::tr("BMI");              // Short form of Body Mass Index
     STR_TR_Weight = QObject::tr("Weight");

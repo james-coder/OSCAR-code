@@ -317,9 +317,9 @@ void NewProfile::on_nextButton_clicked()
     }
 
     if (index >= max_pages) {
-        ui->nextButton->setText(tr("&Finish"));
+        ui->nextButton->setText(tr("Finish"));
     } else {
-        ui->nextButton->setText(tr("&Next"));
+        ui->nextButton->setText(tr("Next"));
     }
 
     ui->backButton->setEnabled(true);
@@ -328,7 +328,7 @@ void NewProfile::on_nextButton_clicked()
 
 void NewProfile::on_backButton_clicked()
 {
-    ui->nextButton->setText(tr("&Next"));
+    ui->nextButton->setText(tr("Next"));
 
     if (ui->stackedWidget->currentIndex() > m_firstPage) {
         ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex() - 1);
@@ -494,7 +494,7 @@ void NewProfile::on_textBrowser_anchorClicked(const QUrl &arg1)
     dlg->setLayout(layout);
     QTextBrowser *browser = new QTextBrowser(this);
     dlg->layout()->addWidget(browser);
-    QPushButton *button = new QPushButton(tr("&Close this window"), browser);
+    QPushButton *button = new QPushButton(tr("Close this window"), browser);
 
     QFile f(arg1.toString().replace("qrc:", ":"));
     f.open(QIODevice::ReadOnly);

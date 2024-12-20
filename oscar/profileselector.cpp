@@ -418,8 +418,8 @@ void ProfileSelector::on_buttonDestroyProfile_clicked()
         layout.insertWidget(1, &lineedit, 1);
         QHBoxLayout layout2;
         layout.insertLayout(2,&layout2,1);
-        QPushButton cancel(QString("&Cancel"), &confirmdlg);
-        QPushButton accept(QString("&Delete Profile"), &confirmdlg);
+        QPushButton cancel(QString(tr("Cancel")), &confirmdlg);
+        QPushButton accept(QString(tr("Delete Profile")), &confirmdlg);
         layout2.addWidget(&cancel);
         layout2.addStretch(1);
         layout2.addWidget(&accept);

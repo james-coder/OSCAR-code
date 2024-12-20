@@ -118,10 +118,10 @@ MainWindow::MainWindow(QWidget *parent) :
         QAction *a = systraymenu->addAction(STR_TR_OSCAR + " " + getVersion().displayString());
         a->setEnabled(false);
         systraymenu->addSeparator();
-        systraymenu->addAction(tr("&About"), this, SLOT(on_action_About_triggered()));
+        systraymenu->addAction(tr("About"), this, SLOT(on_action_About_triggered()));
 //        systraymenu->addAction(tr("Check for &Updates"), this, SLOT(on_actionCheck_for_Updates_triggered()));
         systraymenu->addSeparator();
-        systraymenu->addAction(tr("E&xit"), this, SLOT(close()));
+        systraymenu->addAction(tr("Exit"), this, SLOT(close()));
 
 //      systraymenu = nullptr;
     } else { // if not available, the messages will popup in the taskbar
