@@ -49,13 +49,14 @@ protected:
     SummaryCalcItem* getCalc(ChannelID code, SummaryType type = ST_SETMAX);
     QString channelRange(ChannelID code, const QString & label);
     void addSlice(ChannelID code, SummaryType type = ST_SETMAX);
+    void sortSlices();
 
     QHash<ChannelID,QHash<SummaryType,int>> m_calcs;
 
     // State passed between populate() and addSlice():
     Day* m_day;
     QVector<SummaryChartSlice>* m_slices;
-    float m_height;
+    QMultiMap<float,SummaryChartSlice> m_sort_slices;
 };
 
 #endif // GPRESSURECHART_H

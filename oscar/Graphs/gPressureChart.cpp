@@ -1,11 +1,14 @@
 /* gPressureChart Implementation
  *
  * Copyright (c) 2020-2024 The Oscar Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
+
+#define TEST_MACROS_ENABLEDoff
+#include <test_macros.h>
 
 #include "gPressureChart.h"
 
@@ -157,19 +160,32 @@ void gPressureChart::addSlice(ChannelID code, SummaryType type)
     }
 
     SummaryCalcItem* calc = getCalc(code, type);
-    float height = value - m_height;
-
-    m_slices->append(SummaryChartSlice(calc, value, height, label, calc->color));
-    m_height += height;
+    m_sort_slices.insert(value,SummaryChartSlice(calc, value, 0, label, calc->color));
 }
 
+void gPressureChart::sortSlices() {
+    float prevPressure = 0;
+    for (auto it = m_sort_slices.begin(); it != m_sort_slices.end(); it++ ) {
+        float pressure = it.key();
+        if (pressure<=0) {
+            // no valid data.
+            continue;
+        }
+        float rectHeight = pressure - prevPressure;
+        SummaryChartSlice slice = it.value();
+        slice.height = rectHeight;
+        m_slices->append(slice);
+        prevPressure = pressure;
+    }
+    m_sort_slices.clear();
+}
 
 void gPressureChart::populate(Day * day, int idx)
 {
     CPAPMode mode =  (CPAPMode)(int)qRound(day->settings_wavg(CPAP_Mode));
     m_day = day;
     m_slices = &cache[idx];
-    m_height = 0;
+    m_sort_slices.clear();
 
     if (mode == MODE_CPAP) {
         addSlice(CPAP_Pressure);
@@ -248,4 +264,5 @@ void gPressureChart::populate(Day * day, int idx)
         }
         addSlice(CPAP_IPAPHi);
     }
+    sortSlices();
 }
