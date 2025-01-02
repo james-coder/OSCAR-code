@@ -73,6 +73,8 @@ DEFINES += LOCK_RESMED_SESSIONS
 
 CONFIG += rtti
 CONFIG -= debug_and_release
+## for debug symbols comment out above line and add next line
+##CONFIG += debug
 
 contains(DEFINES, STATIC) {
     static {

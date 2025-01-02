@@ -142,7 +142,7 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 
 
 // define submacros to call logging functions
-#define DEBUGXD   qDebug().noquote(
+#define DEBUGXD   qDebug().noquote()
 #define DEBUGXC   qCritical().noquote()
 #define DEBUGXW   qWarning().noquote()
 
@@ -246,6 +246,8 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 //defined API macros
 //API should start with DEBUGC so that they can always be easily found in code.
 
+#define DEBUGDT         DEBUGXD DEBUGXTFL
+#define DEBUGDI         DEBUGXD DEBUGXFLM
 #define DEBUGCI         DEBUGXC DEBUGXFLM
 #define DEBUGCIS        DEBUGXC DEBUGXFL
 #define DEBUGCT         DEBUGXC DEBUGXTFLM
@@ -253,5 +255,6 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 // obsoluted macros that are still usd.
 #define DEBUGF          DEBUGXC DEBUGXFL
 #define DEBUGFC         DEBUGXC DEBUGXFLM
+
 
 

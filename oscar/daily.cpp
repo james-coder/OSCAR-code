@@ -918,6 +918,7 @@ void Daily::LoadDate(QDate date)
     ui->calendar->blockSignals(false);
     on_calendar_selectionChanged();
 }
+
 void Daily::on_calendar_selectionChanged()
 {
     QTimer::singleShot(0, this, SLOT(on_ReloadDay()));
@@ -944,8 +945,6 @@ void Daily::on_ReloadDay()
 
     unload_time=time.restart();
     //bool fadedir=previous_date < ui->calendar->selectedDate();
-#ifndef REMOVE_FITNESS
-#endif
     Load(ui->calendar->selectedDate());
     load_time=time.restart();
 
@@ -2465,8 +2464,15 @@ void Daily::verifyBookMarkName(QTableWidgetItem* item) {
     }
 }
 
-void Daily::on_bookmarkTable_currentItemChanged(QTableWidgetItem *item, QTableWidgetItem *)
+void Daily::on_bookmarkTable_currentItemChanged(QTableWidgetItem *item, QTableWidgetItem *item2)
 {
+    if(!item) {
+        // can get here at times.
+        if(item2) {
+            DEBUGCI QQ(row,item2->row()) QQ(col,item2->column()) O(item2->text());
+        }
+        return;
+    }
     int row=item->row();
     qint64 st,et;
 
