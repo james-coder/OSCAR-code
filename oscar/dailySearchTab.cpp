@@ -364,7 +364,29 @@ void DailySearchTab::connectUi(bool doConnect) {
     }
 }
 
-void DailySearchTab::addCommandItem(QString str,int topic) {
+#if defined(TEST_MACROS_ENABLED)
+QStringList topicList;
+QString topicStr(int index) {
+    if (index <0 || index > topicList.size() ) {
+        return QString("??");
+    }
+    return topicList[index];
+}
+
+QStringList stateList= { "reset" , "waitForSearchTopic" , "matching" , "multpileMatches" , "waitForStart" , "autoStart" , "searching" , "endOfSeaching" , "waitForContinue" , "allApneaSelect" , "noDataFound"  };
+
+QString stateStr(int index) {
+    if (index <0 || index > stateList.size() ) {
+        return QString("??");
+    }
+    return stateList[index];
+}
+#endif
+
+QListWidgetItem* DailySearchTab::addCommandItem(QString str,int topic) {
+    #if defined(TEST_MACROS_ENABLED)
+    topicList.insert(topic,str);
+    #endif
     float scaleX= (float)(QWidget::logicalDpiX()*100.0)/(float)(QWidget::physicalDpiX());
     float percentX = scaleX/100.0;
     float width = QFontMetricsF(this->font()).size(Qt::TextSingleLine , str).width();
@@ -379,6 +401,7 @@ void DailySearchTab::addCommandItem(QString str,int topic) {
     QListWidgetItem* item = new QListWidgetItem(commandList);
     item->setData(Qt::UserRole,topic);
     commandList->setItemWidget(item, topicButton);
+    return item;
 }
 
 void DailySearchTab::showOnlyAhiChannels(bool ahiOnly) {
@@ -415,7 +438,8 @@ void DailySearchTab::on_matchGroupButton_toggled(QAbstractButton* topicButton ) 
             if (topic == ST_APNEA_ALL ) {
                 initApneaLikeChannels();
             } else {
-                // topic is ChannelIDA
+                // topic is ChannelID
+                lastButton = topicButton;
                 apneaLikeChannels.push_back(topic);
             }
             process_match_info(lastButton->text(), ST_APNEA_LENGTH );
@@ -426,6 +450,7 @@ void DailySearchTab::on_matchGroupButton_toggled(QAbstractButton* topicButton ) 
         if (lastTopic == ST_APNEA_LENGTH ) {
             initApneaLikeChannels();
             showOnlyAhiChannels(true);
+            setState(allApneaSelect);
             return;
         }
     } else {
@@ -476,7 +501,7 @@ void DailySearchTab::populateControl() {
         addCommandItem(tr("AHI "),ST_AHI);
         addCommandItem(tr("Daily Duration"),ST_DAILY_USAGE);
         addCommandItem(tr("Session Duration" ),ST_SESSION_LENGTH);
-        addCommandItem(tr("Days Skipped"),ST_DAYS_SKIPPED);
+        daysSkippedItem = addCommandItem(tr("Days Skipped"),ST_DAYS_SKIPPED);
         addCommandItem(tr("Apnea Length"),ST_APNEA_LENGTH);
         qint32 chans = schema::SPAN | schema::FLAG | schema::MINOR_FLAG;
         if ( !p_profile->cpap->clinicalMode() ) {
@@ -506,9 +531,12 @@ void DailySearchTab::populateControl() {
 void    DailySearchTab::setState(STATE newState) {
             STATE prev=state;
             state = newState;
-            //enum STATE { reset , waitForSearchTopic   ,  matching , multpileMatches , waitForStart ,  autoStart , searching ,  endOfSeaching ,  waitForContinue , noDataFound};
+
+            DEBUGCI O(stateStr(prev)) O("==>") O(stateStr(state)) Q(matches.size());
+            //enum STATE { reset , waitForSearchTopic   ,  matching , multpileMatches , waitForStart ,  autoStart , searching ,  endOfSeaching ,  waitForContinue , allApneaSelect , noDataFound};
             switch (state) {
                 case multpileMatches :
+                    if (daysSkippedItem) daysSkippedItem->setHidden(matches.size()>1) ;
                     break;
                 case matching :
                     if (prev == multpileMatches) {
@@ -550,6 +578,9 @@ void    DailySearchTab::setState(STATE newState) {
                     hideResults(true);
                     progressBar->show();
                     summaryWidget->show();
+                    break;
+                case allApneaSelect :
+                    startButton->hide();
                     break;
                 case waitForContinue :
                     startButton->setEnabled(true);
@@ -945,7 +976,7 @@ bool DailySearchTab::matchFind(Match* myMatch ,Day* day, QDate& date, Qt::Alignm
             case ST_APNEA_ALL :
                 break; // should never get here
             case ST_APNEA_LENGTH :
-                {
+                if (day) {
                 QList<Session *> sessions = day->getSessions(MT_CPAP);
                 QMap<ChannelID,int> values;
                 // find possible channeld to use
@@ -1344,11 +1375,6 @@ void    DailySearchTab::on_operationCombo_activated(int index) {
         criteriaChanged();
 };
 
-void    DailySearchTab::on_matchButton_clicked() {
-        setState (matching);
-        setCommandPopupEnabled(!commandPopupEnabled);
-}
-
 void    DailySearchTab::on_commandButton_clicked() {
         setCommandPopupEnabled(true);
 }
@@ -1493,6 +1519,11 @@ void    DailySearchTab::clearMatch()
 QString Match::createMatchDescription() {
         label = QString("%1 %2 %3 %4 " ).arg(matchName).arg(opCodeStr).arg(compareString).arg(units);
         return label;
+}
+
+void    DailySearchTab::on_matchButton_clicked() {
+        setState (matching);
+        setCommandPopupEnabled(!commandPopupEnabled);
 }
 
 void    DailySearchTab::on_addMatchButton_clicked() {

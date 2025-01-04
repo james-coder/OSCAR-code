@@ -138,7 +138,8 @@ private:
     searching =6 ,
     endOfSeaching =7 ,
     waitForContinue =8 ,
-    noDataFound =9 };
+    allApneaSelect =9 ,
+    noDataFound =10 };
 	STATE state = waitForSearchTopic;
 
     QString red =  "#ff8080";
@@ -258,7 +259,8 @@ private:
     QString     helpStr();
     QString     centerLine(QString line);
     QRegularExpression     searchPatterToRegex (QString wildcard);
-    void        addCommandItem(QString str,int topic);
+    QListWidgetItem* addCommandItem(QString str,int topic);
+    QListWidgetItem* daysSkippedItem = nullptr;
     float       commandListItemMaxWidth = 0;
     float       commandListItemHeight = 0;
     QSet<QString> commandEventList;

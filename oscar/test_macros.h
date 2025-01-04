@@ -248,6 +248,8 @@ IF (day) DEBUGCI O(day->date());        Critical: MinutesAtPressure[659]SetDay Q
 
 #define DEBUGDT         DEBUGXD DEBUGXTFL
 #define DEBUGDI         DEBUGXD DEBUGXFLM
+#define DEBUGWT         DEBUGXW DEBUGXTFL
+#define DEBUGWI         DEBUGXW DEBUGXFLM
 #define DEBUGCI         DEBUGXC DEBUGXFLM
 #define DEBUGCIS        DEBUGXC DEBUGXFL
 #define DEBUGCT         DEBUGXC DEBUGXTFLM
