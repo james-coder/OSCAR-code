@@ -51,12 +51,48 @@ class ViatomLoader : public MachineLoader
     void AddEvent(ChannelID channel, qint64 t, EventDataType value);
     void EndEventList(ChannelID channel, qint64 t);
 
+    Session* ParseFileViatom(const QString & filename, bool *existing);
+    Session* ParseFilePOD2(const QString & filename, bool *existing);
+
+
     Machine* m_mach;
     Session* m_session;
     qint64 m_step;
     QHash<ChannelID, EventList*> m_importChannels;
     QHash<ChannelID, EventDataType> m_importLastValue;
   private:
+};
+
+class ViatomPOD2File{
+
+public:
+    struct Record{
+         unsigned char spo2;
+         unsigned char hr;
+         unsigned char unk1;//Always 0 from my device.
+         unsigned char pi; //Perfusion index. Two digits.  Divide by decimal 10 for value in %. Example: pi= 0x0E = 14 = 1.4%
+         unsigned char unk2;//Always 0 from my device.
+         unsigned char unk3;//Always 0xC0 from my device.
+    };
+    ViatomPOD2File(QFile & file);
+    virtual ~ViatomPOD2File() = default;
+
+    virtual bool ParseHeader();
+    virtual QList<Record> ReadData();
+    SessionID sessionid() const { return m_sessionid; }
+    quint64 timestamp() const { return m_timestamp; }
+    int duration() const { return m_duration; }
+    QDateTime getPOD2FilenameTimestamp();
+
+protected:
+    static const int RECORD_SIZE = 6;
+    QFile & m_file;
+    int m_sig;
+    quint64 m_timestamp;
+    int m_duration;
+    int m_record_count;
+    int m_resolution;
+    SessionID m_sessionid;
 };
 
 class ViatomFile
