@@ -22,6 +22,7 @@
 #include "viatom_loader.h"
 #include "SleepLib/machine.h"
 #include <memory>
+#include <QTimeZone>
 
 // TODO: Merge this with PRS1 macros and generalize for all loaders.
 #define SESSIONID m_session->session()
@@ -117,7 +118,131 @@ int ViatomLoader::OpenFile(const QString & filename)
     return existing ? 0 : -1; // -1 = error
 }
 
-Session* ViatomLoader::ParseFile(const QString & filename, bool *existing)
+
+
+bool IsPOD2Structure(const QString& filePath) {
+    //POD2 files consist of data only.
+    //There is no metadata in the file.
+    //To recognize the POD2 data, we have to look for the proper directory structure
+    //The directory name 28 is the model (or some other ID for the Wellue POD2)
+    //The data are in the host directory.
+    //When copying the data from the Android phone to the PC, this structure must be maintained.
+    auto path = QDir::cleanPath(filePath);
+    if (!QFileInfo(path).path().endsWith("/28/host")){
+        return false;
+    }
+   return true;
+}
+
+
+
+Session* ViatomLoader::ParseFilePOD2(const QString & filename, bool *existing)
+{
+    if (existing) {
+        *existing = false;
+    }
+    qDebug() << "Found Viatom POD 2 data file " << filename;
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly)) {
+        qDebug() << "Couldn't open Viatom data file" << filename;
+        return nullptr;
+    }
+
+    MachineInfo info = newInfo();
+    //POD2 datafiles don't have a serial number.
+    //Import all POD2 data with the same fake "serial number."
+    info.serial = "POD2";
+
+    std::unique_ptr<ViatomPOD2File> v = std::unique_ptr<ViatomPOD2File>(new ViatomPOD2File(file));
+
+    if (v->ParseHeader() == false) {
+        return nullptr;
+    }
+
+    Machine *mach = p_profile->CreateMachine(info);
+    if (mach->SessionExists(v->sessionid())) {
+        // Skip already imported session
+        //qDebug() << filename << "session already exists, skipping" << v.sessionid();
+        if (existing) {
+            // Inform the caller (if they are interested) that this session was already imported
+            *existing = true;
+        }
+        return nullptr;
+    }
+
+    qint64 time_ms = v->timestamp();
+    m_session = new Session(mach, v->sessionid());
+    m_session->set_first(time_ms);
+
+    QList<ViatomPOD2File::Record> records = v->ReadData();
+    m_step = 1000L;
+    // Import data
+    for (auto & rec : records)
+    {
+        //qDebug() << "Timestamp: " << time_ms << "  POD2 Pulse: " << rec.hr << "  SPO2: " << rec.spo2;
+        //I do not know if the POD 2 has the same limits as the other Viatom devices.
+        //Lacking better information, I've kept the limit checks from the other Viatom devices.
+        //In testing, there were some streaks of 0 values for SPO2 and HR
+        //These seem to be invalid measurements.
+        //Skip zeros.
+        // Viatom advertises a range of 30 - 250 bpm.
+        if (rec.hr>0 && (rec.hr < 30 || rec.hr > 250)) {
+            UNEXPECTED_VALUE(rec.hr, "30-250");
+        }
+        else{
+            if (rec.hr>0){
+                AddEvent(OXI_Pulse, time_ms, rec.hr);
+            }
+        }
+
+
+        if (rec.spo2 == 0xFF) {
+            // When the readings fall below 61%, Viatom devices record 0xFF for SpO2.
+            // The official software discards these readings.
+            // TODO: Consider whether to import these as 60% since they reflect hypoxia.
+            EndEventList(OXI_SPO2, time_ms);
+            //qDebug() << "<61% at" << QDateTime::fromMSecsSinceEpoch(time_ms);
+        } else {
+            // Viatom advertises (and graphs) a range of 70% - 99%, but apparently records down to 61%.
+            // The official software graphs 61%-70% as 70%.
+            // TODO: Consider whether we should import 61%-70% as 70% to match the official reports.
+            if (rec.spo2>0 && (rec.spo2 < 61 || rec.spo2 > 99)) {
+                UNEXPECTED_VALUE(rec.spo2, "61-99%");
+            }
+            else
+            {
+                if (rec.spo2>0)
+                {
+                    AddEvent(OXI_SPO2, time_ms, rec.spo2);
+                }
+            }
+
+        }
+        float pi = (float)rec.pi / 10;
+        if (pi>20)
+        {
+            //The POD2 manual says the perfusion index ranges from 0 to 20
+            //The logged values range from 0 to 200.  2% PI = value of 20
+            //The logged values are 10 times the displayed value.
+
+             UNEXPECTED_VALUE(pi, "0-20%");
+        }
+        else
+        {
+            AddEvent(OXI_Perf, time_ms, pi);
+        }
+
+        time_ms += m_step;
+    }
+    EndEventList(OXI_Pulse, time_ms);
+    EndEventList(OXI_SPO2, time_ms);
+    EndEventList(OXI_Perf, time_ms);
+    m_session->set_last(time_ms);
+
+    return m_session;
+}
+
+Session* ViatomLoader::ParseFileViatom(const QString & filename, bool *existing)
 {
     if (existing) {
         *existing = false;
@@ -233,6 +358,16 @@ Session* ViatomLoader::ParseFile(const QString & filename, bool *existing)
     return m_session;
 }
 
+Session* ViatomLoader::ParseFile(const QString & filename, bool *existing)
+{
+    if (IsPOD2Structure(filename)){
+        return ParseFilePOD2(filename, existing);
+    }
+    else{
+        return ParseFileViatom(filename, existing);
+    }
+}
+
 void ViatomLoader::SaveSessionToDatabase(Session* sess)
 {
     Machine* mach = sess->machine();
@@ -295,6 +430,53 @@ ViatomLoader::Register()
 
 #undef SESSIONID
 #define SESSIONID this->m_sessionid
+
+ViatomPOD2File::ViatomPOD2File(QFile & file) : m_file(file)
+{
+}
+
+QDateTime ViatomPOD2File::getPOD2FilenameTimestamp()
+{
+    //Filenames are usually just a Unix epoch timestamp.
+    QString date_string = QFileInfo(m_file).baseName();
+    qint64 msecs = date_string.toLongLong();
+
+    return QDateTime::fromMSecsSinceEpoch(msecs,QTimeZone::systemTimeZone());
+}
+
+bool ViatomPOD2File::ParseHeader()
+{    
+    QDateTime filename_timestamp = getPOD2FilenameTimestamp();
+    m_timestamp = filename_timestamp.toMSecsSinceEpoch();
+    m_sessionid = m_timestamp / 1000L;
+
+    qint64 datasize = m_file.size();
+    m_record_count = datasize / RECORD_SIZE;
+    m_resolution = 1000L;
+    m_duration   = m_record_count;
+
+    return true;
+}
+
+QList<ViatomPOD2File::Record> ViatomPOD2File::ReadData()
+{
+    QByteArray data = m_file.readAll();
+    QDataStream in(data);
+    in.setByteOrder(QDataStream::LittleEndian);
+
+    QList<ViatomPOD2File::Record> records;
+
+    // Read all Pulse, SPO2 and PI data
+    do {
+        ViatomPOD2File::Record rec;
+        in >> rec.spo2 >> rec.hr >> rec.unk1 >> rec.pi >> rec.unk2 >> rec.unk3;
+
+        records.append(rec);
+    } while (records.size() < m_record_count);
+
+
+    return records;
+}
 
 ViatomFile::ViatomFile(QFile & file) : m_file(file)
 {
