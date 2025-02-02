@@ -72,7 +72,8 @@ public:
          unsigned char unk1;//Always 0 from my device.
          unsigned char pi; //Perfusion index. Two digits.  Divide by decimal 10 for value in %. Example: pi= 0x0E = 14 = 1.4%
          unsigned char unk2;//Always 0 from my device.
-         unsigned char unk3;//Always 0xC0 from my device.
+         unsigned char battery;//Has four values: C0 = Full battery, 80 = partially discharged, 40 = low, 00 = flat.
+                               //Actually it is the top two bits.  0b11000000 = full, 0b1000000 = partially discharged, 0c01000000 = low, 0b00000000 = flat.
     };
     ViatomPOD2File(QFile & file);
     virtual ~ViatomPOD2File() = default;
