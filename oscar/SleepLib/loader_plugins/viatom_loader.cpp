@@ -173,6 +173,8 @@ Session* ViatomLoader::ParseFilePOD2(const QString & filename, bool *existing)
     qint64 time_ms = v->timestamp();
     m_session = new Session(mach, v->sessionid());
     m_session->set_first(time_ms);
+    bool batterydead = false;
+    unsigned char batterymask = 0b11000000;
 
     QList<ViatomPOD2File::Record> records = v->ReadData();
     m_step = 1000L;
@@ -190,13 +192,14 @@ Session* ViatomLoader::ParseFilePOD2(const QString & filename, bool *existing)
             UNEXPECTED_VALUE(rec.hr, "30-250");
         }
         else{
-            if (rec.hr>0){
+            //if (rec.hr>0){
                 AddEvent(OXI_Pulse, time_ms, rec.hr);
-            }
+            //}
         }
 
 
         if (rec.spo2 == 0xFF) {
+            //From the original Viatom.  May not apply to the Wellue
             // When the readings fall below 61%, Viatom devices record 0xFF for SpO2.
             // The official software discards these readings.
             // TODO: Consider whether to import these as 60% since they reflect hypoxia.
@@ -211,10 +214,10 @@ Session* ViatomLoader::ParseFilePOD2(const QString & filename, bool *existing)
             }
             else
             {
-                if (rec.spo2>0)
-                {
+                //if (rec.spo2>0)
+                //{
                     AddEvent(OXI_SPO2, time_ms, rec.spo2);
-                }
+                //}
             }
 
         }
@@ -233,11 +236,28 @@ Session* ViatomLoader::ParseFilePOD2(const QString & filename, bool *existing)
         }
 
         time_ms += m_step;
+        if ((rec.battery&batterymask) == 0)
+        {
+            batterydead = true;
+        }
     }
     EndEventList(OXI_Pulse, time_ms);
     EndEventList(OXI_SPO2, time_ms);
     EndEventList(OXI_Perf, time_ms);
     m_session->set_last(time_ms);
+    if (batterydead)
+    {
+
+        QString message = QString(QObject::tr("The imported data for the session starting %1 may be incomplete or incorrect."));
+        message=message.arg(QDateTime::fromMSecsSinceEpoch(m_session->first(),QTimeZone::systemTimeZone()).toString());
+        QMessageBox::warning(QApplication::activeWindow(),
+                                 QObject::tr("Dead battery"),
+                                 QObject::tr("Your Viatom device registered a dead battery during operation.") +"\n\n"+
+                                 message,
+                                 QMessageBox::Ok);
+
+    }
+
 
     return m_session;
 }
@@ -452,7 +472,7 @@ bool ViatomPOD2File::ParseHeader()
 
     qint64 datasize = m_file.size();
     m_record_count = datasize / RECORD_SIZE;
-    m_resolution = 1000L;
+    m_resolution = 1100L;
     m_duration   = m_record_count;
 
     return true;
@@ -469,7 +489,7 @@ QList<ViatomPOD2File::Record> ViatomPOD2File::ReadData()
     // Read all Pulse, SPO2 and PI data
     do {
         ViatomPOD2File::Record rec;
-        in >> rec.spo2 >> rec.hr >> rec.unk1 >> rec.pi >> rec.unk2 >> rec.unk3;
+        in >> rec.spo2 >> rec.hr >> rec.unk1 >> rec.pi >> rec.unk2 >> rec.battery;
 
         records.append(rec);
     } while (records.size() < m_record_count);
