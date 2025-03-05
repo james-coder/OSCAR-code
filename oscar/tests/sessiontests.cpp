@@ -164,6 +164,7 @@ static QString eventChannel(ChannelID i)
         CHANNELNAME(PRS1_TimedBreath);
         CHANNELNAME(PRS1_PeakFlow);
         CHANNELNAME(CPAP_MinuteVent);
+        CHANNELNAME(CPAP_SteadyBreathing);
         CHANNELNAME(CPAP_TidalVolume);
         CHANNELNAME(CPAP_ClearAirway);
         CHANNELNAME(CPAP_FlowLimit);
