@@ -183,8 +183,8 @@ for(file, TRANSLATIONS) {
      mkpath($$qmdir)|error("Aborting.")
  }
  qmout = $$qmfile
- command = $$LRELEASE -removeidentical $$file -qm $$qmfile
- system($$command)|error("Failed to run: $$command")
+ #command = $$LRELEASE -removeidentical $$file -qm $$qmfile
+ #system($$command)|error("Failed to run: $$command")
  TRANSLATIONS_FILES += $$qmfile
 }
 
@@ -275,6 +275,8 @@ lessThan(QT_MAJOR_VERSION,5)|lessThan(QT_MINOR_VERSION,12) {
 }
 
 SOURCES += \
+    SleepLib/loader_plugins/bmcDataParsing.cpp \
+    SleepLib/loader_plugins/bmc_loader.cpp \
     aboutdialog.cpp \
     checkupdates.cpp \
     common_gui.cpp \
@@ -385,6 +387,8 @@ optimize.commands = $${QMAKE_CXX} -c $(CXXFLAGS) -O3 $(INCPATH) -o ${QMAKE_FILE_
 QMAKE_EXTRA_COMPILERS += optimize
 
 HEADERS  += \
+    SleepLib/loader_plugins/bmcDataParsing.h \
+    SleepLib/loader_plugins/bmc_loader.h \
     checkupdates.h \
     notifyMessageBox.h \
     highresolution.h \
