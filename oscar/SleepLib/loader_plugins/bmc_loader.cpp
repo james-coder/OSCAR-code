@@ -106,12 +106,13 @@ void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* o
 {
     BmcMachineSettings machineSettings = bmcSession->MacineSettings;
 
+    oscarSession->settings[BMC_MODE] = (int)machineSettings.Mode;
+
     if (machineSettings.Mode == BmcMode::CPAP)
     {
         oscarSession->settings[CPAP_Mode] = (int)CPAPMode::MODE_CPAP;
         oscarSession->settings[CPAP_Pressure] = machineSettings.CPAP_TreatP;
 
-        oscarSession->settings[BMC_MODE] = (int)machineSettings.Mode;
         oscarSession->settings[BMC_SMARTC] = machineSettings.CPAP_SmartC;
         oscarSession->settings[BMC_INITIALP] = machineSettings.CPAP_InitialP;
         oscarSession->settings[BMC_TREATP] = machineSettings.CPAP_TreatP;
@@ -125,7 +126,6 @@ void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* o
         oscarSession->settings[CPAP_PressureMin] = machineSettings.APAP_MinAPAP;
         oscarSession->settings[CPAP_PressureMax] = machineSettings.APAP_MaxAPAP;
 
-        oscarSession->settings[BMC_MODE] = (int)machineSettings.Mode;
         oscarSession->settings[BMC_SMARTA] = machineSettings.APAP_SmartA ? 1 : 0;
         oscarSession->settings[BMC_INITIALP] = machineSettings.APAP_IntialP;
         oscarSession->settings[BMC_MIN_APAP] = machineSettings.APAP_MinAPAP;
@@ -341,7 +341,7 @@ void BmcLoader::initChannels()
     //Mode
     //---------------------------------------------------------------------------
     Channel * chan = new Channel(BMC_MODE = channelIdx++ , SETTING, MT_CPAP, SESSION,
-            "BMC_Mode", QObject::tr("Mode"), QObject::tr("CPAP Mode"), QObject::tr("Mode"), "", LOOKUP, Qt::green);
+            "BMC_Mode", QObject::tr("BMC Mode"), QObject::tr("BMC Mode"), QObject::tr("BMC Mode"), "", LOOKUP, Qt::green);
     channel.add(GRP_CPAP, chan);
     chan->addOption(0, QObject::tr("CPAP"));
     chan->addOption(1, QObject::tr("AutoCPAP"));
@@ -519,12 +519,12 @@ int BmcLoader::Open(const QString & dirpath)
 {
     this->sessionsLoaded = 0;
 
-    QCoreApplication::processEvents();
-    emit updateMessage(QObject::tr("Reading records..."));
-    QCoreApplication::processEvents();
 
     //#region Open the BMC data files and ready out 
     //******************************************************************************
+    QCoreApplication::processEvents();
+    emit updateMessage(QObject::tr("Reading data..."));
+    QCoreApplication::processEvents();
 
     const auto machine_info = PeekInfo(dirpath);
     BmcData bmc(dirpath);
@@ -537,7 +537,12 @@ int BmcLoader::Open(const QString & dirpath)
 
     //#region Find or create the OSCAR machine and determine the date to import from
     //******************************************************************************
-    QDate firstImportDay = QDate(2000,1,1);     // Before Series 8 devices (I think)
+
+    QCoreApplication::processEvents();
+    emit updateMessage(QObject::tr("Find sessions to import..."));
+    QCoreApplication::processEvents();
+
+    QDate firstImportDay = QDate(2000,1,1);
 
     Machine *mach = p_profile->lookupMachine(machine_info.serial, machine_info.loadername);
     if ( mach ) {       // we have seen this device
@@ -559,6 +564,25 @@ int BmcLoader::Open(const QString & dirpath)
     if (ignoreOldSessions && (ignoreBefore.date() > firstImportDay))
         firstImportDay = ignoreBefore.date();
     qDebug() << "First day to import: " << firstImportDay.toString();    
+    //******************************************************************************
+    //#endregion
+
+
+    //#region Create backup
+    //******************************************************************************
+
+    emit updateMessage(QObject::tr("Creating data backup..."));
+    QCoreApplication::processEvents();
+
+    QString backupPath = mach->getBackupPath();
+    QDir backupDir(backupPath);
+    if (backupDir.exists(backupPath))
+        backupDir.removeRecursively();
+
+    backupDir.mkpath(backupPath);
+
+    copyPath(dirpath, backupPath);
+
     //******************************************************************************
     //#endregion
 
