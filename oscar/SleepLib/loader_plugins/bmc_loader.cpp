@@ -574,6 +574,7 @@ int BmcLoader::Open(const QString & dirpath)
         }
     }
 
+    emit updateMessage(QObject::tr("Starting import..."));
     emit setProgressMax(linksToImport.length());    // add one to include Save in progress.
     emit setProgressValue(0);
     QCoreApplication::processEvents();
@@ -581,70 +582,14 @@ int BmcLoader::Open(const QString & dirpath)
     //#endregion
 
     // do for each day found.
-
     for (int i = 0; i < linksToImport.length(); i++){
 
         BmcDataLink *link;
         link = (BmcDataLink*)&linksToImport.at(i);
 
-        //auto link = linksToImport.at(i);
-        /*
-        emit setProgressValue(i);
-        emit updateMessage(QString("Import day %1 of %2\n%3")
-                           .arg(i+1)
-                           .arg(linksToImport.length())
-                           .arg(link.UsrSession.StartTimestamp.date().toString("yyyy/MM/dd"))
-                           );
-        QCoreApplication::processEvents();
-        */
-
         queTask(new BmcLoaderTask(this, mach, &bmc, link, linksToImport.length(), i));
-
-        /*BmcDateSession bmcDateSession = bmc.ReadDateSession(link.UsrSession.StartTimestamp.date());
-
-        for (int j = 0; j < bmcDateSession.Sessions.length(); j++)
-        {
-            BmcSession* bmcSession = bmcDateSession.Sessions.at(j);
-            SessionID sessionID = (baseDate.daysTo(link.UsrSession.StartTimestamp.date()) * 64) + j; // leave space for N sessions.
-
-            //We will always try to re-import the last day we import since it might have
-            //been imported before noon which means a session could have been in progress.
-            //Delete the session if it already exists before importing it again
-            auto oscarDay = p_profile->GetDay(link.UsrSession.StartTimestamp.date(), MT_CPAP);
-            if (oscarDay && oscarDay->hasMachine(mach))
-            {
-                auto oscarDaySessions = oscarDay->getSessions(MT_CPAP);
-                auto oscarSessionToDelete = oscarDay->find(sessionID, MT_CPAP);
-                if (oscarSessionToDelete)
-                {
-                    oscarDay->removeSession(oscarSessionToDelete);
-                }
-            }
-
-            //Import the session
-            Session* session = new Session(mach, sessionID);
-
-            setSessionMachineSettings(&bmcDateSession, session);
-            setSessionRespiratoryEvents(bmcSession, session);
-            setSessionWaveforms(bmcSession, session);
-
-
-            session->really_set_first(bmcSession->StartTimestamp.toMSecsSinceEpoch());
-            session->really_set_last(bmcSession->EndTimestamp.addSecs(-1).toMSecsSinceEpoch());
-
-            session->SetChanged(true);
-            session->setNoSettings(false);
-            session->UpdateSummaries();
-            //session->StoreSummary();
-            session->Store(mach->getDataPath());
-            mach->AddSession(session);
-
-            this->sessionsLoaded++;
-        }
-        */
     }
 
-    //emit setProgressValue(++progress);
 
     runTasks();
 
