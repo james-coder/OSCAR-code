@@ -26,6 +26,65 @@ ChannelID BMC_RESLEX_MODE;
 
 const QDate baseDate(2010 , 1, 1);
 
+
+/*
+  Import Task
+*/
+void BmcLoaderTask::run()
+{
+    BmcDateSession bmcDateSession = bmc->ReadDateSession(this->bmcLink->UsrSession.StartTimestamp.date());
+
+    for (int j = 0; j < bmcDateSession.Sessions.length(); j++)
+    {
+        emit bmcLoader->setProgressValue(this->currentLinkIndex);
+        emit bmcLoader->updateMessage(QString("Import day %1 of %2\n%3")
+                           .arg(this->currentLinkIndex+1)
+                           .arg(this->totalLinksToImport)
+                           .arg(this->bmcLink->UsrSession.StartTimestamp.date().toString("yyyy/MM/dd"))
+                           );
+        QCoreApplication::processEvents();
+
+        BmcSession* bmcSession = bmcDateSession.Sessions.at(j);
+        SessionID sessionID = (baseDate.daysTo(this->bmcLink->UsrSession.StartTimestamp.date()) * 64) + j; // leave space for N sessions.
+
+        //We will always try to re-import the last day we import since it might have
+        //been imported before noon which means a session could have been in progress.
+        //Delete the session if it already exists before importing it again
+        auto oscarDay = p_profile->GetDay(this->bmcLink->UsrSession.StartTimestamp.date(), MT_CPAP);
+        if (oscarDay && oscarDay->hasMachine(mach))
+        {
+            auto oscarDaySessions = oscarDay->getSessions(MT_CPAP);
+            auto oscarSessionToDelete = oscarDay->find(sessionID, MT_CPAP);
+            if (oscarSessionToDelete)
+            {
+                oscarDay->removeSession(oscarSessionToDelete);
+            }
+        }
+
+        //Import the session
+        Session* session = new Session(mach, sessionID);
+
+        bmcLoader->setSessionMachineSettings(&bmcDateSession, session);
+        bmcLoader->setSessionRespiratoryEvents(bmcSession, session);
+        bmcLoader->setSessionWaveforms(bmcSession, session);
+
+
+        session->really_set_first(bmcSession->StartTimestamp.toMSecsSinceEpoch());
+        session->really_set_last(bmcSession->EndTimestamp.addSecs(-1).toMSecsSinceEpoch());
+
+        session->SetChanged(true);
+        session->setNoSettings(false);
+        session->UpdateSummaries();
+        //session->StoreSummary();
+        session->Store(mach->getDataPath());
+        mach->AddSession(session);
+
+        bmcLoader->sessionsLoaded++;
+    }
+}
+
+
+
 /*
   Constructor. Tell OSCAR where to get each machine for the machine series.
 */
@@ -458,6 +517,7 @@ ChannelID BmcLoader::CPAPModeChannel() { return BMC_MODE; }
 */
 int BmcLoader::Open(const QString & dirpath)
 {
+    this->sessionsLoaded = 0;
 
     QCoreApplication::processEvents();
     emit updateMessage(QObject::tr("Reading records..."));
@@ -520,22 +580,48 @@ int BmcLoader::Open(const QString & dirpath)
     //******************************************************************************
     //#endregion
 
-    int newSessions = 0;
-
     // do for each day found.
-    for (int i = 0; i < linksToImport.length(); i++){
-        auto link = linksToImport.at(i);
-        emit setProgressValue(i);
-        emit updateMessage(QString("Reading session %1 of %2").arg(i+1).arg(linksToImport.length()));
-        QCoreApplication::processEvents();
-        QCoreApplication::processEvents();                
 
-        BmcDateSession bmcDateSession = bmc.ReadDateSession(link.UsrSession.StartTimestamp.date());
+    for (int i = 0; i < linksToImport.length(); i++){
+
+        BmcDataLink *link;
+        link = (BmcDataLink*)&linksToImport.at(i);
+
+        //auto link = linksToImport.at(i);
+        /*
+        emit setProgressValue(i);
+        emit updateMessage(QString("Import day %1 of %2\n%3")
+                           .arg(i+1)
+                           .arg(linksToImport.length())
+                           .arg(link.UsrSession.StartTimestamp.date().toString("yyyy/MM/dd"))
+                           );
+        QCoreApplication::processEvents();
+        */
+
+        queTask(new BmcLoaderTask(this, mach, &bmc, link, linksToImport.length(), i));
+
+        /*BmcDateSession bmcDateSession = bmc.ReadDateSession(link.UsrSession.StartTimestamp.date());
 
         for (int j = 0; j < bmcDateSession.Sessions.length(); j++)
         {
             BmcSession* bmcSession = bmcDateSession.Sessions.at(j);
             SessionID sessionID = (baseDate.daysTo(link.UsrSession.StartTimestamp.date()) * 64) + j; // leave space for N sessions.
+
+            //We will always try to re-import the last day we import since it might have
+            //been imported before noon which means a session could have been in progress.
+            //Delete the session if it already exists before importing it again
+            auto oscarDay = p_profile->GetDay(link.UsrSession.StartTimestamp.date(), MT_CPAP);
+            if (oscarDay && oscarDay->hasMachine(mach))
+            {
+                auto oscarDaySessions = oscarDay->getSessions(MT_CPAP);
+                auto oscarSessionToDelete = oscarDay->find(sessionID, MT_CPAP);
+                if (oscarSessionToDelete)
+                {
+                    oscarDay->removeSession(oscarSessionToDelete);
+                }
+            }
+
+            //Import the session
             Session* session = new Session(mach, sessionID);
 
             setSessionMachineSettings(&bmcDateSession, session);
@@ -553,17 +639,19 @@ int BmcLoader::Open(const QString & dirpath)
             session->Store(mach->getDataPath());
             mach->AddSession(session);
 
-            newSessions++;
+            this->sessionsLoaded++;
         }
+        */
     }
-
-
-    mach->Save();
 
     //emit setProgressValue(++progress);
 
+    runTasks();
+
+    mach->Save();
+
     QCoreApplication::processEvents();
 
-    return newSessions;
+    return this->sessionsLoaded;
 }
 

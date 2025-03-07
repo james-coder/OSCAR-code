@@ -13,7 +13,31 @@ class EventList;
 const int bmc_version = 1;
 const QString bmc_class_name = "BMC";
 
+class BmcLoader;
+class BmcDataLink;
+class BmcData;
 
+class BmcLoaderTask: public ImportTask
+{
+public:
+    BmcLoaderTask(BmcLoader* machineLoader, Machine* machine, BmcData* bmcData, BmcDataLink *dataLink, int totalLinkCount, int currentLinkIdx):
+        bmcLoader(machineLoader),
+        mach(machine),
+        bmc(bmcData),
+        bmcLink(dataLink),
+        totalLinksToImport(totalLinkCount),
+        currentLinkIndex(currentLinkIdx)
+    {}
+
+    BmcLoader* bmcLoader;
+    Machine* mach;
+    BmcData* bmc;
+    BmcDataLink* bmcLink;
+    int totalLinksToImport;
+    int currentLinkIndex;
+
+    virtual void run();
+};
 
 
 
@@ -50,6 +74,8 @@ public:
     virtual ChannelID PresReliefMode();
     virtual ChannelID PresReliefLevel();
     virtual ChannelID CPAPModeChannel();
+
+    int sessionsLoaded;
 };
 
 #endif // BMCLOADER_H
