@@ -383,7 +383,7 @@ BmcWaveformPacket::BmcWaveformPacket(char* buffer)
     this->TidalVolume = packetStruct->TidalVolume;
     this->MinuteVentilation = packetStruct->MinuteVentilation / 10.0f;
     this->RespiratoryRate = packetStruct->RespiratoryRate;
-    this->IERatio = packetStruct->IERatio <= 100 ? IERatioLookup[packetStruct->IERatio] : 0;
+    this->IERatio = packetStruct->IERatio <= 100 ? 100 - IERatioLookup[packetStruct->IERatio] : 0;
     this->Timestamp = QDateTime(QDate(packetStruct->Year, packetStruct->Month, packetStruct->Day), QTime(packetStruct->Hour, packetStruct->Minute, packetStruct->Second));
 
 
@@ -401,7 +401,7 @@ BmcWaveformPacket::BmcWaveformPacket(char* buffer)
     this->Raw.TidalVolume = packetStruct->TidalVolume;
     this->Raw.MinuteVentilation = packetStruct->MinuteVentilation;
     this->Raw.RespiratoryRate = packetStruct->RespiratoryRate;
-    this->Raw.IERatioMapped = (qint16)(packetStruct->IERatio <= 100 ? IERatioLookup[packetStruct->IERatio] : 0) * 10;
+    this->Raw.IERatioMapped = ((qint16)(packetStruct->IERatio <= 100 ? 100 - IERatioLookup[packetStruct->IERatio] : 0) * 10);
     this->Raw.Timestamp = QDateTime(QDate(packetStruct->Year, packetStruct->Month, packetStruct->Day), QTime(packetStruct->Hour, packetStruct->Minute, packetStruct->Second));
 
 }

@@ -56,6 +56,8 @@ const QString STR_GRAPH_PressureMeasured = "PressureMeasured";
 const QString STR_GRAPH_rRMV = "rRMV";
 const QString STR_GRAPH_rMVFluctuation = "rMVFluctuation";
 const QString STR_GRAPH_FlowFull = "FlowFull";
+const QString STR_GRAPH_PressureWave = "PressureWave";
+const QString STR_GRAPH_FlowAbnormality = "FlowAbnormality";
 
 
 //OXI_Pulse, OXI_SPO2, OXI_Perf, OXI_Plethy

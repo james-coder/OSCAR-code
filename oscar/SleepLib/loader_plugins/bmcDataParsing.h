@@ -5,6 +5,11 @@
 #include <QDataStream>
 #include <QList>
 
+
+//The raw I:E Ratio value recorded by BMC is transformed using a function that maps the raw
+//value to a percentage: `InspirationPercentage = (100 * rawValue) / (rawValue + 10)`
+//Instead of performing this calculation for every sample, since we have discrete values
+//from 0 to 100, we create a mapping table of all the valid values and simply do a look up
 const static float IERatioLookup[] = {
         0, 9.1, 16.7, 23.1, 28.6, 33.3, 37.5, 41.2, 44.4, 47.4, 50, 52.4, 54.5, 56.5, 58.3,
         60, 61.5, 63, 64.3, 65.5, 66.7, 67.7, 68.8, 69.7, 70.6, 71.4, 72.2, 73, 73.7, 74.4, 75, 75.6, 76.2,

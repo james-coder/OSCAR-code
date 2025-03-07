@@ -53,3 +53,5 @@ ChannelID ZEO_SleepStage, ZEO_ZQ, ZEO_TotalZ, ZEO_TimeToZ, ZEO_TimeInWake, ZEO_T
           ZEO_RiseTime;
 
 ChannelID POS_Orientation, POS_Inclination, POS_Movement;
+
+ChannelID BMC_PressureWave, BMC_FlowAbnormality;

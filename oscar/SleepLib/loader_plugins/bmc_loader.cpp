@@ -21,7 +21,6 @@ ChannelID BMC_MODE, BMC_RESLEX, BMC_HUMIDIFIER, BMC_SMARTA, BMC_SMARTC, BMC_SMAR
     BMC_INITIAL_EPAP, BMC_EPAP, BMC_IPAP, BMC_ISENS, BMC_ESENS, BMC_RISE_TIME, BMC_TI_MIN, BMC_TI_MAX, BMC_BACKUP_RR,
     BMC_MIN_EPAP, BMC_MIN_IPAP, BMC_MAX_IPAP, BMC_SMART_EPAP, BMC_SMART_MIN_EPAP, BMC_SMART_MIN_IPAP, BMC_SMART_MAX_IPAP;
 
-ChannelID BMC_PRESSURE_WAVE, BMC_FLOW_ABNORMALITY;
 ChannelID BMC_RESLEX_MODE;
 
 
@@ -57,8 +56,7 @@ void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* o
         oscarSession->settings[BMC_SMARTC] = machineSettings.CPAP_SmartC;
         oscarSession->settings[BMC_INITIALP] = machineSettings.CPAP_InitialP;
         oscarSession->settings[BMC_TREATP] = machineSettings.CPAP_TreatP;
-        oscarSession->settings[BMC_MANUALP] = machineSettings.CPAP_ManualP;
-        oscarSession->settings[BMC_LEAK_ALERT] = machineSettings.LeakAlert ? 1 : 0;
+        oscarSession->settings[BMC_MANUALP] = machineSettings.CPAP_ManualP;        
 
     }
 
@@ -92,8 +90,7 @@ void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* o
         oscarSession->settings[BMC_RISE_TIME] = machineSettings.S_RiseTime;
         oscarSession->settings[BMC_TI_MIN] = machineSettings.S_TiMin;
         oscarSession->settings[BMC_TI_MAX] = machineSettings.S_TiMax;
-        oscarSession->settings[BMC_BACKUP_RR] = machineSettings.S_BackupRR ? 1 : 0;
-        oscarSession->settings[BMC_LEAK_ALERT] = machineSettings.LeakAlert;
+        oscarSession->settings[BMC_BACKUP_RR] = machineSettings.S_BackupRR ? 1 : 0;        
     }
 
     if (machineSettings.Mode == BmcMode::AutoS)
@@ -110,8 +107,7 @@ void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* o
         oscarSession->settings[BMC_MAX_IPAP] = machineSettings.AutoS_MaxIPAP;
         oscarSession->settings[BMC_ISENS] = machineSettings.AutoS_ISENS;
         oscarSession->settings[BMC_ESENS] = machineSettings.AutoS_ESENS;
-        oscarSession->settings[BMC_RISE_TIME] = machineSettings.AutoS_RiseTime;
-        oscarSession->settings[BMC_LEAK_ALERT] = machineSettings.LeakAlert;
+        oscarSession->settings[BMC_RISE_TIME] = machineSettings.AutoS_RiseTime;        
     }
 
     //Comfort settings common to all machines
@@ -126,6 +122,7 @@ void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* o
     oscarSession->settings[BMC_HUMIDIFIER] = machineSettings.HumidifierLevel;
     oscarSession->settings[BMC_MASKTYPE] = (int)machineSettings.MaskType;
     oscarSession->settings[BMC_AIRTUBE_TYPE] = (int)machineSettings.AirTubeType;
+    oscarSession->settings[BMC_LEAK_ALERT] = machineSettings.LeakAlert;
 
     if (machineSettings.AirTubeType == BmcAirTubeType::Heated15mm || machineSettings.AirTubeType == BmcAirTubeType::Heated22mm){
         oscarSession->settings[BMC_HEATEDTUBE_LEVEL] = machineSettings.HeatedTubeLevel;
@@ -163,8 +160,8 @@ void BmcLoader::setSessionWaveforms(BmcSession* bmcSession, Session* oscarSessio
     auto wEPAP = oscarSession->AddEventList(CPAP_IPAP, EVL_Waveform, 0.5, 0.0, 0.0, 0.0, 1000);
 
     auto wFlow = oscarSession->AddEventList(CPAP_FlowRate, EVL_Waveform, 0.1, 0.0, 0.0, 0.0, 1000/25.0);
-    auto wPressureWave = oscarSession->AddEventList(BMC_PRESSURE_WAVE, EVL_Waveform, 1.0, 0.0, 0.0, 0.0, 1000/25.0);
-    auto wFlowAbnormality = oscarSession->AddEventList(BMC_FLOW_ABNORMALITY, EVL_Waveform, 1.0, 0.0, 0.0, 0.0, 1000/25.0);
+    auto wPressureWave = oscarSession->AddEventList(BMC_PressureWave, EVL_Waveform, 1.0, 0.0, 0.0, 0.0, 1000/25.0);
+    auto wFlowAbnormality = oscarSession->AddEventList(BMC_FlowAbnormality, EVL_Waveform, 1.0, 0.0, 0.0, 0.0, 1000/25.0);
 
     auto wLeak = oscarSession->AddEventList(CPAP_Leak, EVL_Event, 0.1, 0.0, 0.0, 0.0, 1000);
     auto wTidalVolume = oscarSession->AddEventList(CPAP_TidalVolume, EVL_Event, 1.0, 0.0, 0.0, 0.0, 1000);
@@ -172,30 +169,45 @@ void BmcLoader::setSessionWaveforms(BmcSession* bmcSession, Session* oscarSessio
     auto wRespiratoryRate = oscarSession->AddEventList(CPAP_RespRate, EVL_Event, 1.0, 0.0, 0.0, 0.0, 1000);
     auto wIERatio = oscarSession->AddEventList(CPAP_IE, EVL_Event, 0.1, 0.0, 0.0, 0.0, 1000);
 
+    auto wInspTime = oscarSession->AddEventList(CPAP_Ti, EVL_Event, 0.001, 0.0, 0.0, 0.0, 1000);
+    auto wExpTime = oscarSession->AddEventList(CPAP_Te, EVL_Event, 0.001, 0.0, 0.0, 0.0, 1000);
+
 
     for (auto & bmcWaveform : bmcSession->Waveforms)
     {
-        wFlow->AddWaveform(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.Flow, 25, 1000);
-        wPressureWave->AddWaveform(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.PressureWave, 25, 1000);
-        wFlowAbnormality->AddWaveform(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.FlowAbnormality, 25, 1000);
+        qint64 timestamp = bmcWaveform.Timestamp.toMSecsSinceEpoch();
 
-        wPressure->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.IPAP);
-        wIPAP->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.IPAP);
-        wEPAP->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.EPAP);
-        wLeak->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.Leak);
-        wTidalVolume->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.TidalVolume);
-        wMinuteVentilation->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.MinuteVentilation);
-        wRespiratoryRate->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.RespiratoryRate);
-        wIERatio->AddEvent(bmcWaveform.Timestamp.toMSecsSinceEpoch(), bmcWaveform.Raw.IERatioMapped);
+        wFlow->AddWaveform(timestamp, bmcWaveform.Raw.Flow, 25, 1000);
+        wPressureWave->AddWaveform(timestamp, bmcWaveform.Raw.PressureWave, 25, 1000);
+        wFlowAbnormality->AddWaveform(timestamp, bmcWaveform.Raw.FlowAbnormality, 25, 1000);
+
+        wPressure->AddEvent(timestamp, bmcWaveform.Raw.IPAP);
+        wIPAP->AddEvent(timestamp, bmcWaveform.Raw.IPAP);
+        wEPAP->AddEvent(timestamp, bmcWaveform.Raw.EPAP);
+        wLeak->AddEvent(timestamp, bmcWaveform.Raw.Leak);
+        wTidalVolume->AddEvent(timestamp, bmcWaveform.Raw.TidalVolume);
+        wMinuteVentilation->AddEvent(timestamp, bmcWaveform.Raw.MinuteVentilation);
+        wRespiratoryRate->AddEvent(timestamp, bmcWaveform.Raw.RespiratoryRate);
+        wIERatio->AddEvent(timestamp, bmcWaveform.Raw.IERatioMapped);
+
+        //We add the inspiration and expiration waveform so that OSCAR doesn't try to calculcate them
+        //OSCAR searched for peaks and throughs in the flow waveform, but since BMC's flow waveform
+        //doesn't have a zero crossing (i.e. there is a y-offset), it can't do so reliably.
+        //Instead, we can accurately calculate the I and E times two parameters BMC does record:
+        //the respiratory rate and the IE ratio which
+
+        if (bmcWaveform.RespiratoryRate > 0)
+        {
+            double respTime = (60.0 / bmcWaveform.RespiratoryRate);
+            double inspTime = respTime * (bmcWaveform.Raw.IERatioMapped / 1000.0);
+            double expTime = respTime * ((1000 - bmcWaveform.Raw.IERatioMapped) / 1000.0);
+            wInspTime->AddEvent(timestamp, (qint16)(inspTime * 1000));
+            wExpTime->AddEvent(timestamp, (qint16)(expTime * 1000));
+        }
+
     }
-
-
-
-
-
-
-
 }
+
 
 
 //****************************************************************************************
@@ -427,12 +439,6 @@ void BmcLoader::initChannels()
     channel.add(GRP_CPAP, chan = new Channel(BMC_MAX_IPAP = channelIdx++, SETTING, MT_CPAP,   SESSION,
             "MaxIPAP", QObject::tr("MaxIPAP"), QObject::tr("Max IPAP"), QObject::tr("Max IPAP"), STR_UNIT_CMH2O, DOUBLE, Qt::green));            
 
-    //Charts
-    channel.add(GRP_CPAP, chan = new Channel(BMC_FLOW_ABNORMALITY = channelIdx++, SETTING, MT_CPAP,   SESSION,
-            "FlowAbnormality", QObject::tr("Flow Abnormality"), QObject::tr("Flow Abnormality"), QObject::tr("Flow Abnormality"), "", DOUBLE, Qt::green));
-
-    channel.add(GRP_CPAP, chan = new Channel(BMC_PRESSURE_WAVE = channelIdx++, SETTING, MT_CPAP,   SESSION,
-            "PressureWave", QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), "", DOUBLE, Qt::green));
 
 }
 
@@ -503,7 +509,7 @@ int BmcLoader::Open(const QString & dirpath)
     QList<BmcDataLink> linksToImport;
     for (auto & link : bmc.SessionLinks)
     {
-        if (link.UsrSession.StartTimestamp.date() > firstImportDay){
+        if (link.UsrSession.StartTimestamp.date() >= firstImportDay){
             linksToImport.append(link);
         }
     }
