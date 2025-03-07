@@ -9,6 +9,7 @@
 #include <QMap>
 #include <QStringList>
 #include <cmath>
+#include <QMessageBox>
 #include "SleepLib/loader_plugins/bmcDataParsing.h"
 #include "SleepLib/loader_plugins/bmc_loader.h"
 
@@ -32,54 +33,73 @@ const QDate baseDate(2010 , 1, 1);
 */
 void BmcLoaderTask::run()
 {
-    BmcDateSession bmcDateSession = bmc->ReadDateSession(this->bmcLink->UsrSession.StartTimestamp.date());
-
-    for (int j = 0; j < bmcDateSession.Sessions.length(); j++)
+    try
     {
-        emit bmcLoader->setProgressValue(this->currentLinkIndex);
-        emit bmcLoader->updateMessage(QString("Import day %1 of %2\n%3")
-                           .arg(this->currentLinkIndex+1)
-                           .arg(this->totalLinksToImport)
-                           .arg(this->bmcLink->UsrSession.StartTimestamp.date().toString("yyyy/MM/dd"))
-                           );
-        QCoreApplication::processEvents();
+        BmcDateSession bmcDateSession = bmc->ReadDateSession(this->bmcLink->UsrSession.StartTimestamp.date());
 
-        BmcSession* bmcSession = bmcDateSession.Sessions.at(j);
-        SessionID sessionID = (baseDate.daysTo(this->bmcLink->UsrSession.StartTimestamp.date()) * 64) + j; // leave space for N sessions.
-
-        //We will always try to re-import the last day we import since it might have
-        //been imported before noon which means a session could have been in progress.
-        //Delete the session if it already exists before importing it again
-        auto oscarDay = p_profile->GetDay(this->bmcLink->UsrSession.StartTimestamp.date(), MT_CPAP);
-        if (oscarDay && oscarDay->hasMachine(mach))
+        for (int j = 0; j < bmcDateSession.Sessions.length(); j++)
         {
-            auto oscarDaySessions = oscarDay->getSessions(MT_CPAP);
-            auto oscarSessionToDelete = oscarDay->find(sessionID, MT_CPAP);
-            if (oscarSessionToDelete)
+            emit bmcLoader->setProgressValue(this->currentLinkIndex);
+            emit bmcLoader->updateMessage(QString("Import day %1 of %2\n%3")
+                               .arg(this->currentLinkIndex+1)
+                               .arg(this->totalLinksToImport)
+                               .arg(this->bmcLink->UsrSession.StartTimestamp.date().toString("yyyy/MM/dd"))
+                               );
+            QCoreApplication::processEvents();
+
+            BmcSession* bmcSession = bmcDateSession.Sessions.at(j);
+            SessionID sessionID = (baseDate.daysTo(this->bmcLink->UsrSession.StartTimestamp.date()) * 64) + j; // leave space for N sessions.
+
+            //We will always try to re-import the last day we import since it might have
+            //been imported before noon which means a session could have been in progress.
+            //Delete the session if it already exists before importing it again
+            auto oscarDay = p_profile->GetDay(this->bmcLink->UsrSession.StartTimestamp.date(), MT_CPAP);
+            if (oscarDay && oscarDay->hasMachine(mach))
             {
-                oscarDay->removeSession(oscarSessionToDelete);
+                auto oscarDaySessions = oscarDay->getSessions(MT_CPAP);
+                auto oscarSessionToDelete = oscarDay->find(sessionID, MT_CPAP);
+                if (oscarSessionToDelete)
+                {
+                    oscarDay->removeSession(oscarSessionToDelete);
+                }
             }
+
+            if (bmcSession->Waveforms.length() == 0)
+                continue;
+
+            //Import the session
+            Session* session = new Session(mach, sessionID);
+
+            bmcLoader->setSessionMachineSettings(&bmcDateSession, session);
+            bmcLoader->setSessionRespiratoryEvents(bmcSession, session);
+            bmcLoader->setSessionWaveforms(bmcSession, session);
+
+
+            session->really_set_first(bmcSession->StartTimestamp.toMSecsSinceEpoch());
+            session->really_set_last(bmcSession->EndTimestamp.addSecs(-1).toMSecsSinceEpoch());
+
+            session->SetChanged(true);
+            session->setNoSettings(false);
+            session->UpdateSummaries();
+            //session->StoreSummary();
+            session->Store(mach->getDataPath());
+            mach->AddSession(session);
+
+            bmcLoader->sessionsLoaded++;
         }
-
-        //Import the session
-        Session* session = new Session(mach, sessionID);
-
-        bmcLoader->setSessionMachineSettings(&bmcDateSession, session);
-        bmcLoader->setSessionRespiratoryEvents(bmcSession, session);
-        bmcLoader->setSessionWaveforms(bmcSession, session);
-
-
-        session->really_set_first(bmcSession->StartTimestamp.toMSecsSinceEpoch());
-        session->really_set_last(bmcSession->EndTimestamp.addSecs(-1).toMSecsSinceEpoch());
-
-        session->SetChanged(true);
-        session->setNoSettings(false);
-        session->UpdateSummaries();
-        //session->StoreSummary();
-        session->Store(mach->getDataPath());
-        mach->AddSession(session);
-
-        bmcLoader->sessionsLoaded++;
+    }
+    catch (std::bad_alloc)
+    {
+        qDebug() << "Bad memory allocation while loading a BMC session";
+        QMessageBox::warning(nullptr, QObject::tr("Import Error - Out of Memory"),
+                             QObject::tr("Additional memory could not be allocated during the import.")+"\n\n"+
+                             QObject::tr("Please try switching to 64-bit OSCAR or setting your preferences to ignore older sessions."),
+                             QMessageBox::Ok);
+        throw;
+    }
+    catch (...)
+    {
+        throw;
     }
 }
 
@@ -602,6 +622,17 @@ int BmcLoader::Open(const QString & dirpath)
     emit setProgressMax(linksToImport.length());    // add one to include Save in progress.
     emit setProgressValue(0);
     QCoreApplication::processEvents();
+
+    //32-bit users import an entire SD card of data may get a bad memory allocation exception
+    //while OSCAR tries to store the session.
+    /*if (linksToImport.length() > 10 && QSysInfo::WordSize == 32){
+        QMessageBox::warning(nullptr, QObject::tr("Import Warning"),
+                             QObject::tr("You are about to import a large number of sessions and may run out of memory.")+"\n\n"+
+                             QObject::tr("Please try switching to 64-bit OSCAR or setting your preferences to ignore older sessions."),
+                             QMessageBox::Ok);
+    }*/
+
+
     //******************************************************************************
     //#endregion
 
