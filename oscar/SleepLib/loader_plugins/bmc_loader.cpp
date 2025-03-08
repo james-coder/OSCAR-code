@@ -29,7 +29,10 @@ const QDate baseDate(2010 , 1, 1);
 
 
 /*
-  Import Task
+  Import Task - This is the primary part of the loader: where sessions are added to OSCAR
+    with machine settings, waveforms etc.
+  Each day recorded by BMC may have multiple sessions. This method takes in a
+  a day and creates a OSCAR session for each session in the recorded day.
 */
 void BmcLoaderTask::run()
 {
@@ -106,7 +109,7 @@ void BmcLoaderTask::run()
 
 
 /*
-  Constructor. Tell OSCAR where to get each machine for the machine series.
+  Constructor. Tell OSCAR where to get icons for each machine series.
 */
 
 BmcLoader::BmcLoader()
@@ -122,6 +125,7 @@ BmcLoader::BmcLoader()
 bool bmc_initialized = false;
 
 
+//Given a created session, we add the BMC machine settings to the OSCAR session
 void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* oscarSession)
 {
     BmcMachineSettings machineSettings = bmcSession->MacineSettings;
@@ -211,7 +215,7 @@ void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* o
 
 }
 
-
+//Given a created session, we add the BMC respiratory events to the OSCAR session
 void BmcLoader::setSessionRespiratoryEvents(BmcSession* bmcSession, Session* oscarSession)
 {
     EventList* oscarOsaList = oscarSession->AddEventList(CPAP_Obstructive, EVL_Event);
@@ -231,7 +235,7 @@ void BmcLoader::setSessionRespiratoryEvents(BmcSession* bmcSession, Session* osc
     }
 }
 
-
+//Given a created session, we add the BMC waveforms for the session to the OSCAR session
 void BmcLoader::setSessionWaveforms(BmcSession* bmcSession, Session* oscarSession)
 {
     auto wPressure = oscarSession->AddEventList(CPAP_Pressure, EVL_Waveform, 0.5, 0.0, 0.0, 0.0, 1000);
@@ -272,8 +276,8 @@ void BmcLoader::setSessionWaveforms(BmcSession* bmcSession, Session* oscarSessio
         //We add the inspiration and expiration waveform so that OSCAR doesn't try to calculcate them
         //OSCAR searched for peaks and throughs in the flow waveform, but since BMC's flow waveform
         //doesn't have a zero crossing (i.e. there is a y-offset), it can't do so reliably.
-        //Instead, we can accurately calculate the I and E times two parameters BMC does record:
-        //the respiratory rate and the IE ratio which
+        //Instead, we can accurately calculate the I and E times from two parameters BMC does record:
+        //the respiratory rate and the IE ratio
 
         if (bmcWaveform.RespiratoryRate > 0)
         {
@@ -290,7 +294,7 @@ void BmcLoader::setSessionWaveforms(BmcSession* bmcSession, Session* oscarSessio
 
 
 //****************************************************************************************
-//* All below are implementations of MachineLoader and derived CpapLoader  
+//* All below are implementations of virtual methods of MachineLoader and derived CpapLoader
 //****************************************************************************************
 
 /*
@@ -522,7 +526,7 @@ void BmcLoader::initChannels()
 }
 
 /*
-  Base Class Implementation. Returns various channels and names
+  Base Class Implementation. Returns various channels and names for mapping in OSCAR.
 */
 
 QString BmcLoader::PresReliefLabel() { return QString("Reslex"); }
@@ -534,6 +538,8 @@ ChannelID BmcLoader::CPAPModeChannel() { return BMC_MODE; }
   Base Class Implementation. "Open" is called to import all data.
   The loader must create the machine, add new sessions with settings, waveforms etc to the profile 
   Perform a backup of the SD card if enabled
+  The methodology was changed to allow for multithreaded importing so the importing of sessions
+  is now added as tasks which are all run by OSCAR's machine class instance.
 */
 int BmcLoader::Open(const QString & dirpath)
 {
@@ -636,7 +642,8 @@ int BmcLoader::Open(const QString & dirpath)
     //******************************************************************************
     //#endregion
 
-    // do for each day found.
+    // For each BMC session, create and queue an import task that will transform
+    // our BMC session into an OSCAR session.
     for (int i = 0; i < linksToImport.length(); i++){
 
         BmcDataLink *link;
@@ -647,6 +654,8 @@ int BmcLoader::Open(const QString & dirpath)
 
 
     runTasks();
+
+    //When everything is imported, we can finish up and return the number of new sessions imported.
 
     mach->Save();
 
