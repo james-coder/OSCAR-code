@@ -824,78 +824,92 @@ void FlowParser::calcSteadyBreathingWaveform(){
     /////////////////////////////////////////////////////////////////////////////////
     /// Deep sleep, Löwenstein: https://www.apneaboard.com/wiki/index.php?title=Lowenstein_PrismaLine_optimization
     /// Minute ventilation: https://www.apneaboard.com/wiki/index.php/OSCAR_-_The_Guide#Minute_Vent
-    EventList *SQ = nullptr;
+    EventList *SB = nullptr;
     EventDataType sq;
-    if (!m_session->channelDataExists(CPAP_MinuteVent))
+    if (m_flow == NULL)
     {
         return;
     }
-    //TODO:
-    //If Prisma with Deep Sleep and rRMV and rRMVFluctuation, then don't calculate them here.  Just return.
-    EventDataType sps =  1; // Samples Per Second
-    EventDataType samplingRate = 1000/sps; // milliseconds per sample
-    SQ = m_session->AddEventList(CPAP_SteadyBreathing, EVL_Waveform);
-    SQ->setGain(0.125);
-    EventList *MV= nullptr;
-    MV = m_session->eventlist.find(CPAP_MinuteVent)->at(0);
-    SQ->setFirst(MV->first());
-    qint64 startTime = MV->first();
-    SQ->setLast(MV->last());
-    SQ->setRate(samplingRate);
 
-    TimeSeries MVEvents(m_session->eventlist[CPAP_MinuteVent]);
+    if (m_session->eventlist.contains(CPAP_SteadyBreathing)){
+        return;
+    }
+
+    //Calculate a "steady breathing waveform" from the full flow waveform delivered by the machine.
+    //Take the RMS of 20 second chunks of the flow waveform.
+    //Calculate the difference of consecutive chunks, then take the RMS of such chunks for 2 minutes.
+    //Low pass filter the results.
 
 
-    quint32 rmsLength = 4*60*sps; //Calculate the RMS value of the minute ventilation variation over a four minute length.
-    QVector<EventDataType> rmsBuffer(rmsLength,10);
+    EventDataType samplingRate = m_flow->rate(); // milliseconds per sample
+    EventDataType spsFlow =  1000.0/samplingRate; // Samples Per Second
+    EventDataType flowPeriod_Seconds = 20.0;
+    EventDataType spsSB = 1.0/flowPeriod_Seconds;
+    EventDataType samplingRateSB =  1000.0/spsSB;
+    SB = m_session->AddEventList(CPAP_SteadyBreathing, EVL_Waveform);
+    SB->setGain(0.125);
+
+    EventDataType filter = 0;
+    EventDataType filterStepSize = 1/(120*spsSB);
+
+    SB->setFirst(m_flow->first());
+    SB->setLast(m_flow->last());
+    SB->setRate(samplingRateSB);
+
+    quint32 rmsLengthSB = 120.0*spsSB;//
+    QVector<EventDataType> rmsBufferSB(rmsLengthSB,30);
+
+
+    quint32 rmsLengthFlow = flowPeriod_Seconds*spsFlow; //Calculate the RMS value of the flow rate over 10 seconds
+    QVector<EventDataType> rmsBufferFlow(rmsLengthFlow,30);
 
     EventDataType value;
     EventDataType minsq;
     EventDataType maxsq;
-    quint32 rmsIndex = 0;
-    EventDataType previousValue = MV->data(0);
+    quint32 rmsIndexFlow = 0;
+    quint32 rmsIndexSB = 0;
+    EventDataType previousValue = m_flow->data(0);
     EventDataType difference = 0;
-
-    EventDataType filterStepSize = 1/(30*sps); //walking average over 30 seconds.
-    EventDataType filter = 10;
 
     minsq = previousValue;
     maxsq = previousValue;
-    bool validTime;
-    quint32 count = (MV->duration()/1000)*sps;
-    QVector<qint16> sqv((QVector<qint16>(count)));
 
+    quint32 countFlow = m_flow->count();
 
     //If there's not enough data in the session to fill the calculation buffer, just skip the whole thing.
-    if (count<rmsLength){
+    if (countFlow<rmsLengthFlow){
         return;
     }
 
-     //Initialize the first part of the output so that there's no fake period of "good breathing" at the start of the session.+
-    for (quint32 i=0;i<rmsLength;++i){
-        sqv[i] = 80;
-    }
 
+    quint32 countSB = countFlow/rmsLengthFlow;
+    QVector<qint16> sqv((QVector<qint16>(countSB)));
 
-    for (quint32 i=0;i<count;++i){
-        value = MVEvents.valueAt( i*samplingRate+startTime,&validTime)*10;
-        if (validTime&&i>=rmsLength)
-        {
-            difference = value-previousValue;
-            previousValue = value;
-            rmsBuffer.replace(rmsIndex, difference);
-            rmsIndex = (rmsIndex+1) % rmsLength;
-            sq = RMSOfVectorFluctuation(rmsBuffer);
-            filter = filter - (filter-sq)*filterStepSize;
-            sqv[i]= filter*8;
-            if (filter < minsq) { minsq = filter; }
-            if (filter > maxsq) { maxsq = filter; }
+    for (quint32 SBCounter=0;SBCounter<countSB;++SBCounter){
+            quint32 index=0;
+        for (quint32 i=0;i<rmsLengthFlow;++i){
+            index = i+SBCounter*rmsLengthFlow;
+            if (index<countFlow){
+                value = m_flow->data(index);
+            }
+
+            rmsBufferFlow.replace(rmsIndexFlow, value);
+            rmsIndexFlow = (rmsIndexFlow+1) % rmsLengthFlow;
         }
-
+        sq = RMSOfVectorFluctuation(rmsBufferFlow);
+        difference = sq-previousValue;
+        previousValue = sq;
+        rmsBufferSB.replace(rmsIndexSB, difference);
+        rmsIndexSB = (rmsIndexSB+1) % rmsLengthSB;
+        sq = RMSOfVectorFluctuation(rmsBufferSB);
+        filter = filter + (sq-filter)*filterStepSize;
+        sqv[SBCounter]= filter*8;
+        if (filter < minsq) { minsq = filter; }
+        if (filter > maxsq) { maxsq = filter; }
     }
-    SQ->AddWaveform(SQ->first(), (qint16*)sqv.constData(),sqv.count(), MV->duration());
-    SQ->setMin(minsq);
-    SQ->setMax(maxsq);
+    SB->AddWaveform(SB->first(), (qint16*)sqv.constData(),sqv.count(), m_flow->duration());
+    SB->setMin(minsq);
+    SB->setMax(maxsq);
 }
 
 void FlowParser::flagSteadyBreathing(Session *session)
@@ -908,7 +922,11 @@ void FlowParser::flagSteadyBreathing(Session *session)
         return;
     }
 
-    EventDataType threshold = 0.3;
+    //Detect regions of steady breathing from the steady breathing waveform.
+    //Values below 1.51 (arbitrary, eyeballed value to approximate the Löwenstein results) are steady breathing.
+    //Skip regions shorter than 60 seconds.
+
+    EventDataType threshold = 1.51;
 
     QVector<EventList *> & EVL = session->eventlist[CPAP_SteadyBreathing];
     int evlsize = EVL.size();
