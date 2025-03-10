@@ -91,7 +91,7 @@ void BmcLoaderTask::run()
             bmcLoader->sessionsLoaded++;
         }
     }
-    catch (std::bad_alloc)
+    catch (std::bad_alloc& e)
     {
         qDebug() << "Bad memory allocation while loading a BMC session";
         QMessageBox::warning(nullptr, QObject::tr("Import Error - Out of Memory"),
