@@ -342,6 +342,7 @@ SOURCES += \
     SleepLib/loader_plugins/md300w1_loader.cpp \
     SleepLib/loader_plugins/mseries_loader.cpp \
     SleepLib/loader_plugins/prisma_loader.cpp \
+    SleepLib/loader_plugins/vrem_loader.cpp \
     SleepLib/loader_plugins/prs1_loader.cpp \
     SleepLib/loader_plugins/prs1_parser_asv.cpp \
     SleepLib/loader_plugins/prs1_parser.cpp \
@@ -444,6 +445,7 @@ HEADERS  += \
     SleepLib/loader_plugins/intellipap_loader.h \
     SleepLib/loader_plugins/mseries_loader.h \
     SleepLib/loader_plugins/prisma_loader.h \
+    SleepLib/loader_plugins/vrem_loader.h \
     SleepLib/loader_plugins/prs1_loader.h \
     SleepLib/loader_plugins/prs1_parser.h \
     SleepLib/loader_plugins/resmed_loader.h \
