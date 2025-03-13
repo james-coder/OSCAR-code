@@ -359,6 +359,9 @@ void init()
     schema::channel.add(GRP_CPAP, new Channel(BMC_FlowAbnormality  = 0x1211, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_FlowAbnormality,
             QObject::tr("Flow Abnormality"), QObject::tr("Flow Abnormality"), QObject::tr("Flow Abnormality"), "",    DEFAULT,    QColor(0x7a, 0x00, 0x43)));
 
+    schema::channel.add(GRP_CPAP, new Channel(BMC_IE_Ratio  = 0x1212, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_IE_Ratio,
+            QObject::tr("I/E Ratio %"), QObject::tr("Inspiration duration compared to expiration duration expressed as a percentage"), QObject::tr("I/E Ratio %"), STR_UNIT_Percentage,    DEFAULT,    QColor(39, 95, 140)));
+
 
     NoChannel = 0;
     /*
