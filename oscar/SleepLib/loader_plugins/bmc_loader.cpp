@@ -239,9 +239,9 @@ void BmcLoader::setSessionRespiratoryEvents(BmcSession* bmcSession, Session* osc
 //Given a created session, we add the BMC waveforms for the session to the OSCAR session
 void BmcLoader::setSessionWaveforms(BmcSession* bmcSession, Session* oscarSession)
 {
-    auto wPressure = oscarSession->AddEventList(CPAP_Pressure, EVL_Waveform, 0.5, 0.0, 0.0, 0.0, 1000);
-    auto wIPAP = oscarSession->AddEventList(CPAP_EPAP, EVL_Waveform, 0.5, 0.0, 0.0, 0.0, 1000);
-    auto wEPAP = oscarSession->AddEventList(CPAP_IPAP, EVL_Waveform, 0.5, 0.0, 0.0, 0.0, 1000);
+    auto wPressure = oscarSession->AddEventList(CPAP_Pressure, EVL_Event, 0.5, 0.0, 0.0, 0.0, 1000);
+    auto wIPAP = oscarSession->AddEventList(CPAP_EPAP, EVL_Event, 0.5, 0.0, 0.0, 0.0, 1000);
+    auto wEPAP = oscarSession->AddEventList(CPAP_IPAP, EVL_Event, 0.5, 0.0, 0.0, 0.0, 1000);
 
     auto wFlow = oscarSession->AddEventList(CPAP_FlowRate, EVL_Waveform, 0.1, 0.0, 0.0, 0.0, 1000/25.0);
     auto wPressureWave = oscarSession->AddEventList(BMC_PressureWave, EVL_Waveform, 1.0, 0.0, 0.0, 0.0, 1000/25.0);
