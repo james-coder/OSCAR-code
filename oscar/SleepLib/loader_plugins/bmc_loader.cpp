@@ -519,10 +519,7 @@ void BmcLoader::initChannels()
             "MinEPAP", QObject::tr("MinEPAP"), QObject::tr("Min EPAP"), QObject::tr("Min EPAP"), STR_UNIT_CMH2O, DOUBLE, Qt::green));
 
     channel.add(GRP_CPAP, chan = new Channel(BMC_MIN_IPAP = channelIdx++, SETTING, MT_CPAP,   SESSION,
-            "MinIPAP", QObject::tr("MinIPAP"), QObject::tr("Min IPAP"), QObject::tr("Min IPAP"), STR_UNIT_CMH2O, DOUBLE, Qt::green));
-
-    channel.add(GRP_CPAP, chan = new Channel(BMC_MAX_IPAP = channelIdx++, SETTING, MT_CPAP,   SESSION,
-            "BmcMaxIPAP", QObject::tr("MaxIPAP"), QObject::tr("Max IPAP"), QObject::tr("Max IPAP"), STR_UNIT_CMH2O, DOUBLE, Qt::green));
+            "MinIPAP", QObject::tr("MinIPAP"), QObject::tr("Min IPAP"), QObject::tr("Min IPAP"), STR_UNIT_CMH2O, DOUBLE, Qt::green));   
 
     channel.add(GRP_CPAP, chan = new Channel(BMC_MAX_IPAP = channelIdx++, SETTING, MT_CPAP,   SESSION,
             "BmcMaxIPAP", QObject::tr("MaxIPAP"), QObject::tr("Max IPAP"), QObject::tr("Max IPAP"), STR_UNIT_CMH2O, DOUBLE, Qt::green));
