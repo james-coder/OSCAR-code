@@ -122,9 +122,6 @@ BmcLoader::BmcLoader()
     m_type = MT_CPAP;
 }
 
-bool bmc_initialized = false;
-
-
 //Given a created session, we add the BMC machine settings to the OSCAR session
 void BmcLoader::setSessionMachineSettings(BmcDateSession* bmcSession, Session* oscarSession)
 {
@@ -301,19 +298,6 @@ void BmcLoader::setSessionWaveforms(BmcSession* bmcSession, Session* oscarSessio
 //* All below are implementations of virtual methods of MachineLoader and derived CpapLoader
 //****************************************************************************************
 
-/*
-  Base Class Implementation. Register this loader with OSCAR
-*/
-
-void BmcLoader::Register()
-{
-    if (bmc_initialized) { return; }
-
-    qDebug() << "Registering BMC Loader";
-    RegisterLoader(new BmcLoader());
-
-    bmc_initialized = true;
-}
 
 /*
   Base Class Implementation. Checks if a path contains data that this loader can import
@@ -670,3 +654,17 @@ int BmcLoader::Open(const QString & dirpath)
     return this->sessionsLoaded;
 }
 
+/*
+  Base Class Implementation. Register this loader with OSCAR
+*/
+
+bool bmc_initialized = false;
+void BmcLoader::Register()
+{
+    if (bmc_initialized) { return; }
+
+    qDebug() << "Registering BMC Loader";
+    RegisterLoader(new BmcLoader());
+
+    bmc_initialized = true;
+}
