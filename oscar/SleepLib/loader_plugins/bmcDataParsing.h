@@ -112,13 +112,15 @@ public:
 
     QDateTime StartWaveformPacketTimestamp;
 
+    BmcIdxEntry();
+    BmcIdxEntry(QDataStream*);
+
     size_t StartOffsetByte();
     QString StartFileExtension();
     size_t NextOffsetByte();
     QString NextFileExtension();
 
-    BmcIdxEntry();
-    BmcIdxEntry(QDataStream*);
+    
 };
 
 enum class BmcMode

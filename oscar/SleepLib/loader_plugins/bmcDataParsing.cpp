@@ -35,6 +35,18 @@ BmcUsrSession::BmcUsrSession(QDataStream* strm, bool InProgressSession) : BmcUsr
         this->ReadHistoricSession(strm);
 }
 
+
+quint32 BmcUsrSession::GetNextHistoricSessionOffset(QDataStream* strm)
+{
+    quint64 currentOffset = strm->device()->pos();
+    strm->skipRawData(1);
+    quint32 nextOffset;
+    *strm >> nextOffset;
+    strm->device()->seek(currentOffset);
+    return nextOffset;
+}
+
+
 void BmcUsrSession::ReadInProgressSession(QDataStream* strm)
 {
     quint16 tmp16;
@@ -58,9 +70,11 @@ void BmcUsrSession::ReadInProgressSession(QDataStream* strm)
             *strm >> datalen;
         }
 
-        char msgBytes[datalen];
+        //char msgBytes[datalen];
+        //strm->readRawData(msgBytes, datalen);
 
-        strm->readRawData(msgBytes, datalen);
+        std::vector<char> msgBytes(datalen);
+        strm->readRawData(msgBytes.data(), datalen);
 
         if (msgType == 0x07 || msgType == 0x08 || msgType == 0x09)
         {
@@ -183,16 +197,6 @@ void BmcUsrSession::ReadHistoricSession(QDataStream* strm)
         this->RespiratoryEvents.append(evt);
     }
 
-}
-
-quint32 BmcUsrSession::GetNextHistoricSessionOffset(QDataStream* strm)
-{
-    quint64 currentOffset = strm->device()->pos();
-    strm->skipRawData(1);
-    quint32 nextOffset;
-    *strm >> nextOffset;
-    strm->device()->seek(currentOffset);
-    return nextOffset;
 }
 
 
@@ -407,30 +411,25 @@ BmcWaveformPacket::BmcWaveformPacket(char* buffer)
 }
 
 
-
-QString BmcData::ChangeFileExtension(const QString& path, QString newExtensionWithDot)
+BmcDateSession::~BmcDateSession()
 {
-    QFileInfo finfo(path);
-    QString newName = finfo.path() + QDir::separator() + finfo.completeBaseName() + newExtensionWithDot;
-    return newName;
+    qDeleteAll(this->Sessions.begin(), this->Sessions.end());
 }
 
-QString BmcData::GetUsrFilePath(const QString& path)
+
+BmcData::BmcData() { }
+
+BmcData::BmcData(const QString& path) : BmcData()
 {
-    QDir dir(path);
-    QStringList nameFilters;
-    nameFilters << "*.USR";
+    QString tmpPath(path);
+    if (!tmpPath.endsWith(QDir::separator()))
+        tmpPath.append(QDir::separator());
 
-    QString usrFile;
-
-    auto usrFiles = dir.entryList(nameFilters);
-    if (usrFiles.length() == 1){
-        usrFile = path + usrFiles[0];
-        return usrFile;
-    } else {
-        return nullptr;
-    }
+    this->dirPath = tmpPath;
+    this->usrFilePath = GetUsrFilePath(tmpPath);
 }
+
+
 
 bool BmcData::DirectoryHasBmcData(const QString& path)
 {
@@ -460,224 +459,6 @@ bool BmcData::DirectoryHasBmcData(const QString& path)
 }
 
 
-
-BmcData::BmcData() { }
-
-BmcData::BmcData(const QString& path) : BmcData()
-{
-    QString tmpPath(path);
-    if (!tmpPath.endsWith(QDir::separator()))
-        tmpPath.append(QDir::separator());
-
-    this->dirPath = tmpPath;
-    this->usrFilePath = GetUsrFilePath(tmpPath);
-}
-
-void BmcData::ReadIdxFile()
-{
-    QString idxPath = ChangeFileExtension(this->usrFilePath, ".idx");
-    QFile file(idxPath);
-
-    file.open(QIODevice::ReadOnly);
-
-    file.seek(0x800);  //Packets start at offset 0x800
-
-    //For each packet, we :
-    //  * Read the 512 byte packet into memory
-    //  * Read each packet for idx entry and machine settings
-    //This results in less random-access seeking on a slow SD card
-
-    while (file.pos() < file.size())
-    {
-        auto arr = file.read(512);
-        QBuffer buf(&arr);
-        buf.open(QIODevice::ReadOnly);
-        QDataStream strmPacket(&buf);
-        strmPacket.setByteOrder(QDataStream::LittleEndian);
-
-        BmcIdxEntry entry(&strmPacket);
-        this->AllIdxEntries.append(entry);
-
-        //Go back to the start of the packet and read the machine settings in it
-        buf.seek(0);
-        BmcMachineSettings settings(&strmPacket);
-        this->AllMachineSettings.append(settings);
-    }
-
-    file.close();
-}
-
-void BmcData::ReadAllSessions()
-{
-    QFile fileUSR(this->usrFilePath);
-    fileUSR.open(QIODevice::ReadOnly);
-
-    QDataStream strmUSR(&fileUSR);
-    strmUSR.setByteOrder(QDataStream::LittleEndian);
-
-    BmcUsrSession inProgressSession(&strmUSR, true);
-
-    //The offset at which sessions begin
-    fileUSR.seek(0x102340);
-
-    //For each session, we determine the length of the session data, copy
-    // the data to memory and then parse it from memory to save on file seeking.
-    do
-    {
-        quint32 nextOffset = BmcUsrSession::GetNextHistoricSessionOffset(&strmUSR);
-        quint32 len = nextOffset - fileUSR.pos();
-
-        auto rawData = fileUSR.read(len);
-
-        QBuffer buf(&rawData);
-        buf.open(QIODevice::ReadOnly);
-        QDataStream strmSession(&buf);
-        strmSession.setByteOrder(QDataStream::LittleEndian);
-        BmcUsrSession session(&strmSession, false);
-        this->AllUsrSessions.append(session);
-
-    }while (fileUSR.pos() < fileUSR.size());
-
-    this->AllUsrSessions.append(inProgressSession);
-
-    fileUSR.close();
-
-}
-
-QDateTime BmcData::ReadWaveformPacketTimestamp(const QString& path, quint16 packetOffset)
-{
-    quint64 byteOffset = (packetOffset * 0x100) + 0xf8;
-
-    if (!QFile::exists(path))
-        return QDateTime();
-
-    QFile file(path);
-
-    if ((quint64)file.size() < byteOffset)
-        return QDateTime();
-
-    file.open(QIODevice::ReadOnly);
-    if (!file.isOpen()){
-        throw std::invalid_argument("Waveform file could be opened");
-    }
-
-    file.seek(byteOffset); //Offset in file of packet + offset of timestamp
-
-    QDataStream strmPacket(&file);
-    strmPacket.setByteOrder(QDataStream::LittleEndian);
-
-    quint16 year;
-    quint8 month, day, hour, minute, second;
-
-    strmPacket >> year;
-    strmPacket >> month;
-    strmPacket >> day;
-    strmPacket >> hour;
-    strmPacket >> minute;
-    strmPacket >> second;
-
-    file.close();
-
-    return QDateTime(QDate(year, month, day), QTime(hour, minute, second));
-}
-
-void BmcData::BuildWaveformCrumbs()
-{
-    int i = 0;
-    QString extension = QString(".%1").arg(i, 3, 10, QLatin1Char('0'));
-    QString filepath = ChangeFileExtension(this->usrFilePath, extension);
-
-    while (QFile::exists(filepath))
-    {
-        QString idxPath = ChangeFileExtension(this->usrFilePath, ".idx");
-
-        for (int j = 0; j < 16; j++)
-        {
-            quint16 packetOffset = i * 0x1000;
-            quint64 byteOffset = packetOffset * 0x100;
-            QDateTime timestamp = ReadWaveformPacketTimestamp(filepath, packetOffset);
-            if (!timestamp.isNull()){
-                BmcWaveformCrumb crumb;
-                crumb.Filepath = filepath;
-                crumb.FileIndex = i;
-                crumb.PacketOffset = packetOffset;
-                crumb.ByteOffset = byteOffset;
-                crumb.Timestamp = timestamp;
-                this->WaveformCrumbs.append(crumb);
-            }
-        }
-
-        i++;
-        extension = QString(".%1").arg(i, 3, 10, QLatin1Char('0'));
-        filepath = ChangeFileExtension(this->usrFilePath, extension);
-    };
-
-
-    std::sort(this->WaveformCrumbs.begin(), this->WaveformCrumbs.end(), [](BmcWaveformCrumb a, BmcWaveformCrumb b)->bool{
-        return a.Timestamp < b.Timestamp;
-    });
-
-}
-
-void BmcData::FindValidSessions()
-{
-    //Since .nnn waveform data is overwritten cyclicly, we need to check
-    //whether the packet the IDX entry points to in .nnn matches the date
-    //of the idx entry. If not, we found the point where the data overwrite
-    //tail is.
-
-    QListIterator<BmcIdxEntry> itr(this->AllIdxEntries);
-    itr.toBack();
-
-    while (itr.hasPrevious())
-    {
-        BmcIdxEntry entry = itr.previous();
-        QString startPath = ChangeFileExtension(this->usrFilePath, entry.StartFileExtension());
-        QString nextPath = ChangeFileExtension(this->usrFilePath, entry.NextFileExtension());
-
-        entry.StartWaveformPacketTimestamp = ReadWaveformPacketTimestamp(startPath, entry.StartOffsetPacket);
-
-
-        auto daysDifference =  qAbs(entry.Timestamp.daysTo(entry.StartWaveformPacketTimestamp));
-
-        if (daysDifference >= 3)
-            break;
-
-        this->ValidIdxEntries.insert(0, entry);
-    }
-
-    //Next we iterate all the USR sessions and see if there is a valid IDX session
-
-    for (auto &usrSession : this->AllUsrSessions)
-    {
-        BmcIdxEntry* foundIdxEntry = nullptr;
-
-        for (auto &idxEntry : this->ValidIdxEntries)
-        {
-            if (usrSession.StartTimestamp >= idxEntry.StartWaveformPacketTimestamp)
-                foundIdxEntry = &idxEntry;
-            else
-                break;
-        }
-
-        if (foundIdxEntry != NULL){
-            BmcDataLink link;
-            link.IdxEntry = *foundIdxEntry;
-            link.UsrSession = usrSession;
-
-            for (auto &crumb : this->WaveformCrumbs){
-                if (crumb.Timestamp < usrSession.StartTimestamp)
-                    link.WaveformCrumb = crumb;
-                else
-                    break;
-            }
-
-            this->SessionLinks.append(link);
-        }
-    }
-
-}
-
 int BmcData::ReadDataCount()
 {
     QFile file(this->usrFilePath);
@@ -702,73 +483,33 @@ void BmcData::ReadData()
     this->FindValidSessions();
 }
 
-QList<BmcWaveformPacket> BmcData::ReadWaveforms(BmcDataLink& link)
+
+BmcMachineInfo BmcData::ReadMachineInfo()
 {
-    QList<BmcWaveformPacket> waveforms;
-    QDateTime lastPacketTimestamp(QDate(2000, 1, 1), QTime(0, 0, 0));
+   BmcMachineInfo info;
 
-    if (!QFile::exists(link.WaveformCrumb.Filepath))
-        return waveforms;
+   QFile usrFile(this->usrFilePath);
+   usrFile.open(QIODevice::ReadOnly);
 
-    char packetBuf[256];
+   char buf[32];
 
-    int currentFileIndex = link.WaveformCrumb.FileIndex;
-    QFile* nnnFile = new QFile(link.WaveformCrumb.Filepath);
-    nnnFile->open(QIODevice::ReadOnly);
-    nnnFile->seek(link.WaveformCrumb.ByteOffset);
+   //SerialNumber
+   usrFile.seek(0x2d);
+   usrFile.read(buf, 32);
+   info.SerialNumber = QString(buf);
+   //info.SerialNumber.truncate(info.SerialNumber.indexOf(QChar::Null));
+   info.SerialNumber = info.SerialNumber.trimmed();
 
-    bool complete = false;
+   //Model Number
+   usrFile.seek(0x2296);
+   usrFile.read(buf, 32);
+   info.Model = QString(buf);
+   //info.Model.truncate(info.Model.indexOf(QChar::Null));
+   info.Model = info.Model.trimmed();
 
-    while (!complete)
-    {
-        while (nnnFile->pos() < nnnFile->size())
-        {
-            nnnFile->read(packetBuf, 0x100);
-#ifdef DEBUG_BMC
-            qout2 << currentFileIndex << "   ";
-            qout2 << QString("%1").arg((double)(nnnFile->pos()) / nnnFile->size() * 100);
-            qout2 << "\n";
-            qout2.flush();
-#endif
-            BmcWaveformPacket packet(packetBuf);
+   usrFile.close();
 
-            if (packet.Timestamp >= link.UsrSession.StartTimestamp && packet.Timestamp <= link.UsrSession.EndTimestamp)
-                waveforms.append(packet);
-
-            if (packet.Timestamp > link.UsrSession.EndTimestamp || packet.Timestamp < lastPacketTimestamp){
-                complete = true;
-                break;
-            }
-
-            lastPacketTimestamp = packet.Timestamp;
-        }
-        nnnFile->close();
-
-        currentFileIndex++;
-        QString nextExtension = QString(".%1").arg(currentFileIndex, 3, 10, QLatin1Char('0'));
-        QString nextPath = ChangeFileExtension(this->usrFilePath, nextExtension);
-
-        if (!QFile::exists(nextPath)){
-            currentFileIndex = 0;
-            nextExtension = QString(".%1").arg(currentFileIndex, 3, 10, QLatin1Char('0'));
-            nextPath = ChangeFileExtension(this->usrFilePath, nextExtension);
-            if (!QFile::exists(nextPath)){
-                complete = true;
-                break;
-            }
-        }
-
-        delete(nnnFile);
-
-        if (!complete)
-        {
-            nnnFile = new QFile(nextPath);
-            nnnFile->open(QIODevice::ReadOnly);
-        }
-    }
-
-    return waveforms;
-
+   return info;
 }
 
 
@@ -848,35 +589,306 @@ BmcDateSession BmcData::ReadDateSession(QDate aDate)
     return dateSession;
 }
 
-BmcDateSession::~BmcDateSession()
+
+QString BmcData::ChangeFileExtension(const QString& path, QString newExtensionWithDot)
 {
-    qDeleteAll(this->Sessions.begin(), this->Sessions.end());
+    QFileInfo finfo(path);
+    QString newName = finfo.path() + QDir::separator() + finfo.completeBaseName() + newExtensionWithDot;
+    return newName;
 }
 
-BmcMachineInfo BmcData::ReadMachineInfo()
+QString BmcData::GetUsrFilePath(const QString& path)
 {
-   BmcMachineInfo info;
+    QDir dir(path);
+    QStringList nameFilters;
+    nameFilters << "*.USR";
 
-   QFile usrFile(this->usrFilePath);
-   usrFile.open(QIODevice::ReadOnly);
+    QString usrFile;
 
-   char buf[32];
-
-   //SerialNumber
-   usrFile.seek(0x2d);
-   usrFile.read(buf, 32);
-   info.SerialNumber = QString(buf);
-   //info.SerialNumber.truncate(info.SerialNumber.indexOf(QChar::Null));
-   info.SerialNumber = info.SerialNumber.trimmed();
-
-   //Model Number
-   usrFile.seek(0x2296);
-   usrFile.read(buf, 32);
-   info.Model = QString(buf);
-   //info.Model.truncate(info.Model.indexOf(QChar::Null));
-   info.Model = info.Model.trimmed();
-
-   usrFile.close();
-
-   return info;
+    auto usrFiles = dir.entryList(nameFilters);
+    if (usrFiles.length() == 1){
+        usrFile = path + usrFiles[0];
+        return usrFile;
+    } else {
+        return nullptr;
+    }
 }
+
+
+QDateTime BmcData::ReadWaveformPacketTimestamp(const QString& path, quint16 packetOffset)
+{
+    quint64 byteOffset = (packetOffset * 0x100) + 0xf8;
+
+    if (!QFile::exists(path))
+        return QDateTime();
+
+    QFile file(path);
+
+    if ((quint64)file.size() < byteOffset)
+        return QDateTime();
+
+    file.open(QIODevice::ReadOnly);
+    if (!file.isOpen()){
+        throw std::invalid_argument("Waveform file could be opened");
+    }
+
+    file.seek(byteOffset); //Offset in file of packet + offset of timestamp
+
+    QDataStream strmPacket(&file);
+    strmPacket.setByteOrder(QDataStream::LittleEndian);
+
+    quint16 year;
+    quint8 month, day, hour, minute, second;
+
+    strmPacket >> year;
+    strmPacket >> month;
+    strmPacket >> day;
+    strmPacket >> hour;
+    strmPacket >> minute;
+    strmPacket >> second;
+
+    file.close();
+
+    return QDateTime(QDate(year, month, day), QTime(hour, minute, second));
+}
+
+
+void BmcData::ReadIdxFile()
+{
+    QString idxPath = ChangeFileExtension(this->usrFilePath, ".idx");
+    QFile file(idxPath);
+
+    file.open(QIODevice::ReadOnly);
+
+    file.seek(0x800);  //Packets start at offset 0x800
+
+    //For each packet, we :
+    //  * Read the 512 byte packet into memory
+    //  * Read each packet for idx entry and machine settings
+    //This results in less random-access seeking on a slow SD card
+
+    while (file.pos() < file.size())
+    {
+        auto arr = file.read(512);
+        QBuffer buf(&arr);
+        buf.open(QIODevice::ReadOnly);
+        QDataStream strmPacket(&buf);
+        strmPacket.setByteOrder(QDataStream::LittleEndian);
+
+        BmcIdxEntry entry(&strmPacket);
+        this->AllIdxEntries.append(entry);
+
+        //Go back to the start of the packet and read the machine settings in it
+        buf.seek(0);
+        BmcMachineSettings settings(&strmPacket);
+        this->AllMachineSettings.append(settings);
+    }
+
+    file.close();
+}
+
+void BmcData::ReadAllSessions()
+{
+    QFile fileUSR(this->usrFilePath);
+    fileUSR.open(QIODevice::ReadOnly);
+
+    QDataStream strmUSR(&fileUSR);
+    strmUSR.setByteOrder(QDataStream::LittleEndian);
+
+    BmcUsrSession inProgressSession(&strmUSR, true);
+
+    //The offset at which sessions begin
+    fileUSR.seek(0x102340);
+
+    //For each session, we determine the length of the session data, copy
+    // the data to memory and then parse it from memory to save on file seeking.
+    do
+    {
+        quint32 nextOffset = BmcUsrSession::GetNextHistoricSessionOffset(&strmUSR);
+        quint32 len = nextOffset - fileUSR.pos();
+
+        auto rawData = fileUSR.read(len);
+
+        QBuffer buf(&rawData);
+        buf.open(QIODevice::ReadOnly);
+        QDataStream strmSession(&buf);
+        strmSession.setByteOrder(QDataStream::LittleEndian);
+        BmcUsrSession session(&strmSession, false);
+        this->AllUsrSessions.append(session);
+
+    }while (fileUSR.pos() < fileUSR.size());
+
+    this->AllUsrSessions.append(inProgressSession);
+
+    fileUSR.close();
+
+}
+
+void BmcData::BuildWaveformCrumbs()
+{
+    int i = 0;
+    QString extension = QString(".%1").arg(i, 3, 10, QLatin1Char('0'));
+    QString filepath = ChangeFileExtension(this->usrFilePath, extension);
+
+    while (QFile::exists(filepath))
+    {
+        QString idxPath = ChangeFileExtension(this->usrFilePath, ".idx");
+
+        for (int j = 0; j < 16; j++)
+        {
+            quint16 packetOffset = i * 0x1000;
+            quint64 byteOffset = packetOffset * 0x100;
+            QDateTime timestamp = ReadWaveformPacketTimestamp(filepath, packetOffset);
+            if (!timestamp.isNull()){
+                BmcWaveformCrumb crumb;
+                crumb.Filepath = filepath;
+                crumb.FileIndex = i;
+                crumb.PacketOffset = packetOffset;
+                crumb.ByteOffset = byteOffset;
+                crumb.Timestamp = timestamp;
+                this->WaveformCrumbs.append(crumb);
+            }
+        }
+
+        i++;
+        extension = QString(".%1").arg(i, 3, 10, QLatin1Char('0'));
+        filepath = ChangeFileExtension(this->usrFilePath, extension);
+    };
+
+
+    std::sort(this->WaveformCrumbs.begin(), this->WaveformCrumbs.end(), [](BmcWaveformCrumb a, BmcWaveformCrumb b)->bool{
+        return a.Timestamp < b.Timestamp;
+    });
+
+}
+
+
+QList<BmcWaveformPacket> BmcData::ReadWaveforms(BmcDataLink& link)
+{
+    QList<BmcWaveformPacket> waveforms;
+    QDateTime lastPacketTimestamp(QDate(2000, 1, 1), QTime(0, 0, 0));
+
+    if (!QFile::exists(link.WaveformCrumb.Filepath))
+        return waveforms;
+
+    char packetBuf[256];
+
+    int currentFileIndex = link.WaveformCrumb.FileIndex;
+    QFile* nnnFile = new QFile(link.WaveformCrumb.Filepath);
+    nnnFile->open(QIODevice::ReadOnly);
+    nnnFile->seek(link.WaveformCrumb.ByteOffset);
+
+    bool complete = false;
+
+    while (!complete)
+    {
+        while (nnnFile->pos() < nnnFile->size())
+        {
+            nnnFile->read(packetBuf, 0x100);
+#ifdef DEBUG_BMC
+            qout2 << currentFileIndex << "   ";
+            qout2 << QString("%1").arg((double)(nnnFile->pos()) / nnnFile->size() * 100);
+            qout2 << "\n";
+            qout2.flush();
+#endif
+            BmcWaveformPacket packet(packetBuf);
+
+            if (packet.Timestamp >= link.UsrSession.StartTimestamp && packet.Timestamp <= link.UsrSession.EndTimestamp)
+                waveforms.append(packet);
+
+            if (packet.Timestamp > link.UsrSession.EndTimestamp || packet.Timestamp < lastPacketTimestamp){
+                complete = true;
+                break;
+            }
+
+            lastPacketTimestamp = packet.Timestamp;
+        }
+        nnnFile->close();
+
+        currentFileIndex++;
+        QString nextExtension = QString(".%1").arg(currentFileIndex, 3, 10, QLatin1Char('0'));
+        QString nextPath = ChangeFileExtension(this->usrFilePath, nextExtension);
+
+        if (!QFile::exists(nextPath)){
+            currentFileIndex = 0;
+            nextExtension = QString(".%1").arg(currentFileIndex, 3, 10, QLatin1Char('0'));
+            nextPath = ChangeFileExtension(this->usrFilePath, nextExtension);
+            if (!QFile::exists(nextPath)){
+                complete = true;
+                break;
+            }
+        }
+
+        delete(nnnFile);
+
+        if (!complete)
+        {
+            nnnFile = new QFile(nextPath);
+            nnnFile->open(QIODevice::ReadOnly);
+        }
+    }
+
+    return waveforms;
+
+}
+
+
+void BmcData::FindValidSessions()
+{
+    //Since .nnn waveform data is overwritten cyclicly, we need to check
+    //whether the packet the IDX entry points to in .nnn matches the date
+    //of the idx entry. If not, we found the point where the data overwrite
+    //tail is.
+
+    QListIterator<BmcIdxEntry> itr(this->AllIdxEntries);
+    itr.toBack();
+
+    while (itr.hasPrevious())
+    {
+        BmcIdxEntry entry = itr.previous();
+        QString startPath = ChangeFileExtension(this->usrFilePath, entry.StartFileExtension());
+        QString nextPath = ChangeFileExtension(this->usrFilePath, entry.NextFileExtension());
+
+        entry.StartWaveformPacketTimestamp = ReadWaveformPacketTimestamp(startPath, entry.StartOffsetPacket);
+
+
+        auto daysDifference =  qAbs(entry.Timestamp.daysTo(entry.StartWaveformPacketTimestamp));
+
+        if (daysDifference >= 3)
+            break;
+
+        this->ValidIdxEntries.insert(0, entry);
+    }
+
+    //Next we iterate all the USR sessions and see if there is a valid IDX session
+
+    for (auto &usrSession : this->AllUsrSessions)
+    {
+        BmcIdxEntry* foundIdxEntry = nullptr;
+
+        for (auto &idxEntry : this->ValidIdxEntries)
+        {
+            if (usrSession.StartTimestamp >= idxEntry.StartWaveformPacketTimestamp)
+                foundIdxEntry = &idxEntry;
+            else
+                break;
+        }
+
+        if (foundIdxEntry != NULL){
+            BmcDataLink link;
+            link.IdxEntry = *foundIdxEntry;
+            link.UsrSession = usrSession;
+
+            for (auto &crumb : this->WaveformCrumbs){
+                if (crumb.Timestamp < usrSession.StartTimestamp)
+                    link.WaveformCrumb = crumb;
+                else
+                    break;
+            }
+
+            this->SessionLinks.append(link);
+        }
+    }
+
+}
+

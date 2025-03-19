@@ -42,22 +42,24 @@ public:
 
 
 class BmcLoader : public CPAPLoader
-{
-    Q_OBJECT
+{    
 public:
     BmcLoader();
 
     void setSessionMachineSettings(BmcDateSession*, Session*);
     void setSessionRespiratoryEvents(BmcSession*, Session*);
     void setSessionWaveforms(BmcSession*, Session*);
-
-    static void Register();
-
-    virtual MachineInfo PeekInfo(const QString & path);
+        
 
     virtual bool Detect(const QString & path);
 
+    virtual MachineInfo PeekInfo(const QString & path);
+
+    virtual void initChannels();
+
     virtual int Open(const QString &);
+
+    static void Register();
 
     virtual const QString &loaderName() { return bmc_class_name; }
 
@@ -68,7 +70,9 @@ public:
             QString(), QString(), QObject::tr("BMC"), QDateTime::currentDateTime(), bmc_version);
         }
 
-    virtual void initChannels();
+    
+
+    
 
     virtual QString PresReliefLabel();
     virtual ChannelID PresReliefMode();
