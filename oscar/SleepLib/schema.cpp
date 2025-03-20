@@ -223,6 +223,9 @@ void init()
     schema::channel.add(GRP_OXI, new Channel(OXI_SPO2Drop        = 0x1804, FLAG,        MT_OXIMETER, SESSION, STR_GRAPH_Oxi_SPO2Drop,
             QObject::tr("SpO2 Drop (SD)"), QObject::tr("A sudden (user definable) drop in blood oxygen saturation"), QObject::tr("SD"),         STR_UNIT_EventsPerHour,    DEFAULT,    QColor("light blue")));
 
+    /////////////////////////////////////////////////////////////////
+    // Waveforms
+    /////////////////////////////////////////////////////////////////
 
     schema::channel.add(GRP_CPAP, new Channel(CPAP_FlowRate          = 0x1100, WAVEFORM,    MT_CPAP, SESSION, STR_GRAPH_FlowRate,
             QObject::tr("Flow Rate"), QObject::tr("Breathing flow rate waveform"), QObject::tr("Flow Rate"), STR_UNIT_LPM,    DEFAULT,    QColor("black")));
@@ -345,6 +348,20 @@ void init()
     schema::channel.add(GRP_SLEEP, ch = new Channel(ZEO_TimeInDeep = 0x2007, DATA,   MT_SLEEPSTAGE,  SESSION, "TimeInDeep",   QObject::tr("Time In Deep Sleep"), QObject::tr("Time spent in deep sleep"), QObject::tr("Time in Deep Sleep"),  STR_UNIT_Minutes, INTEGER,  Qt::black));
     schema::channel.add(GRP_SLEEP, ch = new Channel(ZEO_TimeToZ    = 0x2008, DATA,   MT_SLEEPSTAGE,  SESSION, "TimeToZ",      QObject::tr("Time to Sleep"), QObject::tr("Time taken to get to sleep"), QObject::tr("Time to Sleep"),  STR_UNIT_Minutes, INTEGER,  Qt::black));
     schema::channel.add(GRP_SLEEP, ch = new Channel(ZEO_ZQ         = 0x2009, DATA,   MT_SLEEPSTAGE,  SESSION, "ZeoZQ", QObject::tr("Zeo ZQ"), QObject::tr("Zeo sleep quality measurement"), QObject::tr("ZEO ZQ"),  QString(), INTEGER,  Qt::black));
+
+    //////////////////////////////////////////////////////////////////////
+    // Manufacturer-specific channels
+    // **** Ensure your channel ID is unique
+    //////////////////////////////////////////////////////////////////////
+    schema::channel.add(GRP_CPAP, new Channel(BMC_PressureWave     = 0x1210, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_PressureWave,
+            QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), "",    DEFAULT,    QColor(0x29, 0x7, 0xa0)));
+
+    schema::channel.add(GRP_CPAP, new Channel(BMC_FlowAbnormality  = 0x1211, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_FlowAbnormality,
+            QObject::tr("Flow Abnormality"), QObject::tr("Flow Abnormality"), QObject::tr("Flow Abnormality"), "",    DEFAULT,    QColor(0x7a, 0x00, 0x43)));
+
+    schema::channel.add(GRP_CPAP, new Channel(BMC_IE_Ratio  = 0x1212, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_IE_Ratio,
+            QObject::tr("I/E Ratio %"), QObject::tr("Inspiration duration compared to expiration duration expressed as a percentage"), QObject::tr("I/E Ratio %"), STR_UNIT_Percentage,    DEFAULT,    QColor(39, 95, 140)));
+
 
     NoChannel = 0;
     /*
