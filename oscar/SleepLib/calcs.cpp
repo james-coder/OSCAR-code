@@ -864,14 +864,12 @@ void FlowParser::calcSteadyBreathingWaveform(){
     QVector<EventDataType> rmsBufferFlow(rmsLengthFlow,30);
 
     EventDataType value;
-    EventDataType minsq;
     EventDataType maxsq;
     quint32 rmsIndexFlow = 0;
     quint32 rmsIndexSB = 0;
     EventDataType previousValue = m_flow->data(0);
     EventDataType difference = 0;
 
-    minsq = previousValue;
     maxsq = previousValue;
 
     quint32 countFlow = m_flow->count();
@@ -904,11 +902,10 @@ void FlowParser::calcSteadyBreathingWaveform(){
         sq = RMSOfVectorFluctuation(rmsBufferSB);
         filter = filter + (sq-filter)*filterStepSize;
         sqv[SBCounter]= filter*8;
-        if (filter < minsq) { minsq = filter; }
         if (filter > maxsq) { maxsq = filter; }
     }
     SB->AddWaveform(SB->first(), (qint16*)sqv.constData(),sqv.count(), m_flow->duration());
-    SB->setMin(minsq);
+    SB->setMin(0);
     SB->setMax(maxsq);
 }
 
