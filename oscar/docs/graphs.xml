@@ -3,7 +3,7 @@
  <Graph name="Event Flags" group="Daily" master="true">
   <property name="visible" type="bool" value="true"/>
   <group type="flags">
-   <layer name="CSR" func="data" type="span">
+   <layer name="PB(CSR)" func="data" type="span">
    <layer name="ClearAirway" func="data" type="bar">
    <layer name="Obstructive" func="data" type="bar">
    <layer name="Apnea" func="data" type="bar">
@@ -15,7 +15,7 @@
   </group>
  </Graph>
  <Graph name="Flow Rate" group="Daily">
-  <layer type="overlay" data="CSR" visual="span"/>
+  <layer type="overlay" data="PB(CSR)" visual="span"/>
   <layer type="waveform" data="FlowRate"/>
   <layer type="overlay" data="Obstructive" visual="bar"/>
   <layer type="overlay" data="Hypopnea" visual="bar"/>
