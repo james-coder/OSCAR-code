@@ -156,8 +156,8 @@ void init()
     schema::channel.add(GRP_CPAP, new Channel(CPAP_IPAPSet       = 0x11A5, WAVEFORM,    MT_CPAP, SESSION, "IPAPSet",        QObject::tr("IPAP Set"),        QObject::tr("IPAP Setting"),                   QObject::tr("IPAP Set"),     STR_UNIT_CMH2O,        DEFAULT,    QColor("dark red")));
     schema::channel.add(GRP_CPAP, new Channel(CPAP_EPAPSet       = 0x11A6, WAVEFORM,    MT_CPAP, SESSION, "EPAPSet",        QObject::tr("EPAP Set"),        QObject::tr("EPAP Setting"),                   QObject::tr("EPAP Set"),     STR_UNIT_CMH2O,        DEFAULT,    QColor("dark green")));
     // Flags
-    schema::channel.add(GRP_CPAP, new Channel(CPAP_CSR           = 0x1000, SPAN,        MT_CPAP, SESSION, "CSR",
-            QObject::tr("Cheyne Stokes Respiration (CSR)"), QObject::tr("An abnormal period of Cheyne Stokes Respiration"), QObject::tr("CSR"), STR_UNIT_Percentage,DEFAULT,    COLOR_CSR));
+    schema::channel.add(GRP_CPAP, new Channel(CPAP_CSR           = 0x1000, SPAN,        MT_CPAP, SESSION, "PB(CSR)",
+            QObject::tr("Periodic Breathing/Cheyne Stokes Respiration (PB/CSR)"), QObject::tr("An abnormal period of either Periodic Breathing or Cheyne Stokes Respiration"), QObject::tr("PB(CSR)"), STR_UNIT_Percentage,DEFAULT,    COLOR_CSR));
     schema::channel.add(GRP_CPAP, new Channel(CPAP_PB            = 0x1028, SPAN,        MT_CPAP, SESSION, "PB",
             QObject::tr("Periodic Breathing (PB)"),QObject::tr("An abnormal period of Periodic Breathing"), QObject::tr("PB"),STR_UNIT_Percentage,   DEFAULT,    COLOR_CSR));
     schema::channel.add(GRP_CPAP, new Channel(CPAP_ClearAirway   = 0x1001, FLAG,        MT_CPAP, SESSION, "ClearAirway",
