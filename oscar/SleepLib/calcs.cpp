@@ -907,6 +907,7 @@ void FlowParser::calcSteadyBreathingWaveform(){
     SB->AddWaveform(SB->first(), (qint16*)sqv.constData(),sqv.count(), m_flow->duration());
     SB->setMin(0);
     SB->setMax(maxsq);
+
 }
 
 void FlowParser::flagSteadyBreathing(Session *session)

@@ -852,7 +852,7 @@ void initializeStrings()
 //    STR_TR_SAI = QObject::tr("SAI");  // Short form of SleepAwake Index
     STR_TR_REI = QObject::tr("REI");  // Short form of RERA Index
     STR_TR_EPI = QObject::tr("EPI");  // Short form of Expiratory Puff Index
-    STR_TR_CSR = QObject::tr("CSR");  // Short form of Cheyne Stokes Respiration
+    STR_TR_CSR = QObject::tr("PB(CSR)");  // Short form of Cheyne Stokes Respiration
     STR_TR_PB = QObject::tr("PB");    // Short form of Periodic Breathing
 
 
