@@ -29,6 +29,7 @@ QColor COLOR_PulseChange    = COLOR_LightGray;
 QColor COLOR_SPO2Drop       = COLOR_LightBlue;
 QColor COLOR_UserFlag1      = QColor("#e0e0e0");
 QColor COLOR_UserFlag2      = QColor("#c0c0e0");
+QColor COLOR_SteadyBreathingFlag      = Qt::red;
 
 // Chart Colors
 QColor COLOR_EPAP         = Qt::blue;
