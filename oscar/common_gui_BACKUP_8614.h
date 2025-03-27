@@ -56,12 +56,15 @@ const QString STR_GRAPH_PressureMeasured = "PressureMeasured";
 const QString STR_GRAPH_rRMV = "rRMV";
 const QString STR_GRAPH_rMVFluctuation = "rMVFluctuation";
 const QString STR_GRAPH_FlowFull = "FlowFull";
+<<<<<<< HEAD
 const QString STR_GRAPH_PressureWave = "PressureWave";
 const QString STR_GRAPH_FlowAbnormality = "FlowAbnormality";
 const QString STR_GRAPH_IE_Ratio = "IERatio";
+
+=======
 const QString STR_GRAPH_CPAP_SteadyBreathing = "SteadyBreathing";
 const QString STR_GRAPH_CPAP_SteadyBreathingEvent = "SteadyBreathingSpan";
-
+>>>>>>> df09c5fe (Implemented steady breathing waveform and event.)
 
 //OXI_Pulse, OXI_SPO2, OXI_Perf, OXI_Plethy
 
