@@ -1940,7 +1940,7 @@ bool ResmedLoader::ProcessSTRfiles(Machine *mach, QMap<QDate, STRFile> & STRmap,
             if ((sig = str.lookupLabel("OAI"))) {
                 R.oai = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
             }
-            if ((sig = str.lookupLabel("PB(CSR)"))) {
+            if ((sig = str.lookupLabel("CSR"))) {
                 R.csr = EventDataType(sig->dataArray[rec]) * sig->gain + sig->offset;
             }
 
