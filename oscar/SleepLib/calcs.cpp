@@ -863,7 +863,7 @@ void FlowParser::calcSteadyBreathingWaveform(){
     quint32 rmsLengthFlow = flowPeriod_Seconds*spsFlow; //Calculate the RMS value of the flow rate over 10 seconds
     QVector<EventDataType> rmsBufferFlow(rmsLengthFlow,30);
 
-    EventDataType value;
+    EventDataType value=0;
     EventDataType maxsq;
     quint32 rmsIndexFlow = 0;
     quint32 rmsIndexSB = 0;
