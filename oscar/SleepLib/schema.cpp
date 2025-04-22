@@ -75,7 +75,9 @@ void setOrders() {
     schema::channel[CPAP_ExP].setOrder(order++);
     schema::channel[CPAP_VSnore].setOrder(order++);
     schema::channel[CPAP_VSnore2].setOrder(order++);
+    #if defined(STEADY_BREATHING)
     schema::channel[CPAP_SteadyBreathingFlag].setOrder(order++);
+    #endif
 
 
     // Any channels not set above appear here, as default value for order is 255.
@@ -319,11 +321,13 @@ void init()
     ch->addOption(7, QObject::tr("ASV (Variable EPAP)"));
     ch->addOption(8, QObject::tr("AVAPS"));
 
+    #if defined(STEADY_BREATHING)
     schema::channel.add(GRP_CPAP, new Channel(CPAP_SteadyBreathing      = 0x1201, WAVEFORM,    MT_CPAP, SESSION, STR_GRAPH_CPAP_SteadyBreathing,
             QObject::tr("Steady Breathing"), QObject::tr("Variation in minute ventilation"), QObject::tr("Steady Breathing"), STR_UNIT_LPM, DEFAULT, Qt::red));
 
     schema::channel.add(GRP_CPAP, new Channel(CPAP_SteadyBreathingFlag      = 0x1202, SPAN,    MT_CPAP, SESSION, STR_GRAPH_CPAP_SteadyBreathingEvent,
             QObject::tr("Steady breathing (SB)"), QObject::tr("Low variation in minute ventilation"), QObject::tr("SB"), STR_UNIT_LPM, DEFAULT, Qt::red));
+    #endif
 
 
 
@@ -400,8 +404,10 @@ void init()
     schema::channel[CPAP_PB].setShowInOverview(true);
     schema::channel[CPAP_LargeLeak].setShowInOverview(true);
     schema::channel[CPAP_FLG].setShowInOverview(true);
+    #if defined(STEADY_BREATHING)
     schema::channel[CPAP_SteadyBreathing].setShowInOverview(true);
     schema::channel[CPAP_SteadyBreathingFlag].setShowInOverview(true);
+    #endif
 
 
     // Identify the channels that contribute to AHI calculation

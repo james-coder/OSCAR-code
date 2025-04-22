@@ -59,8 +59,10 @@ const QString STR_GRAPH_FlowFull = "FlowFull";
 const QString STR_GRAPH_PressureWave = "PressureWave";
 const QString STR_GRAPH_FlowAbnormality = "FlowAbnormality";
 const QString STR_GRAPH_IE_Ratio = "IERatio";
+#if defined(STEADY_BREATHING)
 const QString STR_GRAPH_CPAP_SteadyBreathing = "SteadyBreathing";
 const QString STR_GRAPH_CPAP_SteadyBreathingEvent = "SteadyBreathingSpan";
+#endif
 
 
 //OXI_Pulse, OXI_SPO2, OXI_Perf, OXI_Plethy

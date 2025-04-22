@@ -27,7 +27,12 @@ ChannelID CPAP_IPAP, CPAP_IPAPLo, CPAP_IPAPHi, CPAP_EPAP, CPAP_EPAPLo, CPAP_EPAP
           CPAP_UserFlag1, CPAP_UserFlag2, CPAP_UserFlag3, /*CPAP_BrokenSummary, CPAP_BrokenWaveform,*/ CPAP_RDI,
           CPAP_PresReliefMode, CPAP_PresReliefLevel, CPAP_PSMin, CPAP_PSMax, CPAP_Test1,
           CPAP_Test2, CPAP_HumidSetting,
-          CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet, CPAP_EEPAP, CPAP_EEPAPLo, CPAP_EEPAPHi, CPAP_SteadyBreathing,CPAP_SteadyBreathingFlag;
+          CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet, CPAP_EEPAP, CPAP_EEPAPLo, CPAP_EEPAPHi
+          #if defined(STEADY_BREATHING)
+          , CPAP_SteadyBreathing,CPAP_SteadyBreathingFlag
+          #endif
+          ;
+
 
 
 ChannelID RMS9_E01, RMS9_E02, RMS9_SetPressure, RMS9_MaskOnTime;

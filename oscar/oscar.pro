@@ -19,6 +19,7 @@ if (equals(QT_MAJOR_VERSION,5)) {
         error("You need Qt 5.8 or newer to build OSCAR");
     }
 }
+### DEFINES += STEADY_BREATHING
 
 # get rid of the help browser, at least for now
 DEFINES += helpless

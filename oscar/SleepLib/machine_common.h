@@ -164,7 +164,11 @@ extern ChannelID CPAP_IPAP, CPAP_IPAPLo, CPAP_IPAPHi, CPAP_EPAP, CPAP_EPAPLo, CP
        CPAP_LeakMedian, CPAP_LeakTotal, CPAP_MaxLeak, CPAP_FLG, CPAP_IE, CPAP_Te, CPAP_Ti, CPAP_TgMV,
        CPAP_UserFlag1, CPAP_UserFlag2, CPAP_UserFlag3, /*CPAP_BrokenSummary, CPAP_BrokenWaveform,*/ CPAP_RDI,
        CPAP_PresReliefMode, CPAP_PresReliefLevel, CPAP_Test1, CPAP_Test2,
-       CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet, CPAP_SteadyBreathing, CPAP_SteadyBreathingFlag;
+       CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet
+       #if defined(STEADY_BREATHING)
+       , CPAP_SteadyBreathing, CPAP_SteadyBreathingFlag
+       #endif
+       ;
 
 extern ChannelID RMS9_E01, RMS9_E02, RMS9_SetPressure, RMS9_MaskOnTime;
 extern ChannelID CPAP_LargeLeak, PRS1_BND,
