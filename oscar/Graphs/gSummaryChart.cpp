@@ -152,14 +152,11 @@ bool gSummaryChart::mouseReleaseEvent(QMouseEvent *event, gGraph *graph)
 
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         float x = event->x();
-        float y = event->y();
     #else   
         float x = event->position().x();
-        float y = event->position().y();
     #endif  
-
-    qDebug() << x << y;
-
+    x -= m_rect.left();
+    
     EventDataType miny;
     EventDataType maxy;
 
