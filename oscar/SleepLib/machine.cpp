@@ -926,10 +926,11 @@ bool Machine::LoadSummary(ProgressDialog * progress)
     QByteArray data = file.readAll();
     QByteArray uncompressed = gUncompress(data);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,8,0)
+
     QString errorMsg;
     int errorLine;
     int errorColumn;
-
     if (!doc.setContent(uncompressed, false, &errorMsg, &errorLine, &errorColumn)) {
         qWarning() << "Invalid XML Content in" << filename
                    << "at line" << errorLine << ", column" << errorColumn
@@ -937,6 +938,38 @@ bool Machine::LoadSummary(ProgressDialog * progress)
         file.close();
         return false;
     }
+#else
+    auto result = doc.setContent(uncompressed) ;
+    if (!result) {
+        qWarning() << "Invalid XML Content in" << filename 
+                   << "at line:" << result.errorLine << ", column: " <<  result.errorColumn
+                   << ":" << result.errorMessage;
+        file.close();
+        return false;
+    }
+#endif
+
+#if 0
+///////////////////////////////////////////////////////////////////////////////////////////////
+QByteArray uncompressed = gUncompress(data);
+    QString errorMsg;
+    int errorLine;
+    int errorColumn;
+
+    QDomDocument::ParseOptions options;
+    options |= QDomDocument::ParseError; // Enable error reporting
+
+    if (!doc.setContent(uncompressed, options, &errorMsg, &errorLine, &errorColumn)) {
+        qWarning() << "Invalid XML Content in" << filename
+                   << "at line" << errorLine << ", column" << errorColumn
+                   << ":" << errorMsg;
+        file.close();
+        return false;
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+#endif
+
 
     file.close();
 
