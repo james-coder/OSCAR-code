@@ -172,7 +172,7 @@ int WeinmannLoader::Open(const QString & dirpath)
         QDateTime date = QDateTime(QDate(year,month,day), QTime(hour,minute,second));
         quint32 ts = date.toSecsSinceEpoch();
         if (!mach->SessionExists(ts)) {
-            qDebug() << date;
+            // qDebug() << date;
         }
 
         // stores used length of data at 0x46, in 16bit integers, for IPAP, EPAP, snore, leak,
