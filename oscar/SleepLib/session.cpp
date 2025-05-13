@@ -1126,6 +1126,23 @@ void Session::updateCountSummary(ChannelID code)
             // so a single sample should work.
             // the iBreeze loader had snore events with a single snore sample for a session.
             // which triggered this investigation.
+
+            // CRASH DEBUG DESCRIPTION.
+            // Why this occurs only for QT6 and not QT5 is not known at this time
+            // This crash occurs when an empty event list is created for an event.
+            // and another event list is created for that event then the empty event list
+            // will trigger the crash.
+            // every time an event is added to an event list a counter is incremented.
+            // if the count is zero then tptr is a null pointer and triggers the crash.
+            // when the count is zero then just continue to process the next event list.
+            if (cnt==0) {
+                #if 0
+                if (tptr) {
+                    DEBUGCI NAME(code) Q((void*)&e) Q((void*)tptr) Q((void*)dptr) Q(start) Q(cnt) Q(ev_size) ;
+                }
+                #endif
+                continue;
+            }
             #if defined(FIX_FOR_SINGLE_EVENT)
             lastraw = *dptr;
             lasttime = start + *tptr;
