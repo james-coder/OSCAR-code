@@ -336,7 +336,7 @@ bool Journal::RestoreDay (QDomElement& dayElement,QDate& date,QString& filename)
                 DEBUGFC Q(date) Q(idx) Q(archiveNote);
             }
         }
-        if (bmChanged) {
+       if (bmChanged) {
             //DEBUGFC Q(bmChanged);
             getJournal(daily,date,journal);
             journal->settings[Bookmark_Start]=start;

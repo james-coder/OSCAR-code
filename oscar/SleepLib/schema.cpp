@@ -367,6 +367,7 @@ void init()
     // Manufacturer-specific channels
     // **** Ensure your channel ID is unique
     //////////////////////////////////////////////////////////////////////
+/*
     schema::channel.add(GRP_CPAP, new Channel(BMC_PressureWave     = 0x1210, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_PressureWave,
             QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), "",    DEFAULT,    QColor(0x29, 0x7, 0xa0)));
 
@@ -375,7 +376,7 @@ void init()
 
     schema::channel.add(GRP_CPAP, new Channel(BMC_IE_Ratio  = 0x1212, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_IE_Ratio,
             QObject::tr("I/E Ratio %"), QObject::tr("Inspiration duration compared to expiration duration expressed as a percentage"), QObject::tr("I/E Ratio %"), STR_UNIT_Percentage,    DEFAULT,    QColor(39, 95, 140)));
-
+*/
 
     NoChannel = 0;
     /*
