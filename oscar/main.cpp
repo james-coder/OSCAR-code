@@ -745,7 +745,7 @@ int main(int argc, char *argv[]) {
     ViatomLoader::Register();
     PrismaLoader::Register();
     ResventLoader::Register();
-    BmcLoader::Register();
+    //BmcLoader::Register();
 
 
     // Begin logging device connection activity.
