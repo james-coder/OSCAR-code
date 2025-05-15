@@ -263,7 +263,7 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
         CPAP_MaskPressure, CPAP_RespRate, CPAP_MinuteVent, CPAP_PTB, PRS1_PeakFlow, CPAP_RespEvent, CPAP_Ti, CPAP_Te,
         CPAP_IE, ZEO_SleepStage, POS_Inclination, POS_Orientation, POS_Movement, CPAP_Test1,
         Prisma_ObstructLevel, Prisma_rRMV, Prisma_rMVFluctuation, Prisma_PressureMeasured, Prisma_FlowFull,
-        BMC_PressureWave, BMC_FlowAbnormality, BMC_IE_Ratio
+//        BMC_PressureWave, BMC_FlowAbnormality, BMC_IE_Ratio
         #if defined(STEADY_BREATHING)
         , CPAP_SteadyBreathing
         #endif
@@ -413,11 +413,11 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
     //LEAK->AddLayer(AddCPAP(new gLineChart(CPAP_Leak, COLOR_Leak,square)));
     //LEAK->AddLayer(AddCPAP(new gLineChart(CPAP_MaxLeak, COLOR_MaxLeak,square)));
     graphlist[schema::channel[CPAP_Snore].code()]->AddLayer(new gLineChart(CPAP_Snore, true));
-
+/*
     graphlist[schema::channel[BMC_FlowAbnormality].code()]->AddLayer(new gLineChart(BMC_FlowAbnormality, square));
     graphlist[schema::channel[BMC_PressureWave].code()]->AddLayer(new gLineChart(BMC_PressureWave, square));
     graphlist[schema::channel[BMC_IE_Ratio].code()]->AddLayer(new gLineChart(BMC_IE_Ratio, square));
-
+*/
     graphlist[schema::channel[CPAP_PTB].code()]->AddLayer(new gLineChart(CPAP_PTB, square));
     graphlist[schema::channel[PRS1_PeakFlow].code()]->AddLayer(new gLineChart(PRS1_PeakFlow, square));
 

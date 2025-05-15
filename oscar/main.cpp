@@ -55,7 +55,7 @@
 #include "SleepLib/loader_plugins/viatom_loader.h"
 #include "SleepLib/loader_plugins/prisma_loader.h"
 #include "SleepLib/loader_plugins/resvent_loader.h"
-#include "SleepLib/loader_plugins/bmc_loader.h"
+// #include "SleepLib/loader_plugins/bmc_loader.h"
 
 MainWindow *mainwin = nullptr;
 
