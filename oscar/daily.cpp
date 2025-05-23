@@ -262,10 +262,10 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
         CPAP_FlowRate, CPAP_Pressure, CPAP_Leak, CPAP_FLG, CPAP_Snore, CPAP_TidalVolume,
         CPAP_MaskPressure, CPAP_RespRate, CPAP_MinuteVent, CPAP_PTB, PRS1_PeakFlow, CPAP_RespEvent, CPAP_Ti, CPAP_Te,
         CPAP_IE, ZEO_SleepStage, POS_Inclination, POS_Orientation, POS_Movement, CPAP_Test1,
-        Prisma_ObstructLevel, Prisma_rRMV, Prisma_rMVFluctuation, Prisma_PressureMeasured, Prisma_FlowFull,
-//        BMC_PressureWave, BMC_FlowAbnormality, BMC_IE_Ratio
+        Prisma_ObstructLevel, Prisma_rRMV, Prisma_rMVFluctuation, Prisma_PressureMeasured, Prisma_FlowFull
+//      ,  BMC_PressureWave, BMC_FlowAbnormality, BMC_IE_Ratio
         #if defined(STEADY_BREATHING)
-        , CPAP_SteadyBreathing
+        ,    CPAP_SteadyBreathing
         #endif
 
     };
@@ -427,7 +427,10 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
     graphlist[schema::channel[Prisma_rMVFluctuation].code()]->AddLayer(new gLineChart(Prisma_rMVFluctuation, square));
     graphlist[schema::channel[Prisma_FlowFull].code()]->AddLayer(new gLineChart(Prisma_FlowFull, square));
     #if defined(STEADY_BREATHING)
-    graphlist[schema::channel[CPAP_SteadyBreathing].code()]->AddLayer(new gLineChart(CPAP_SteadyBreathing, false));
+    if (AppSetting->steadyBreathing()==SB_ACTIVE) {
+        //DEBUGCI ;
+        graphlist[schema::channel[CPAP_SteadyBreathing].code()]->AddLayer(new gLineChart(CPAP_SteadyBreathing, false));
+    }
     #endif
     graphlist[schema::channel[CPAP_Test1].code()]->AddLayer(new gLineChart(CPAP_Test1, square));
     //graphlist[schema::channel[CPAP_Test2].code()]->AddLayer(new gLineChart(CPAP_Test2, square));
@@ -2837,6 +2840,14 @@ void Daily::setFlagText () {
     for (int i=1; i < lastIndex; ++i) {
         numTotal++;
         ChannelID code = ui->eventsCombo->itemData(i, Qt::UserRole).toUInt();
+        #if defined(STEADY_BREATHING)
+        if (AppSetting->steadyBreathing()!=SB_ACTIVE) {
+            if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
+                DEBUGCI O("removing") NAME(code);
+                continue;
+            }
+        }
+        #endif
         schema::Channel * chan = &schema::channel[code];
 
         if (!chan->enabled())
@@ -2959,6 +2970,14 @@ void Daily::updateEventsCombo(Day* day) {
     ui->eventsCombo->addItem(*icon_up_down, "", 0);   // text updated in setflagText
     for (int i=0; i < available.size(); ++i) {
         ChannelID code = available.at(i);
+        #if false && defined(STEADY_BREATHING)
+        if (!AppSetting->steadyBreathing()==SB_ACTIVE) {
+            if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
+                DEBUGCI O("removing") NAME(code);
+                continue;
+            }
+        }
+        #endif
         int comboxBoxIndex = i+1;
         schema::Channel & chan = schema::channel[code];
         ui->eventsCombo->addItem(chan.enabled() ? *icon_on : * icon_off, chan.label(), code);
@@ -2976,6 +2995,14 @@ void Daily::showAllEvents(bool show) {
     for (int i=1;i<lastIndex;i++) {
         // If disabled, emulate a click to enable the event
         ChannelID code = ui->eventsCombo->itemData(i, Qt::UserRole).toUInt();
+        #if false && defined(STEADY_BREATHING)
+        if (!AppSetting->steadyBreathing()==SB_ACTIVE) {
+            if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
+                DEBUGCI O("removing") NAME(code);
+                continue;
+            }
+        }
+        #endif
         schema::Channel * chan = &schema::channel[code];
         if (chan->enabled()!=show) {
             Daily::on_eventsCombo_activated(i);

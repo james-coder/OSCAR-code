@@ -19,7 +19,6 @@ if (equals(QT_MAJOR_VERSION,5)) {
         error("You need Qt 5.8 or newer to build OSCAR");
     }
 }
-### DEFINES += STEADY_BREATHING
 
 # get rid of the help browser, at least for now
 DEFINES += helpless
@@ -85,6 +84,12 @@ contains(DEFINES, STATIC) {
         message("Static build.")
     }
 }
+
+DEFINES += STEADY_BREATHING
+#### STEADY_BREATHING_ENHANCED_TESTING should NOT be defined for offical builds.
+#### STEADY_BREATHING_ENHANCED_TESTING requires STEADY_BREATHING
+####  DEFINES += STEADY_BREATHING_ENHANCED_TESTING
+
 
 TARGET = OSCAR
 unix:!macx:!haiku {

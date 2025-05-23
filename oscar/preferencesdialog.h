@@ -1,7 +1,7 @@
 ﻿/* OSCAR Preferences Dialog Headers
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -96,6 +96,9 @@ class PreferencesDialog : public QDialog
     void on_calculateUnintentionalLeaks_toggled(bool arg1);
 
     void on_resetOxiMetryDefaults_clicked();
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+        void on_resetSteadyBreathingDefaults_clicked();
+    #endif
 
 private:
     void InitChanInfo();

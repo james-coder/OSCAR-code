@@ -1,7 +1,7 @@
 /* OSCAR Preferences Dialog Implementation
  *
  * Copyright (c) 2019-2024 The OSCAR Team
- * Copyright (c) 2011-2018 Mark Watkins 
+ * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -44,7 +44,6 @@ typedef QMessageBox::StandardButtons StandardButtons;
 
 QHash<schema::ChanType, QString> channeltype;
 
-
 QString PreferencesDialog::clinicalHelp() {
     QStringList str; str
     <<tr("Clinical Mode:")
@@ -57,6 +56,7 @@ QString PreferencesDialog::clinicalHelp() {
     <<tr("Allows user to select which data sets/ sessions to be used for calculations and display.")
     <<tr("Additional charts and calculations may be available that are not available from the vendor data.")
     <<tr("Enables Custom UserFlags displayed in the statistics Therapy Efficacy section")
+    <<tr("Enables Steady Breathing Event Flags and Waveform (see CPAP tab)")
     <<"";
     return str.join("\n");
 }
@@ -243,6 +243,28 @@ PreferencesDialog::PreferencesDialog(QWidget *parent, Profile *_profile) :
     ui->monochromePrinting->setChecked(AppSetting->monochromePrinting());
     ui->eventFlagSessionBar->setChecked(profile->appearance->eventFlagSessionBar());
     ui->disableDailyGraphTitles->setChecked(AppSetting->disableDailyGraphTitles());
+
+    #if defined(STEADY_BREATHING)
+    SteadyBreathingState sbState = AppSetting->steadyBreathing();
+    ui->steadyBreathing->setChecked(sbState!=SB_OFF);
+    if (profile->cpap->clinicalMode()) {
+        if (sbState==SB_ACTIVE) {
+            AppSetting->setSteadyBreathing(SB_INACTIVE);
+        }
+        ui->steadyBreathing->setCheckable(false);
+        ui->steadyBreathing->setTitle(tr("Must enable Passive Mode (see Clinical Tab)"));
+        ui->steadyBreathing->setDisabled(true);
+    }
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+    // Ui MUST BE MANUALLY ENABLED. was commented out
+    ui->steadyBreathingDuration->setValue( AppSetting->steadyBreathingDuration());
+    ui->steadyBreathingThreshold->setValue(AppSetting->steadyBreathingThreshold());
+    ui->steadyBreathingDuration->show();
+    ui->steadyBreathingThreshold->show();
+    ui->resetSteadyBreathingDefaults->show();
+    #endif
+    #endif
+
     ui->complianceHours->setValue(profile->cpap->complianceHours());
     ui->clinicalMode->setChecked(profile->cpap->clinicalMode());
     ui->clinicalTextEdit->setPlainText(clinicalHelp());
@@ -876,13 +898,26 @@ bool PreferencesDialog::Save()
     bool clicicalModeChanged = profile->cpap->clinicalMode() != ui->clinicalMode->isChecked() ;
     p_profile->cpap->setClinicalMode(ui->clinicalMode->isChecked());
 
+    #if defined(STEADY_BREATHING)
+    // SetSteadyBreathing must be after setting clinical mode
+    SteadyBreathingState sbState= ui->steadyBreathing->isChecked() ? SB_ACTIVE : SB_OFF;
+    if (profile->cpap->clinicalMode() && sbState==SB_ACTIVE) sbState=SB_INACTIVE;
+    bool steadyBreathingGraphDIsplayChanged = (AppSetting->steadyBreathing()==SB_ACTIVE) != (sbState==SB_ACTIVE);
+    AppSetting->setSteadyBreathing(sbState);
+
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+    AppSetting->setSteadyBreathingDuration(ui->steadyBreathingDuration->value());
+    AppSetting->setSteadyBreathingThreshold(ui->steadyBreathingThreshold->value());
+    #endif
+    #endif
+
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (HighResolution::checkBox(true,ui->highResolution) ) {
         QTimer::singleShot(0, mainwin, SLOT(RestartApplication(true, "-p")));
         return true; // save profile
     }
     #endif
-    
+
     if (ui->alternatingColorsCombo->currentIndex() != AppSetting->alternatingColorsCombo()) {
         AppSetting->setAlternatingColorsCombo(ui->alternatingColorsCombo->currentIndex());
         mainwin->GenerateStatistics();
@@ -1040,7 +1075,15 @@ bool PreferencesDialog::Save()
     profile->Save();
     profile->resetOxiChannelPref();
 
+#if defined(STEADY_BREATHING)
+        ui->steadyBreathing->setDisabled(profile->cpap->clinicalMode());
+        if (steadyBreathingGraphDIsplayChanged) {
+            mainwin->reloadProfile();
+        }
+#endif
+        // steady Breathing
     if (clicicalModeChanged) {
+
         // this fails - causing duplicate reload.
         //QTimer::singleShot(0, mainwin, SLOT(reloadProfile()));
         // while this one works.
@@ -1276,6 +1319,17 @@ void PreferencesDialog::on_resetChannelDefaults_clicked()
     }
 }
 
+#if defined(STEADY_BREATHING_ENHANCED_TESTING)
+void PreferencesDialog::on_resetSteadyBreathingDefaults_clicked()
+{
+    // Ui MUST BE MANUALLY ENABLED. was commented out
+    AppSetting->setSteadyBreathingDuration(AppSetting->steadyBreathingDefaultDuration());
+    AppSetting->setSteadyBreathingThreshold(AppSetting->steadyBreathingDefaultThreshold());
+    ui->steadyBreathingDuration->setValue( AppSetting->steadyBreathingDuration());
+    ui->steadyBreathingThreshold->setValue(AppSetting->steadyBreathingThreshold());
+}
+#endif
+
 void PreferencesDialog::on_resetOxiMetryDefaults_clicked()
 {
 
@@ -1400,3 +1454,4 @@ void PreferencesDialog::on_calculateUnintentionalLeaks_toggled(bool)
 {
 
 }
+

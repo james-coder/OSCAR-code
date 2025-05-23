@@ -29,6 +29,13 @@ AppWideSetting::AppWideSetting(Preferences *pref) : PrefSettings(pref)
     initPref(STR_AS_MonochromePrinting, false);
     //initPref(STR_AS_EventFlagSessionBar, false);
     initPref(STR_AS_DisableDailyGraphTitles, false);
+    #if defined(STEADY_BREATHING)
+    initPref(STR_AS_SteadyBreathing, SB_OFF);
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+    initPref(STR_AS_SteadyBreathingThreshold, steadyBreathingDefaultThreshold());
+    initPref(STR_AS_SteadyBreathingDuration, steadyBreathingDefaultDuration());
+    #endif
+    #endif
     initPref(STR_AS_ShowPieChart, false);
     m_animations = initPref(STR_AS_Animations, true).toBool();
     m_squareWavePlots = initPref(STR_AS_SquareWave, false).toBool();

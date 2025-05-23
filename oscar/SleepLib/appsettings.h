@@ -26,6 +26,9 @@ enum OverviewLinechartModes { OLC_Bartop, OLC_Lines };
 #endif
 
 #define REMSTAR_M_SUPPORTdisabled
+#if defined(STEADY_BREATHING)
+enum SteadyBreathingState { SB_OFF, SB_INACTIVE ,SB_ACTIVE};
+#endif
 
 // ApplicationWideSettings Strings
 const QString STR_CS_UserEventPieChart = "UserEventPieChart";
@@ -49,6 +52,13 @@ const QString STR_AS_IncludeSerial = "IncludeSerial";
 const QString STR_AS_MonochromePrinting = "PrintBW";
 //const QString STR_AS_EventFlagSessionBar = "EventFlagSessionBar";
 const QString STR_AS_DisableDailyGraphTitles = "DisableDailyGraphTitles";
+#if defined(STEADY_BREATHING)
+const QString STR_AS_SteadyBreathing = "SteadyBreathing";
+#if defined(STEADY_BREATHING_ENHANCED_TESTING)
+const QString STR_AS_SteadyBreathingThreshold = "SteadyBreathingThreshold";
+const QString STR_AS_SteadyBreathingDuration = "SteadyBreathingDuration";
+#endif
+#endif
 const QString STR_AS_GraphTooltips = "GraphTooltips";
 const QString STR_AS_LineThickness = "LineThickness";
 const QString STR_AS_LineCursorMode = "LineCursorMode";
@@ -144,6 +154,15 @@ public:
   bool monochromePrinting() const { return getPref(STR_AS_MonochromePrinting).toBool(); }
   //bool eventFlagSessionBar() const { return getPref(STR_AS_EventFlagSessionBar).toBool(); }
   bool disableDailyGraphTitles() const { return getPref(STR_AS_DisableDailyGraphTitles).toBool(); }
+#if defined(STEADY_BREATHING)
+  SteadyBreathingState steadyBreathing() const { return (SteadyBreathingState)getPref(STR_AS_SteadyBreathing).toInt(); }
+#if defined(STEADY_BREATHING_ENHANCED_TESTING)
+  double steadyBreathingDefaultThreshold() const { return (double)1.51; /* hardCoded value */ }
+  int steadyBreathingDefaultDuration() const { return 20; /* hardCoded value */ }
+  double steadyBreathingThreshold() const { return getPref(STR_AS_SteadyBreathingThreshold).toDouble(); }
+  int steadyBreathingDuration() const { return getPref(STR_AS_SteadyBreathingDuration).toInt(); }
+#endif
+#endif
   //! \Allow disabling of sessions
   //! \brief Whether to show graph tooltips
   inline bool graphTooltips() const { return m_graphTooltips; }
@@ -208,6 +227,13 @@ public:
   void setMonochromePrinting(bool b) { setPref(STR_AS_MonochromePrinting, b); }
   // void setEventFlagSessionBar(bool b) { setPref(STR_AS_EventFlagSessionBar, b); }
   void setDisableDailyGraphTitles(bool b) { setPref(STR_AS_DisableDailyGraphTitles, b); }
+  #if defined(STEADY_BREATHING)
+  void setSteadyBreathing(SteadyBreathingState b) { setPref(STR_AS_SteadyBreathing, (int)b); }
+  #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+  void setSteadyBreathingThreshold(double b) { setPref(STR_AS_SteadyBreathingThreshold, b); }
+  void setSteadyBreathingDuration(int b) { setPref(STR_AS_SteadyBreathingDuration, b); }
+  #endif
+  #endif
   //! \brief Sets whether to allow double clicking on Y-Axis labels to change vertical scaling mode
   void setGraphTooltips(bool b) { setPref(STR_AS_GraphTooltips, m_graphTooltips=b); }
   //! \brief Sets the type of overlay flags (which are displayed over the Flow Waveform)
