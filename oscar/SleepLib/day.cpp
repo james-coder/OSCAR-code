@@ -41,7 +41,6 @@ void Day::updateCPAPCache()
     d_sum.clear();
     OpenSummary();
     QList<ChannelID> channels = getSortedMachineChannels(MT_CPAP, schema::FLAG | schema::MINOR_FLAG | schema::SPAN);
-
     for (const auto code : channels) {
         d_count[code] = count(code);
         d_sum[code] = count(code);
@@ -1268,8 +1267,15 @@ QList<ChannelID> Day::getSortedMachineChannels(MachineType type, quint32 chantyp
     }
 
     QMultiMap<int, ChannelID> order;
-
     for (const auto code : available) {
+        #if defined(STEADY_BREATHING)
+            if (AppSetting->steadyBreathing()!=SB_ACTIVE) {
+                if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
+                    //DEBUGCI O("removing") NAME(code);
+                    continue;
+                }
+            }
+        #endif
         order.insert(schema::channel[code].order(), code);
     }
 
@@ -1294,6 +1300,14 @@ QList<ChannelID> Day::getSortedMachineChannels(quint32 chantype)
     QMultiMap<int, ChannelID> order;
 
     for (auto code : available) {
+        #if defined(STEADY_BREATHING)
+            if (AppSetting->steadyBreathing()!=SB_ACTIVE) {
+                if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
+                    //DEBUGCI O("removing") NAME(code);
+                    continue;
+                }
+            }
+        #endif
         order.insert(schema::channel[code].order(), code);
     }
 

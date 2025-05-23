@@ -963,11 +963,11 @@ void calcRespRate(Session *session, FlowParser *flowparser)
             flowparser->openFlow(session, flow);
             flowparser->calc(calcResp, calcTv, calcTi , calcTe, calcMv);
             #if defined(STEADY_BREATHING)
-                flowparser->calcSteadyBreathingWaveform();
+                if (AppSetting->steadyBreathing()==SB_ACTIVE) flowparser->calcSteadyBreathingWaveform();
             #endif
             flowparser->flagEvents();
             #if defined(STEADY_BREATHING)
-                flowparser->flagSteadyBreathing(session);
+                if (AppSetting->steadyBreathing()==SB_ACTIVE) flowparser->flagSteadyBreathing(session);
             #endif
         }
     }
@@ -1667,25 +1667,33 @@ void FlowParser::calcSteadyBreathingWaveform(){
 
     EventDataType samplingRate = m_flow->rate(); // milliseconds per sample
     EventDataType spsFlow =  1000.0/samplingRate; // Samples Per Second
-    EventDataType flowPeriod_Seconds = 20.0;
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+        EventDataType flowPeriod_Seconds = AppSetting->steadyBreathingDuration();
+    #else
+        EventDataType flowPeriod_Seconds = 20.0;
+    #endif
+
     EventDataType spsSB = 1.0/flowPeriod_Seconds;
     EventDataType samplingRateSB =  1000.0/spsSB;
+    EventDataType samplePerPeriodFlow =  flowPeriod_Seconds*spsFlow;
+
     SB = m_session->AddEventList(CPAP_SteadyBreathing, EVL_Waveform);
     SB->setGain(0.125);
-
-    EventDataType filter = 0;
-    EventDataType filterStepSize = 1/(120*spsSB);
-
     SB->setFirst(m_flow->first());
     SB->setLast(m_flow->last());
     SB->setRate(samplingRateSB);
 
-    quint32 rmsLengthSB = 120.0*spsSB;//
-    QVector<EventDataType> rmsBufferSB(rmsLengthSB,30);
+    EventDataType defaultFilterValue = 30;   // is this the correct name for 30?
+    EventDataType samplesPerFilter = 120;   // is this the correct name for 120?
+    quint32 rmsLengthSB = samplesPerFilter*spsSB;
+    QVector<EventDataType> rmsBufferSB(rmsLengthSB,defaultFilterValue);   //what is 30?
 
+    EventDataType filter = 0;
+    EventDataType filterStepSize = 1/(EventDataType)rmsLengthSB ; // 1/(samplesPerFilter*spsSB);
 
-    quint32 rmsLengthFlow = flowPeriod_Seconds*spsFlow; //Calculate the RMS value of the flow rate over 10 seconds
-    QVector<EventDataType> rmsBufferFlow(rmsLengthFlow,30);
+    quint32 rmsLengthFlow = samplePerPeriodFlow; //flowPeriod_Seconds*spsFlow; //Calculate the RMS value of the flow rate over 10 seconds (period)
+    QVector<EventDataType> rmsBufferFlow(rmsLengthFlow,defaultFilterValue);
+
 
     EventDataType value=0;
     EventDataType maxsq;
@@ -1748,7 +1756,11 @@ void FlowParser::flagSteadyBreathing(Session *session)
     //Values below 1.51 (arbitrary, eyeballed value to approximate the Löwenstein results) are steady breathing.
     //Skip regions shorter than 60 seconds.
 
-    EventDataType threshold = 1.51;
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+        EventDataType threshold = AppSetting->steadyBreathingThreshold();
+    #else
+        EventDataType threshold = 1.51;
+    #endif
 
     QVector<EventList *> & EVL = session->eventlist[CPAP_SteadyBreathing];
     int evlsize = EVL.size();
@@ -1795,3 +1807,4 @@ void FlowParser::flagSteadyBreathing(Session *session)
     }
 }
 #endif
+

@@ -20,6 +20,7 @@ float brightness(QColor color);
 
 const QColor COLOR_Black = Qt::black;
 const QColor COLOR_LightGreen = QColor("light green");
+const QColor COLOR_LightRed = QColor("light pink");
 const QColor COLOR_DarkGreen = Qt::darkGreen;
 const QColor COLOR_Purple = QColor("purple");
 const QColor COLOR_Aqua = QColor("#40c0ff");

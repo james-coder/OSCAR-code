@@ -30,7 +30,8 @@ QColor COLOR_SPO2Drop       = COLOR_LightBlue;
 QColor COLOR_UserFlag1      = QColor("#e0e0e0");
 QColor COLOR_UserFlag2      = QColor("#c0c0e0");
 #if defined(STEADY_BREATHING)
-QColor COLOR_SteadyBreathingFlag      = QColor("#cc0000");
+QColor COLOR_SteadyBreathingFlag  = COLOR_LightRed ;
+QColor COLOR_SteadyBreathing      = COLOR_Red ;
 #endif
 
 // Chart Colors

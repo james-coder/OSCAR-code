@@ -323,10 +323,10 @@ void init()
 
     #if defined(STEADY_BREATHING)
     schema::channel.add(GRP_CPAP, new Channel(CPAP_SteadyBreathing      = 0x1201, WAVEFORM,    MT_CPAP, SESSION, STR_GRAPH_CPAP_SteadyBreathing,
-            QObject::tr("Steady Breathing"), QObject::tr("Variation in minute ventilation"), QObject::tr("Steady Breathing"), STR_UNIT_LPM, DEFAULT, Qt::red));
+            QObject::tr("Steady Breathing"), QObject::tr("Variation in minute ventilation"), QObject::tr("Steady Breathing"), STR_UNIT_LPM, DEFAULT, COLOR_SteadyBreathing));
 
     schema::channel.add(GRP_CPAP, new Channel(CPAP_SteadyBreathingFlag      = 0x1202, SPAN,    MT_CPAP, SESSION, STR_GRAPH_CPAP_SteadyBreathingEvent,
-            QObject::tr("Steady breathing (SB)"), QObject::tr("Low variation in minute ventilation"), QObject::tr("SB"), STR_UNIT_LPM, DEFAULT, Qt::red));
+            QObject::tr("Steady breathing (SB)"), QObject::tr("Low variation in minute ventilation"), QObject::tr("SB"), STR_UNIT_LPM, DEFAULT, COLOR_SteadyBreathingFlag));
     #endif
 
 
@@ -367,8 +367,7 @@ void init()
     // Manufacturer-specific channels
     // **** Ensure your channel ID is unique
     //////////////////////////////////////////////////////////////////////
-/*
-    schema::channel.add(GRP_CPAP, new Channel(BMC_PressureWave     = 0x1210, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_PressureWave,
+/*     schema::channel.add(GRP_CPAP, new Channel(BMC_PressureWave     = 0x1210, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_PressureWave,
             QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), QObject::tr("Pressure Wave"), "",    DEFAULT,    QColor(0x29, 0x7, 0xa0)));
 
     schema::channel.add(GRP_CPAP, new Channel(BMC_FlowAbnormality  = 0x1211, WAVEFORM,    MT_CPAP,  SESSION, STR_GRAPH_FlowAbnormality,

@@ -88,6 +88,11 @@ extern QColor COLOR_SPO2Drop;
 extern QColor COLOR_UserFlag1;
 extern QColor COLOR_UserFlag2;
 
+#if defined(STEADY_BREATHING)
+extern QColor COLOR_SteadyBreathingFlag;
+extern QColor COLOR_SteadyBreathing;
+#endif
+
 // Chart Colors
 extern QColor COLOR_EPAP;
 extern QColor COLOR_IPAP;

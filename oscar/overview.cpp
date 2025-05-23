@@ -308,6 +308,14 @@ void Overview::CreateAllGraphs() {
         if (chan->showInOverview()) {
             ChannelID code = chan->id();
             QString name = chan->fullname();
+
+            #if defined(STEADY_BREATHING)
+            if (AppSetting->steadyBreathing()!=SB_ACTIVE ) {
+                if (code == CPAP_SteadyBreathingFlag)  continue;
+                if (code == CPAP_SteadyBreathing)  continue;
+            }
+            #endif
+
             if (name.length() > 16) name = chan->label();
             gGraph *G = createGraph(chan->code(), name, chan->description());
             gSummaryChart * sc = nullptr;
