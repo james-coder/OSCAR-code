@@ -27,6 +27,7 @@
 #include <QtGlobal>
 #include <QHeaderView>
 #include <QCoreApplication>
+#include <QFileInfo>
 #include "dailySearchTab.h"
 #include "SleepLib/day.h"
 #include "SleepLib/profiles.h"

@@ -11,7 +11,7 @@
 #define PRISMA_LOADER_H
 #include "SleepLib/machine_loader.h"
 #include "SleepLib/loader_plugins/edfparser.h"
-#include <QDir>
+class QDir;
 
 #ifdef UNITTEST_MODE
 #define private public

@@ -10,8 +10,6 @@
 #include <QApplication>
 #include <QString>
 #include <QDateTime>
-#include <QDir>
-#include <QFile>
 #include <QBuffer>
 #include <QByteArray>
 #include <QDataStream>
@@ -19,6 +17,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
 
 #include <cmath>
 

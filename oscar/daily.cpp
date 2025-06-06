@@ -7,11 +7,6 @@
  * License. See the file COPYING in the main directory of the source code
  * for more details. */
 
-#define TEST_MACROS_ENABLEDoff
-#include <test_macros.h>
-
-#define CONFIGURE_MODE
-#define COMBINE_MODE_3
 
 #include <QTextCharFormat>
 #include <QPalette>
@@ -29,9 +24,15 @@
 #include <QFontMetrics>
 #include <QLabel>
 #include <QMutexLocker>
-
 #include <cmath>
 
+#define TEST_MACROS_ENABLEDoff
+#include <test_macros.h>
+
+#define CONFIGURE_MODE
+#define COMBINE_MODE_3
+
+#include "saveGraphLayoutSettings.h"
 #include "daily.h"
 #include "ui_daily.h"
 #include "dailySearchTab.h"

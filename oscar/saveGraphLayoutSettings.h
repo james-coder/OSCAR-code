@@ -11,14 +11,14 @@
 
 #include <QWidget>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QPushButton>
 #include <QLabel>
 #include <QMessageBox>
-#include <QRegularExpression>
-#include <QDir>
+class QVBoxLayout;
+class QListWidget;
+class QListWidgetItem;
+class QRegularExpression;
+class QDir;
+class QPushButton;
 
 #include "Graphs/gGraphView.h"
 
@@ -189,7 +189,6 @@ private slots:
 
     void    closeHint();
 };
-
 
 #endif // SAVEGRAPHLAYOUTSETTINGS_H
 

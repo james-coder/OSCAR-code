@@ -11,7 +11,7 @@
 #define PRS1LOADER_H
 #include "SleepLib/machine_loader.h"
 
-#ifdef UNITTEST_MODE
+#if defined(UNITTEST_MODE) || defined(UNITTEST_MODE_PRS1)
 #define private public
 #define protected public
 #endif

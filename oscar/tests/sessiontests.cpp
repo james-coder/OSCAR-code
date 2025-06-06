@@ -287,7 +287,12 @@ void SessionToYaml(QString filepath, Session* session, bool ok)
     for (QList<ChannelID>::iterator key = keys.begin(); key != keys.end(); key++) {
         QVariant & value = session->settings[*key];
         QString s;
-        if ((QMetaType::Type) value.type() == QMetaType::Float) {
+        #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+            if (value.typeId() == qMetaTypeId<float>())
+        #else
+            if ((QMetaType::Type) value.type() == QMetaType::Float)
+        #endif
+        {
             s = QString::number(value.toFloat());  // Print the shortest accurate representation rather than QVariant's full precision.
         } else {
             s = value.toString();
@@ -335,15 +340,15 @@ void SessionToYaml(QString filepath, Session* session, bool ok)
             out << "      data:" << '\n';
             out << "        min: " << e.Min() << '\n';
             out << "        max: " << e.Max() << '\n';
-            out << "        raw: " << intList((EventStoreType*) e.m_data.data(), e.count(), 100) << '\n';
+            out << "        raw: " << intList((EventStoreType*) e.getData().data(), e.count(), 100) << '\n';
             if (e.type() != EVL_Waveform) {
-                out << "        delta: " << intList((quint32*) e.m_time.data(), e.count(), 100) << '\n';
+                out << "        delta: " << intList((quint32*) e.getTime().data(), e.count(), 100) << '\n';
             }
             if (e.hasSecondField()) {
                 out << "      data2:" << '\n';
                 out << "        min: " << e.min2() << '\n';
                 out << "        max: " << e.max2() << '\n';
-                out << "        raw: " << intList((EventStoreType*) e.m_data2.data(), e.count(), 100) << '\n';
+                out << "        raw: " << intList((EventStoreType*) e.getData2().data(), e.count(), 100) << '\n';
             }
         }
     }

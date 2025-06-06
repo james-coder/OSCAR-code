@@ -11,16 +11,16 @@
 #define TEST_MACROS_ENABLEDoff
 #include <test_macros.h>
 
-#include "session.h"
-#include "version.h"
 #include <cmath>
-#include <QDir>
 #include <QDebug>
 #include <QMessageBox>
 #include <QMetaType>
 #include <algorithm>
 #include <limits>
+#include <QDir>
 
+#include "session.h"
+#include "version.h"
 #include "SleepLib/machine_common.h"
 #include "SleepLib/calcs.h"
 #include "SleepLib/profiles.h"

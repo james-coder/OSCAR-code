@@ -34,7 +34,7 @@
 #include "Graphs/gLineChart.h"
 #include "sessionbar.h"
 #include "mytextbrowser.h"
-#include "saveGraphLayoutSettings.h"
+class SaveGraphLayoutSettings;
 
 
 namespace Ui {

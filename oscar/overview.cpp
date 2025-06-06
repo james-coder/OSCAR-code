@@ -36,8 +36,10 @@
 #include "Graphs/gUsageChart.h"
 #include "Graphs/gTTIAChart.h"
 #include "cprogressbar.h"
+#include "saveGraphLayoutSettings.h"
 
 #include "mainwindow.h"
+
 extern MainWindow *mainwin;
 
 

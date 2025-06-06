@@ -27,11 +27,11 @@
 #include "Graphs/gOverviewGraph.h"
 #endif
 #include "Graphs/gSummaryChart.h"
-#include "saveGraphLayoutSettings.h"
 
 #include <QRegularExpression>
 #include <QListWidget>
 #include <QListWidgetItem>
+class SaveGraphLayoutSettings;
 
 namespace Ui {
 class Overview;

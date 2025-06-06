@@ -11,9 +11,7 @@
 #include "test_macros.h"
 
 
-#include "Graphs/gGraphView.h"
 
-#include <QDir>
 #include <QTimeZone>
 #include <QFontMetrics>
 #include <QLabel>
@@ -28,6 +26,8 @@
 #include <QScreen>
 #include <QWindow>
 #include <QMessageBox>
+#include <QFile>
+#include "Graphs/gGraphView.h"
 
 
 #ifdef DEBUG_EFFICIENCY

@@ -19,6 +19,11 @@
 #include <QPixmap>
 #include <QSize>
 #include <QChar>
+#include <QDir>
+#include <QRegularExpression>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QVBoxLayout>
 #include "SleepLib/profiles.h"
 #include "saveGraphLayoutSettings.h"
 
