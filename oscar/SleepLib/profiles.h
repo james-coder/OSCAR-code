@@ -342,6 +342,9 @@ const QString STR_CS_CalculateUnintentionalLeaks = "CalculateUnintentionalLeaks"
 const QString STR_CS_4cmH2OLeaks = "Custom4cmH2OLeaks";
 const QString STR_CS_20cmH2OLeaks = "Custom20cmH2OLeaks";
 
+const QString STR_CS_EventPostcontext = "EventPostcontext";
+const QString STR_CS_ConsolidateEvents = "ConsolidateEvents";
+
 // ImportSettings Strings
 const QString STR_IS_DaySplitTime = "DaySplitTime";
 const QString STR_IS_PreloadSummaries = "PreloadSummaries";
@@ -597,6 +600,8 @@ class CPAPSettings : public PrefSettings
         m_4cmH2OLeaks = initPref(STR_CS_4cmH2OLeaks, 20.167).toDouble();
         m_20cmH2OLeaks = initPref(STR_CS_20cmH2OLeaks, 48.333).toDouble();
         m_clock_drift = initPref(STR_CS_ClockDrift, (int)0).toInt();
+        m_event_postcontext = initPref(STR_CS_EventPostcontext, 0.0).toDouble();
+        m_consolidate_events = initPref(STR_CS_ConsolidateEvents, false).toBool();
     }
 
     //Getters
@@ -631,6 +636,9 @@ class CPAPSettings : public PrefSettings
     inline double custom4cmH2OLeaks() const { return m_4cmH2OLeaks; }
     inline double custom20cmH2OLeaks() const { return m_20cmH2OLeaks; }
 
+    inline double eventPostcontext() const { return m_event_postcontext; }
+    inline bool consolidateEvents() const { return m_consolidate_events; }
+
     //Setters
     void setMode(CPAPMode mode) { setPref(STR_CS_PrescribedMode, (int)mode); }
     void setMinPressure(EventDataType pressure) { setPref(STR_CS_PrescribedMinPressure, pressure); }
@@ -663,6 +671,9 @@ class CPAPSettings : public PrefSettings
     void setCustom4cmH2OLeaks(double val) { setPref(STR_CS_4cmH2OLeaks, m_4cmH2OLeaks=val); }
     void setCustom20cmH2OLeaks(double val) { setPref(STR_CS_20cmH2OLeaks, m_20cmH2OLeaks=val); }
 
+    void setEventPostcontext(double val) { setPref(STR_CS_EventPostcontext, m_event_postcontext=val); }
+    void setConsolidateEvents(bool b) { setPref(STR_CS_ConsolidateEvents, m_consolidate_events=b); }
+    
   public:
     int m_clock_drift;
     double m_4cmH2OLeaks, m_20cmH2OLeaks;
@@ -673,6 +684,8 @@ class CPAPSettings : public PrefSettings
 
     EventDataType m_userEventRestriction1, m_userEventRestriction2, m_userEventDuration1, m_userEventDuration2;
 
+    double m_event_postcontext;
+    bool m_consolidate_events;
 };
 
 /*! \class ImportSettings
