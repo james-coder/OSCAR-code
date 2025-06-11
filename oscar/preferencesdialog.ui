@@ -1596,6 +1596,54 @@ Works only when Steady Breathing is enabled and CPAP data is (re)imported.  </st
                 </item>
                 <!--  END STEADY_BREATHING part2 -->
                 <item>
+                 <widget class="QGroupBox" name="groupBox_EventTab">
+                  <property name="title">
+                    <string>Settings for Events Tab</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_EventTab">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="eventPostcontextLabel">
+                      <property name="text">
+                        <string>Event postcontext size</string>
+                      </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QDoubleSpinBox" name="eventPostcontext">
+                     <property name="toolTip">
+                       <string>Extra context shown after occurrence under Daily view Events tab</string>
+                     </property>
+                     <property name="suffix">
+                       <string> Seconds</string>
+                     </property>
+                     <property name="decimals">
+                       <number>1</number>
+                     </property>
+                     <property name="maximum">
+                       <double>14400.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                       <double>30.000000000000000</double>
+                     </property>
+                     <property name="value">
+                       <double>0.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>                  
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="consolidateEvents">
+                      <property name="toolTip">
+                        <string>Combine events into consolidated node in tree under Daily view Events tab</string>
+                      </property>
+                      <property name="text">
+                        <string>Consolidate event types</string>
+                      </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
                  <spacer name="verticalSpacer_4">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
