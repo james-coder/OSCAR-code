@@ -24,6 +24,8 @@
 #include <QFontMetrics>
 #include <QLabel>
 #include <QMutexLocker>
+
+#include <algorithm>
 #include <cmath>
 
 #define TEST_MACROS_ENABLEDoff
@@ -119,6 +121,22 @@ const QList<QString> advancedGraphOrder = {
 // CPAP modes that should have Advanced graphs
 const QList<int> useAdvancedGraphs = {MODE_ASV, MODE_ASV_VARIABLE_EPAP, MODE_AVAPS};
 
+
+// QTreeWidgetItem specialization for sorting by timestamp
+// Note: This is just used for the consolidated events, but for consistency
+// it would make sense to use it for all QTreeWidgetItem's.
+class EventTreeWidgetItem : public QTreeWidgetItem {
+public:
+    EventTreeWidgetItem(const QStringList &strings) : QTreeWidgetItem(strings) {}
+    EventTreeWidgetItem(QTreeWidgetItem *parent, const QStringList &strings) : QTreeWidgetItem(parent, strings) {}
+
+    bool operator<(const QTreeWidgetItem &other) const override {
+        // Compare timestamps stored in user data
+        qint64 thisTime = data(0, Qt::UserRole).toLongLong();
+        qint64 otherTime = other.data(0, Qt::UserRole).toLongLong();
+        return thisTime < otherTime;
+    }
+};
 
 void Daily::setCalendarVisible(bool visible)
 {
@@ -766,22 +784,31 @@ void Daily::on_calendar_currentPageChanged(int year, int month)
 
 void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
 {
+    DEBUGXD O("Daily::UpdateEventsTree") O(tree) O(day);
     tree->clear();
     if (!day) return;
 
     tree->setColumnCount(1); // 1 visible common.. (1 hidden)
+    // Disable automatic sorting of the top-level items
+    tree->setSortingEnabled(false);
 
     QTreeWidgetItem *root=nullptr;
     QHash<ChannelID,QTreeWidgetItem *> mcroot;
     QHash<ChannelID,int> mccnt;
+    int mccnt_total=0;
+    QList<EventTreeWidgetItem> all_events;
 
     qint64 drift=0, clockdrift=p_profile->cpap->clockDrift()*1000L;
+    // Get post-context preference for event display
+    double event_post_context_secs=p_profile->cpap->eventPostcontext();
+    DEBUGXD Q(event_post_context_secs);
 
     quint32 chantype = schema::FLAG | schema::SPAN | schema::MINOR_FLAG;
     if (p_profile->general->showUnknownFlags()) chantype |= schema::UNKNOWN;
     QList<ChannelID> chans = day->getSortedMachineChannels(chantype);
 
     // Go through all the enabled sessions of the day
+    qint64 max_t_post_context = 0;
     for (QList<Session *>::iterator s=day->begin();s!=day->end();++s) {
         Session * sess = *s;
         if (!sess->enabled()) continue;
@@ -812,6 +839,7 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
                 l.append("");
                 mcroot[code]=mcr=new QTreeWidgetItem(root,l);
                 mccnt[code]=0;
+                mccnt_total+=cnt;
             } else {
                 mcr=mcroot[code];
             }
@@ -829,16 +857,34 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
                     if ((code == CPAP_CSR) || (code == CPAP_PB)) { // center it in the middle of span
                         t -= float(ev.raw(o) / 2.0) * 1000.0;
                     }
-                    QStringList a;
+                    // Add in postcontext to event display (e.g., 30 seconds)
+                    // Note: a no-op by default (i.e., t_post_context = t)
+                    qint64 t_post_context = t + (event_post_context_secs * 1000.0);
+                    max_t_post_context = max(t_post_context, max_t_post_context);
+
+                    QStringList a, a_all;
                     QDateTime d=QDateTime::fromMSecsSinceEpoch(t); // Localtime
                     QString s=QString("#%1: %2").arg((int)(++mccnt[code]),(int)numDigits,(int)10,QChar('0')).arg(d.toString("HH:mm:ss"));
-                    if (m.value()[z]->raw(o) > 0)
-                            s += QString(" (%3)").arg(m.value()[z]->raw(o));
+                    QString s_all=QString("%1").arg(d.toString("HH:mm:ss"));
+                    if (m.value()[z]->raw(o) > 0) {
+                        QString duration_spec = QString(" (%3)").arg(m.value()[z]->raw(o));
+                        s += duration_spec;
+                        s_all += duration_spec;
+                    }
 
                     a.append(s);
                     QTreeWidgetItem *item=new QTreeWidgetItem(a);
-                    item->setData(0,Qt::UserRole,t);
+                    item->setData(0,Qt::UserRole,t_post_context);
                     mcr->addChild(item);
+
+                    // Similarly add entry for consolidated node
+                    if (p_profile->cpap->consolidateEvents()) {
+                        s_all += " " + schema::channel[code].label();
+                        a_all.append(s_all);
+                        EventTreeWidgetItem item_all=EventTreeWidgetItem(a_all);
+                        item_all.setData(0,Qt::UserRole,t_post_context);
+                        all_events.append(item_all);
+                    }
                 }
             }
         }
@@ -847,6 +893,10 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
     for (QHash<ChannelID,QTreeWidgetItem *>::iterator m=mcroot.begin();m!=mcroot.end();m++) {
         tree->insertTopLevelItem(cnt++,m.value());
     }
+    qDebug() << "max_t_post_context:" << max_t_post_context;
+
+    // TODO: Sort beforehand so that UA occurs before Session Start/End
+    // tree->sortByColumn(0,Qt::AscendingOrder);
 
     if (day->hasMachine(MT_CPAP) || day->hasMachine(MT_OXIMETER) || day->hasMachine(MT_POSITION)) {
         QTreeWidgetItem * start = new QTreeWidgetItem(QStringList(tr("Session Start Times")),eventTypeStart);
@@ -868,7 +918,46 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
             end->addChild(item);
         }
     }
+
+    // NOTE: Sorting here causes UA to occur after Session Start/End,
+    // so it should be moved above.
     tree->sortByColumn(0,Qt::AscendingOrder);
+
+    // Add consolidated list
+    // Note: The test for consolidation is based on debugging output, so make
+    // sure changes here are reflected in tests/eventstabtests.cpp. In addition,
+    // mainwin is undefined during tests and access should be guarded elsewhere.
+    qDebug() << "consolidate:" << p_profile->cpap->consolidateEvents();
+    if (p_profile->cpap->consolidateEvents()) {
+
+        // Sort all items by date (e.g., so CA's interleaved w/ OA's, etc.)
+        std::sort(all_events.begin(), all_events.end());
+
+        // Number items to account for timestamp rank
+        int numDigits_all=ceil(log10(all_events.count()+1));
+        QStringList l_all=QStringList(tr("All"));
+        EventTreeWidgetItem *all_numbered_events=new EventTreeWidgetItem(root,l_all);
+        for (int event_num = 0; event_num < all_events.count(); event_num++) {
+            // ex: "04:15:22 (12)" => "#16: 04:15:22 (12)"
+            EventTreeWidgetItem child = all_events.at(event_num);
+            QString label = child.text(0);
+            QString new_label=QString("#%1: %2").arg((int)event_num + 1,(int)numDigits_all,(int)10,QChar('0')).arg(label);
+            qDebug() << "new_label:" << new_label;
+            child.setText(0, new_label);
+            all_numbered_events->addChild(new EventTreeWidgetItem(child));
+        }
+
+        // Add to control
+        if (all_numbered_events->childCount()) {
+            tree->insertTopLevelItem(cnt++,all_numbered_events);
+        }
+    }
+
+    // Trace out event-type nodes
+    qDebug() << "final top-level items:";
+    for (int level = 0; level < tree->topLevelItemCount(); level++) {
+        qDebug() << tree->topLevelItem(level)->text(0);
+    }
 }
 
 void Daily::UpdateCalendarDay(QDate date)
