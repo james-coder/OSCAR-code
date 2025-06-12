@@ -75,7 +75,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent, Profile *_profile) :
     channeltype[schema::UNKNOWN] = tr("Always Minor");
     bool haveResMed = false;
     QList<Machine *> machines = profile->GetMachines(MT_CPAP);
-//  qDebug() << "Machile list size is" << machines.size();
+//  qDebug() << "Machine list size is" << machines.size();
     if ( machines.size() > 0 ) {
         for (QList<Machine *>::iterator it = machines.begin(); it != machines.end(); ++it) {
             const QString & mclass=(*it)->loaderName();
@@ -384,6 +384,9 @@ PreferencesDialog::PreferencesDialog(QWidget *parent, Profile *_profile) :
     ui->maskLeaks4Label->setText(QString("%1 %2").arg(profile->cpap->custom4cmH2OLeaks(), 5, 'f', 1).arg(STR_UNIT_LPM));
     ui->maskLeaks20Label->setText(QString("%1 %2").arg(profile->cpap->custom20cmH2OLeaks(), 5, 'f', 1).arg(STR_UNIT_LPM));
 
+    ui->eventPostcontext->setValue(profile->cpap->eventPostcontext());
+    ui->consolidateEvents->setChecked(profile->cpap->consolidateEvents());
+    
     /*    QLocale locale=QLocale::system();
         QString shortformat=locale.dateFormat(QLocale::ShortFormat);
         if (!shortformat.toLower().contains("yyyy")) {
@@ -1018,6 +1021,9 @@ bool PreferencesDialog::Save()
     profile->cpap->setCustom4cmH2OLeaks(double(ui->maskLeaks4Slider->value()) / 10.0f);
     profile->cpap->setCustom20cmH2OLeaks(double(ui->maskLeaks20Slider->value()) / 10.0f);
 
+    profile->cpap->setEventPostcontext(double(ui->eventPostcontext->value()));
+    profile->cpap->setConsolidateEvents(ui->consolidateEvents->isChecked());
+    
     AppSetting->setAutoLaunchImport(ui->autoLaunchImporter->isChecked());
 
 #ifndef NO_CHECKUPDATES
