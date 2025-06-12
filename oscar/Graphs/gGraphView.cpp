@@ -3398,14 +3398,11 @@ void gGraphView::keyPressEvent(QKeyEvent *event)
     if (m_metaselect && ((event->key() == Qt::Key_B) || (event->key() == 8747))) {
         if (mainwin->getDaily()->graphView() == this) {
             if (m_graph_index >= 0) {
-                m_metaselect=false;
-                qint64 start,end;
-                getSelectionTimes(start,end);
-                QDateTime d1 = QDateTime::fromMSecsSinceEpoch(start, QTimeZone::systemTimeZone());
-
-                mainwin->getDaily()->addBookmark(start, end, QString("Bookmark at %1").arg(d1.time().toString("HH:mm:ss")));
-                m_graphs[m_graph_index]->cancelSelection();
-                m_graph_index = -1;
+                // this code was copied from daily.cpp because daily::on_addBookmarkButton_clicked was private.
+                qint64 st,et;
+                GetXBounds(st,et);
+                QDateTime d=QDateTime::fromSecsSinceEpoch(st/1000L, QTimeZone::systemTimeZone());
+                mainwin->getDaily()->addBookmark(st,et,"" );
                 timedRedraw(0);
             }
             event->accept();
