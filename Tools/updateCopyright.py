@@ -207,6 +207,8 @@ def processFile(filename):
                         else :
                             lines.append(line)
                     #} end processing line
+                ##if ( lineInfo.needReview or (codeFile and not lineInfo.countUpdated) ) :
+                ## ALways print code files without copyRight info.
                 if ( lineInfo.needReview or (codeFile and not lineInfo.countUpdated) ) :
                     print(f"  Copyright Check    {relativeFileName}")
                     if not lineInfo.countUpdated : 

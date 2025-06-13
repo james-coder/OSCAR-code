@@ -1,7 +1,7 @@
 /* SleepLib Device Loader Class Implementation
  *
  * Copyright (c) 2011-2018 Mark Watkins 
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
