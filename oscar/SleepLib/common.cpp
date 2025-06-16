@@ -442,7 +442,15 @@ void validateFont (QString which, int size, bool bold, bool italic) {
 }
 
 void setApplicationFont () {
+    if (mainwin == nullptr) {
+	qWarning() << "Warning: mainwin not set in setApplicationFont";
+	return;	
+    }
     qDebug() << "Application font starts out as" << QApplication::font();
+    if (p_pref == nullptr) {
+	qWarning() << "Warning: p_pref not set in setApplicationFont";
+	return;
+    }
     QFont font = QFont(((*p_pref)["Fonts_Application_Name"]).toString());
     font.setPointSize(((*p_pref)["Fonts_Application_Size"]).toInt());
     font.setWeight(((*p_pref)["Fonts_Application_Bold"]).toBool() ? QFont::Bold : QFont::Normal);
