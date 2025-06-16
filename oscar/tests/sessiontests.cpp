@@ -287,7 +287,7 @@ void SessionToYaml(QString filepath, Session* session, bool ok)
     for (QList<ChannelID>::iterator key = keys.begin(); key != keys.end(); key++) {
         QVariant & value = session->settings[*key];
         QString s;
-        #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+        #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
             if (value.typeId() == qMetaTypeId<float>())
         #else
             if ((QMetaType::Type) value.type() == QMetaType::Float)
