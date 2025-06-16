@@ -1,6 +1,6 @@
 /* gGraphView Implementation
  *
- * Copyright (c) 2019-2025 The OSCAR Team
+ * Copyright (c) 2019-2024 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -1326,6 +1326,10 @@ void gGraphView::GetXBounds(qint64 &st, qint64 &et)
 void gGraphView::SetXBounds(qint64 minx, qint64 maxx, short group, bool refresh)
 {
     bool changed= (minx!=m_minx)||(maxx!=m_maxx);
+    if (maxx<=minx) {
+        qDebug() << "Request Failed to setXbounds maxx<=minx" <<maxx <<minx;
+        return;
+    }
 
     for (auto & graph : m_graphs) {
         if ((graph->group() == group)) {
