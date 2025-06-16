@@ -11,6 +11,7 @@
 
 #include <QDebug>
 #include <QProgressBar>
+#include <QSettings>
 #include "mainwindow.h"
 #include "SleepLib/machine_loader.h"
 #include "SleepLib/profiles.h"
@@ -20,6 +21,8 @@
 #include "test_macros.h"
 
 #define TESTDATA_PATH "./testdata/"
+
+#define APP_DATA_SETTING "Settings/AppData"
 
 extern MainWindow * mainwin;
 
@@ -50,6 +53,8 @@ EventsTabTests::EventsTabTests()
     m_save_p_pref = p_pref;
     m_save_p_profile = p_profile;
     m_save_AppSetting = AppSetting;
+    QSettings settings;
+    m_save_app_data = settings.value(APP_DATA_SETTING).toString();
 }
 
 EventsTabTests::~EventsTabTests()
@@ -83,6 +88,10 @@ void EventsTabTests::initTestCase()
     p_pref->Open();
     AppSetting = new AppWideSetting(p_pref);
 
+    // Set Qt application data
+    QSettings settings;
+    settings.setValue(APP_DATA_SETTING, TESTDATA_PATH);
+    
     // Make sure main window unset
     mainwin = nullptr;
 
@@ -158,6 +167,10 @@ void EventsTabTests::cleanupTestCase()
     p_pref = m_save_p_pref;
     p_profile = m_save_p_profile;
     AppSetting = m_save_AppSetting;
+
+    // Likewise for Qt
+    QSettings settings;
+    settings.setValue(APP_DATA_SETTING, m_save_app_data);
 }
 
 // Per-test initialization

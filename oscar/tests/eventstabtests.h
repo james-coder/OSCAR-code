@@ -54,6 +54,7 @@ private:
     AppWideSetting* m_save_AppSetting = nullptr;
     Profile* m_save_p_profile = nullptr;
     ProgressDialog* m_progress = nullptr;
+    QString m_save_app_data;
 };
 
 // Register the test class with the AutoTest framework
