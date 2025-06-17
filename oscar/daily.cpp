@@ -795,7 +795,6 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
     QTreeWidgetItem *root=nullptr;
     QHash<ChannelID,QTreeWidgetItem *> mcroot;
     QHash<ChannelID,int> mccnt;
-    int mccnt_total=0;
     QList<EventTreeWidgetItem> all_events;
 
     qint64 drift=0, clockdrift=p_profile->cpap->clockDrift()*1000L;
@@ -839,7 +838,6 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
                 l.append("");
                 mcroot[code]=mcr=new QTreeWidgetItem(root,l);
                 mccnt[code]=0;
-                mccnt_total+=cnt;
             } else {
                 mcr=mcroot[code];
             }
