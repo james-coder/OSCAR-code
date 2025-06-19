@@ -694,11 +694,15 @@ bool Machine::Load(ProgressDialog *progress)
         return false;
     }
 
+#ifndef UNITTEST_MODE
+    // Add loader pixmap to progress
+    // Note: not used during test due to non-QGuiApplication quirks
     QPixmap image = getPixmap();
     if (!image.isNull()) {
         image = image.scaled(64,64);
         progress->setPixmap(image);
     }
+#endif
     progress->setMessage(QObject::tr("Loading %1 data for %2...").arg(info.brand).arg(profile->user->userName()));
 
     if (loader()) {

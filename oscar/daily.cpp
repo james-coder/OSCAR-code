@@ -294,6 +294,14 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
 
     for (int i=0; i < cpapsize; ++i) {
         ChannelID code = cpapcodes[i];
+        QString cpap_label = schema::channel[code].code();
+        DEBUGXD O(i) O(code) O(cpap_label);
+        if (graphlist.contains(cpap_label)) {
+            // Ignores duplicates labels (e.g., Prisma ones undefined in tests).
+            // Otheriwse, it leads to segmentation faults during cleanup.
+            qDebug() << "Ignoring duplicate code at offset" << i << code << cpap_label;
+            continue;
+        }
         graphlist[schema::channel[code].code()] = new gGraph(schema::channel[code].code(), GraphView, schema::channel[code].label(), channelInfo(code), default_height);
 //        qDebug() << "Creating graph for code" << code << schema::channel[code].code();
     }
@@ -1017,6 +1025,7 @@ void Daily::UpdateCalendarDay(QDate date)
 }
 void Daily::LoadDate(QDate date)
 {
+    DEBUGXD O("Daily::LoadDate") O(date);
     if (!date.isValid()) {
         qDebug() << "LoadDate called with invalid date";
         return;
@@ -1857,6 +1866,9 @@ void Daily::Load(QDate date)
    //     stage = day->machine(MT_SLEEPSTAGE);
         posit = day->machine(MT_POSITION);
     }
+    else {
+        qDebug() << "Warning: unable to load day";
+    }
 
     if (!AppSetting->cacheSessions()) {
         // Getting trashed on purge last day...
@@ -1902,7 +1914,9 @@ void Daily::Load(QDate date)
 
     // FIXME:
     // Generating entire statistics because bookmarks may have changed.. (This updates the side panel too)
-    mainwin->GenerateStatistics();
+    if (mainwin) {
+        mainwin->GenerateStatistics();
+    }
 
     snapGV->setDay(day);
 
@@ -2720,7 +2734,9 @@ void Daily::set_BmiUI(double user_weight_kg) {
         // And make it invisible
         ui->BMIlabel->setVisible(false);
     }
-    mainwin->updateOverview();
+    if (mainwin) {
+        mainwin->updateOverview();
+    }
 };
 
 void Daily::set_WeightUI(double kg) {
@@ -3152,4 +3168,3 @@ void Daily::on_layout_clicked() {
         saveGraphLayoutSettings->triggerLayout(GraphView);
     }
 }
-

@@ -651,6 +651,7 @@ test {
         tests/deviceconnectiontests.cpp \
         tests/cryptotests.cpp \
         tests/dreemtests.cpp \
+        tests/eventstabtests.cpp \
         tests/zeotests.cpp
 
     HEADERS += \
@@ -664,6 +665,7 @@ test {
         tests/deviceconnectiontests.h \
         tests/cryptotests.h \
         tests/dreemtests.h \
+        tests/eventstabtests.h \
         tests/zeotests.h
 }
 
