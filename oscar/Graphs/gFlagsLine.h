@@ -137,6 +137,13 @@ class gFlagsGroup: public LayerGroup
         layer->m_rebuild_cpap = m_rebuild_cpap;
     }
 
+    // Delete the flag lines and clear the list
+    void delete_flag_lines() {
+	for (int i=0; i<lvisible.size(); i++) {
+	    delete lvisible.at(i);
+	}
+	lvisible.clear();
+    }
 
   protected:
     virtual bool mouseMoveEvent(QMouseEvent *event, gGraph *graph);
