@@ -298,7 +298,7 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
         DEBUGXD O(i) O(code) O(cpap_label);
         if (graphlist.contains(cpap_label)) {
             // Ignores duplicates labels (e.g., Prisma ones undefined in tests).
-            // Otheriwse, it leads to segmentation faults during cleanup.
+            // Otherwise, it leads to segmentation faults during cleanup.
             qDebug() << "Ignoring duplicate code at offset" << i << code << cpap_label;
             continue;
         }
@@ -609,6 +609,8 @@ Daily::~Daily()
     delete ui;
     delete icon_on;
     delete icon_off;
+    delete icon_up_down;
+    delete icon_warning;
     if (saveGraphLayoutSettings!=nullptr) delete saveGraphLayoutSettings;
     delete dailySearchTab;
 }
