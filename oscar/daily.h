@@ -266,7 +266,7 @@ private slots:
     void setup_ZombieUIWidgets(int zombieValue, bool zombieMode, bool setup);
     void set_ZombieUI(int ,bool init=false);
     void on_ZombieSlider_valueChanged(int value);
-    void on_ZombieSpinBox_editingFinished();
+    void on_ZombieSpinBox_valueChanged(double d);
     void on_Units10_100_clicked();
 
     void set_WeightUI(double weight_kg);

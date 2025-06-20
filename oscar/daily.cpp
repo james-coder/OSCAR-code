@@ -2849,9 +2849,8 @@ void Daily::on_ZombieSlider_valueChanged(int uiValue)
     mainwin->updateOverview();
 }
 
-void Daily::on_ZombieSpinBox_editingFinished()
+void Daily::on_ZombieSpinBox_valueChanged(double spinValue)
 {
-    double spinValue=ui->ZombieSpinBox->value();
     if (ui->ZombieSpinBox->decimals() == 1) {
         spinValue *=10;
     }
