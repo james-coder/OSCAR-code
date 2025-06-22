@@ -46,8 +46,8 @@ gFlagsGroup::gFlagsGroup()
 }
 gFlagsGroup::~gFlagsGroup()
 {
+    delete_flag_lines();
 }
-
 
 qint64 gFlagsGroup::Minx()
 {
@@ -110,6 +110,7 @@ void gFlagsGroup::SetDay(Day *d)
         availableChans = chans.keys();
     }
 
+    delete_flag_lines();
     lvisible.clear();
     for (const auto code : availableChans) {
 //        const schema::Channel & chan = schema::channel[code];
