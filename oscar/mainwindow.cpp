@@ -84,6 +84,7 @@
 #endif
 
 CheckUpdates *updateChecker;
+bool openOk;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),

@@ -18,6 +18,7 @@
         // #include <QtOpenGLWidgets/QOpenGLWidget>
     #endif
 #endif
+extern bool openOk;
 
 #include <QSystemTrayIcon>
 #include <QTimer>

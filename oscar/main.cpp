@@ -58,6 +58,7 @@
 // #include "SleepLib/loader_plugins/bmc_loader.h"
 
 MainWindow *mainwin = nullptr;
+extern bool openOk;
 
 int numFilesCopied = 0;
 
@@ -127,8 +128,8 @@ bool processPreferenceFile( QString path ) {
     QFile fl(fullpath);
     QFile tmp(fullpath+".tmp");
     QString line;
-    fl.open(QIODevice::ReadOnly);
-    tmp.open(QIODevice::WriteOnly);
+    openOk = fl.open(QIODevice::ReadOnly);
+    openOk = tmp.open(QIODevice::WriteOnly);
     QTextStream instr(&fl);
     QTextStream outstr(&tmp);
     bool isSleepyHead = false;
@@ -155,8 +156,8 @@ bool processFile( QString fullpath ) {
     QFile fl(fullpath);
     QFile tmp(fullpath+".tmp");
     QString line;
-    fl.open(QIODevice::ReadOnly);
-    tmp.open(QIODevice::WriteOnly);
+    openOk = fl.open(QIODevice::ReadOnly);
+    openOk = tmp.open(QIODevice::WriteOnly);
     QTextStream instr(&fl);
     QTextStream outstr(&tmp);
     while (instr.readLineInto(&line)) {

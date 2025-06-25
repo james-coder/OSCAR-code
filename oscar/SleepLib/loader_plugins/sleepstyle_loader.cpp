@@ -20,6 +20,7 @@
 #include "sleepstyle_EDFinfo.h"
 
 const QString FPHCARE = "FPHCARE";
+extern bool openOk;
 
 ChannelID SS_SensAwakeLevel;
 ChannelID SS_EPR;
@@ -123,7 +124,7 @@ QStringList getSleepStyleMachines (QString iconPath) {
 
         QString line;
 
-        sumFile.open(QIODevice::ReadOnly);
+        openOk = sumFile.open(QIODevice::ReadOnly);
         QTextStream instr(&sumFile);
         for (int j = 0; j < 5; j++) {
             line = "";

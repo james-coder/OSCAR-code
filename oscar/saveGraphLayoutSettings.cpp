@@ -31,6 +31,7 @@
 
 #define USE_FRAMELESS_WINDOW_off
 #define USE_PROFILE_SPECIFIC_FOLDERoff      // off implies saved layouts worked for all profiles.
+extern bool openOk;
 
 SaveGraphLayoutSettings::SaveGraphLayoutSettings(QString title,QWidget* parent) : parent(parent),title(title)
 {
@@ -928,7 +929,7 @@ QString DescriptionMap::get(QString key) {
 
 void DescriptionMap::save() {
     QFile file(filename);
-    file.open(QFile::WriteOnly);
+    openOk = file.open(QFile::WriteOnly);
     QTextStream out(&file);
     QMapIterator<QString, QString>it(descriptions);
     while (it.hasNext()) {
@@ -944,7 +945,7 @@ void DescriptionMap::load() {
     QFile file(filename);
     descriptions.clear();
     if (!file.exists()) return;
-    file.open(QFile::ReadOnly);
+    openOk = file.open(QFile::ReadOnly);
     QTextStream instr(&file);
     while (instr.readLineInto(&line)) {
         QRegularExpressionMatch match = parseDescriptionsRe->match(line);

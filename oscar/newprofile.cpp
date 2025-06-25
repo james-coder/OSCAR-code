@@ -27,6 +27,7 @@
 #include "version.h"
 
 extern MainWindow *mainwin;
+extern bool openOk;
 
 
 NewProfile::NewProfile(QWidget *parent, const QString *user) :
@@ -62,7 +63,7 @@ NewProfile::NewProfile(QWidget *parent, const QString *user) :
     {
         // process countries list
         QFile f(":/docs/countries.txt");
-        f.open(QFile::ReadOnly);
+        openOk = f.open(QFile::ReadOnly);
         QTextStream cnt(&f);
         QString a;
         ui->countryCombo->clear();
@@ -81,7 +82,7 @@ NewProfile::NewProfile(QWidget *parent, const QString *user) :
     {
         // timezone list
         QFile f(":/docs/tz.txt");
-        f.open(QFile::ReadOnly);
+        openOk = f.open(QFile::ReadOnly);
         QTextStream cnt(&f);
         QString a;
         ui->timezoneCombo->clear();
@@ -497,7 +498,7 @@ void NewProfile::on_textBrowser_anchorClicked(const QUrl &arg1)
     QPushButton *button = new QPushButton(tr("Close this window"), browser);
 
     QFile f(arg1.toString().replace("qrc:", ":"));
-    f.open(QIODevice::ReadOnly);
+    openOk = f.open(QIODevice::ReadOnly);
     QTextStream ts(&f);
     QString text = ts.readAll();
     connect(button, SIGNAL(clicked()), dlg, SLOT(close()));

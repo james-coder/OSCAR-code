@@ -27,6 +27,7 @@
 #endif
 
 const QString FPHCARE = "FPHCARE";
+extern bool openOk;
 
 FPIcon::FPIcon(Profile *profile, MachineID id)
     : CPAP(profile, id)
@@ -124,7 +125,7 @@ QStringList getIconMachines (QString iconPath) {
 
         QString line;
 
-        sumFile.open(QIODevice::ReadOnly);
+        openOk = sumFile.open(QIODevice::ReadOnly);
         QTextStream instr(&sumFile);
         for (int j = 0; j < 5; j++) {
             line = "";

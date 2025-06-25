@@ -47,6 +47,7 @@
 #include "Graphs/gFlagsLine.h"
 #include "SleepLib/profiles.h"
 #include "overview.h"
+extern bool openOk;
 
 
 #if 0
@@ -3682,7 +3683,7 @@ void gGraphView::SaveSettings(QString title,QString folderName)
     qDebug() << "Saving" << title << "settings";
     QString filename=settingsFilename(title,folderName) ;
     QFile f(filename);
-    f.open(QFile::WriteOnly);
+    openOk = f.open(QFile::WriteOnly);
     QDataStream out(&f);
     out.setVersion(QDataStream::Qt_4_6);
     out.setByteOrder(QDataStream::LittleEndian);
@@ -3746,7 +3747,7 @@ bool gGraphView::LoadSettings(QString title,QString folderName)
         return false;
     }
 
-    f.open(QFile::ReadOnly);
+    openOk = f.open(QFile::ReadOnly);
     QDataStream in(&f);
     in.setVersion(QDataStream::Qt_4_6);
     in.setByteOrder(QDataStream::LittleEndian);

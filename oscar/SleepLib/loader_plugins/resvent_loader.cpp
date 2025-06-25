@@ -152,6 +152,7 @@ THERAPY/LOG/<xxxx>/<NNNNNN>         Contains a list of log files.
 #include <cmath>
 
 #include "resvent_loader.h"
+extern bool openOk;
 
 #ifdef DEBUG_EFFICIENCY
 #include <QElapsedTimer>  // only available in 4.8
@@ -293,7 +294,7 @@ void ResventLoader::readConfigFile(const QString & configFile, QMap<QString,QStr
         qDebug() << "Resvent Data card has no file" << configFile;
     } else {
         QFile f(configFile);
-        f.open(QIODevice::ReadOnly | QIODevice::Text);
+        openOk = f.open(QIODevice::ReadOnly | QIODevice::Text);
         f.seek(4);
         while (!f.atEnd()) {
             QString line = f.readLine().trimmed();
@@ -425,7 +426,7 @@ void ResventLoader::LoadEvents(const QString& session_folder_path, Session* sess
 
     QMap<EventType, QVector<EventData>> events;
     QFile f(event_file_path);
-    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    openOk = f.open(QIODevice::ReadOnly | QIODevice::Text);
     f.seek(4);
     while (!f.atEnd()) {
         QString line = f.readLine().trimmed(); // ID=20,DT=1692022874,DR=6,GD=0,
@@ -566,7 +567,7 @@ void ResventLoader::LoadOtherWaveForms(const QString& session_folder_path, Sessi
     std::for_each(wave_files.cbegin(), wave_files.cend(), [&](const QString& wave_file){
         // P01_ file
         QFile f(session_folder_path + QDir::separator() + wave_file);
-        f.open(QIODevice::ReadOnly);
+        openOk = f.open(QIODevice::ReadOnly);
 
         if (!initialized) {
             ReadWaveFormsHeaders(f, wave_forms, session, usage);
@@ -633,7 +634,7 @@ void ResventLoader::LoadWaveForms(const QString& session_folder_path, Session* s
     std::for_each(wave_files.cbegin(), wave_files.cend(), [&](const QString& wave_file){
         // W01_ file
         QFile f(session_folder_path + QDir::separator() + wave_file);
-        f.open(QIODevice::ReadOnly);
+        openOk = f.open(QIODevice::ReadOnly);
 
         if (!initialized) {
             ReadWaveFormsHeaders(f, wave_forms, session, usage);
@@ -738,7 +739,7 @@ ResVentUsageData ResventLoader::ReadUsage(const QString& session_folder_path, co
         return usage_data;
     }
     QFile f(session_stat_path);
-    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    openOk = f.open(QIODevice::ReadOnly | QIODevice::Text);
     f.seek(4);
     while (!f.atEnd()) {
         QString line = f.readLine().trimmed();
