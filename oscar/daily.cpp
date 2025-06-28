@@ -28,7 +28,7 @@
 #include <algorithm>
 #include <cmath>
 
-#define TEST_MACROS_ENABLEDoff
+#define TEST_MACROS_ENABLED
 #include <test_macros.h>
 
 #define CONFIGURE_MODE
@@ -455,7 +455,6 @@ Daily::Daily(QWidget *parent,gGraphView * shared)
     graphlist[schema::channel[Prisma_FlowFull].code()]->AddLayer(new gLineChart(Prisma_FlowFull, square));
     #if defined(STEADY_BREATHING)
     if (AppSetting->steadyBreathing()==SB_ACTIVE) {
-        //DEBUGCI ;
         graphlist[schema::channel[CPAP_SteadyBreathing].code()]->AddLayer(new gLineChart(CPAP_SteadyBreathing, false));
     }
     #endif
@@ -2193,7 +2192,7 @@ void Daily::set_JournalWeightValue(QDate& date, double kg) {
 
 void Daily::set_JournalNotesHtml(QDate& date, QString html) {
     QString newHtmlPlaintText = convertHtmlToPlainText(html); // have a look as plaintext to see if really empty.
-    bool newHtmlHasContent = !newHtmlPlaintText.isEmpty(); // have a look as plaintext to see if really empty.
+    bool newHtmlHasContent = !ui->JournalNotes->document()->isEmpty() ;
     Session* journal = GetJournalSession(date,false);
     QString prevHtml;
     if (journal) {
@@ -2267,7 +2266,6 @@ void Daily::on_JournalNotesItalic_clicked()
 
 
     cursor.mergeCharFormat(format);
-   //ui->JournalNotes->mergeCurrentCharFormat(format);
 
 }
 
@@ -2286,24 +2284,31 @@ void Daily::on_JournalNotesBold_clicked()
         format.setFontWeight(QFont::Normal);
 
     cursor.mergeCharFormat(format);
-    //ui->JournalNotes->mergeCurrentCharFormat(format);
 
 }
 
+QVector<int> journalNotesFontSizeArray={10,15,20};
+//QVector<int> journalNotesFontSizeArray={10,15,25};
+
 void Daily::on_JournalNotesFontsize_activated(int index)
 {
+    int fontsize = journalNotesFontSizeArray[index];
+
     QTextCursor cursor = ui->JournalNotes->textCursor();
+    if (cursor.atEnd()  && cursor.atStart() ) {
+        // set default font size
+        QFont defaultFont = ui->JournalNotes->font();
+        defaultFont.setPointSize(fontsize);
+        defaultFont.setItalic(false);
+        defaultFont.setBold(false);
+        ui->JournalNotes->setFont(defaultFont);
+    }
+
     if (!cursor.hasSelection())
         cursor.select(QTextCursor::WordUnderCursor);
-
     QTextCharFormat format=cursor.charFormat();
 
     QFont font=format.font();
-    int fontsize=10;
-
-    if (index==1) fontsize=15;
-    else if (index==2) fontsize=25;
-
     font.setPointSize(fontsize);
     format.setFont(font);
 
@@ -2464,7 +2469,6 @@ void Daily::on_JournalNotesUnderline_clicked()
     format.setFontUnderline(!format.fontUnderline());
 
     cursor.mergeCharFormat(format);
-   //ui->JournalNotes->mergeCurrentCharFormat(format);
 }
 
 void Daily::on_prevDayButton_clicked()
@@ -2488,7 +2492,7 @@ void Daily::on_prevDayButton_clicked()
 
 bool Daily::eventFilter(QObject *object, QEvent *event)
 {
-    if (object == ui->JournalNotes && event->type() == QEvent::FocusOut) {
+    if (false && object == ui->JournalNotes && event->type() == QEvent::FocusOut) {
         // Trigger immediate save of journal when we focus out from it so we never
         // lose any journal entry text...
         if (previous_date.isValid()) {
