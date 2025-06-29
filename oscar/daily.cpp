@@ -28,7 +28,7 @@
 #include <algorithm>
 #include <cmath>
 
-#define TEST_MACROS_ENABLED
+#define TEST_MACROS_ENABLEDoff
 #include <test_macros.h>
 
 #define CONFIGURE_MODE
@@ -2952,7 +2952,6 @@ void Daily::setFlagText () {
         #if defined(STEADY_BREATHING)
         if (AppSetting->steadyBreathing()!=SB_ACTIVE) {
             if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
-                DEBUGCI O("removing") NAME(code);
                 continue;
             }
         }
@@ -3082,7 +3081,6 @@ void Daily::updateEventsCombo(Day* day) {
         #if false && defined(STEADY_BREATHING)
         if (!AppSetting->steadyBreathing()==SB_ACTIVE) {
             if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
-                DEBUGCI O("removing") NAME(code);
                 continue;
             }
         }
@@ -3107,7 +3105,6 @@ void Daily::showAllEvents(bool show) {
         #if false && defined(STEADY_BREATHING)
         if (!AppSetting->steadyBreathing()==SB_ACTIVE) {
             if (code == CPAP_SteadyBreathing || code == CPAP_SteadyBreathingFlag)  {
-                DEBUGCI O("removing") NAME(code);
                 continue;
             }
         }
