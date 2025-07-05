@@ -902,8 +902,9 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
     }
     qDebug() << "max_t_post_context:" << max_t_post_context;
 
-    // TODO: Sort beforehand so that UA occurs before Session Start/End
-    // tree->sortByColumn(0,Qt::AscendingOrder);
+    // Sort the top-level nodes (i.e., event types)
+    // note: Done here so that UA occurs before Session Start/End
+    tree->sortByColumn(0,Qt::AscendingOrder);
 
     if (day->hasMachine(MT_CPAP) || day->hasMachine(MT_OXIMETER) || day->hasMachine(MT_POSITION)) {
         QTreeWidgetItem * start = new QTreeWidgetItem(QStringList(tr("Session Start Times")),eventTypeStart);
@@ -925,10 +926,6 @@ void Daily::UpdateEventsTree(QTreeWidget *tree,Day *day)
             end->addChild(item);
         }
     }
-
-    // NOTE: Sorting here causes UA to occur after Session Start/End,
-    // so it should be moved above.
-    tree->sortByColumn(0,Qt::AscendingOrder);
 
     // Add consolidated list
     // Note: The test for consolidation is based on debugging output, so make
