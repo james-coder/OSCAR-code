@@ -249,8 +249,8 @@ void EventsTabTests::testDefaults()
     QStringList expectedMessages;
     expectedMessages << "max_t_post_context: 1745679339000"  // 2025-04-26 09:55:39
                      << "consolidate: false"
-	             << "Unclassified Apnea (UA) 1 event"
-	             << "Session Start Times";
+                     << "Unclassified Apnea (UA) 1 event"
+                     << "Session Start Times";
 
     // Compare the captured messages with the expected messages using the helper
     compareCapturedMessages(expectedMessages);
@@ -273,4 +273,35 @@ void EventsTabTests::testOptions()
 
     // Compare the captured messages with the expected messages using the helper
     compareCapturedMessages(expectedMessages);
+}
+
+void EventsTabTests::testHtmlSummary()
+{
+    DEBUGXD O("EventsTabTests::testHtmlSummary");
+
+    // Load sample data
+    qDebug() << "Loading sample with default settings";
+    loadSampleData(false, 0);
+
+    QString filePath = GetAppData() + "/test.html";
+    QFile file(filePath);
+    QVERIFY2(file.exists(), qPrintable(QString("File %1 does not exist").arg(filePath)));
+
+    // Open and read HTML file with formatted Daily Details info
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray fileContent = file.readAll();
+        QString htmlContent = QString::fromUtf8(fileContent);
+        file.close();
+
+        // Check for regex patterns in the data
+        QVERIFY(QRegularExpression("AHI.*4\\.22").match(htmlContent).hasMatch());
+        QVERIFY(QRegularExpression("Date.*Start.*End.*Hours").match(htmlContent).hasMatch());
+        QVERIFY(QRegularExpression("4/26/25.*06:38.*09:57.*03:19").match(htmlContent).hasMatch());
+        QVERIFY(QRegularExpression("Clear Airway.*2\\.41").match(htmlContent).hasMatch());
+        QVERIFY(QRegularExpression("Channel.*Min.*Med.*95.*99\\.5").match(htmlContent).hasMatch());
+        QVERIFY(QRegularExpression("Pressure.*11\\.00.*11\\.74.*12\\.98.*13\\.58").
+                match(htmlContent).hasMatch());
+    } else {
+        QFAIL(qPrintable(QString("Failed to open file %1").arg(filePath)));
+    }
 }
