@@ -244,10 +244,13 @@ void EventsTabTests::testDefaults()
     qDebug() << "Loading without consolidation and without post-context";
     loadSampleData(false, 0);
     
-    // Define the expected debug messages
+    // Define the expected debug messages, checking for following:
+    //   1. no extra postcontext, 2. no consolidation, and 3. UA before session times
     QStringList expectedMessages;
     expectedMessages << "max_t_post_context: 1745679339000"  // 2025-04-26 09:55:39
-                     << "consolidate: false";
+                     << "consolidate: false"
+	             << "Unclassified Apnea (UA) 1 event"
+	             << "Session Start Times";
 
     // Compare the captured messages with the expected messages using the helper
     compareCapturedMessages(expectedMessages);
