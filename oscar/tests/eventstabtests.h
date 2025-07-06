@@ -42,6 +42,7 @@ private slots:
     // Test functions
     void testDefaults();
     void testOptions();
+    void testHtmlSummary();
 
 private:
     // Member variables
