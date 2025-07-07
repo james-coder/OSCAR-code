@@ -24,6 +24,7 @@
 #include <QFontMetrics>
 #include <QLabel>
 #include <QMutexLocker>
+#include <QFile>
 
 #include <algorithm>
 #include <cmath>
