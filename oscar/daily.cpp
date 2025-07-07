@@ -24,6 +24,7 @@
 #include <QFontMetrics>
 #include <QLabel>
 #include <QMutexLocker>
+#include <QFile>
 
 #include <algorithm>
 #include <cmath>
@@ -2056,7 +2057,13 @@ void Daily::Load(QDate date)
     }
     //sessbar->update();
 
-#ifdef DEBUG_DAILY_HTML
+
+    // Generate HTML shown in [Details] tab
+    // Note: Outputs to local file if debugging
+    QString html = getLeftSidebar(true);
+    webView->setHtml(html);
+    
+#if defined(DEBUG_DAILY_HTML) || defined(UNITTEST_MODE)
     QString name = GetAppData()+"/test.html";
     QFile file(name);
     if (file.open(QFile::WriteOnly)) {
@@ -2065,8 +2072,6 @@ void Daily::Load(QDate date)
         file.close();
     }
 #endif
-
-    webView->setHtml(getLeftSidebar(true));
 
     ui->JournalNotes->clear();
 
