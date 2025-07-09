@@ -315,7 +315,7 @@ QPair<QByteArray, int> reduce7BBytes(const QByteArray &byteArray) {
     return qMakePair(result, reductionCount);
 }
 
-void flowParser(const QByteArray &flowArray,EventList* flow,/*EventList* leak,*/qint64 time){
+void flowParser(const QByteArray &flowArray,EventList* flow,qint64 time){
     QByteArray flowValuesArray = flowArray.mid(2, 50);
     qint64 flowTime = (time);
     qint16* waveformValues = new qint16[50];
@@ -339,7 +339,7 @@ void flowParser(const QByteArray &flowArray,EventList* flow,/*EventList* leak,*/
         averageValues[i] = sum / valueQueue.size();
         
     }
-    flow->AddWaveform(flowTime, averageValues,50 , 20);
+    flow->AddWaveform(flowTime, averageValues,50 , 40);
 }
 void updatePressure(qint64 time ,EventList* pressure){
     if (intPressure != 0)
@@ -469,11 +469,14 @@ int VREMLoader::OscarDataParser(QStringList OdataList,Machine* machine,QVector<v
                         SessionEndTime = data.end_time;
                         session->set_first(SessionStartTime);
                         intPressure = 0;
-                        session->set_last(SessionEndTime);
+                        if (SessionEndTime != 0)
+                        {
+                            session->set_last(SessionEndTime);
+                        }
                         session->settings[CPAP_PressureMin] = data.min_pressure.toFloat();
                         session->settings[CPAP_PressureMax] = data.max_pressure.toFloat();
-                        session->settings[CPAP_RampTime] = data.rampTime.toInt();
-                        session->settings[CPAP_RampPressure] = data.ramp_pressure.toInt();
+                        session->settings[CPAP_RampTime] = data.rampTime.toFloat();
+                        session->settings[CPAP_RampPressure] = data.ramp_pressure.toFloat();
                         if (mode == 1)
                         {
                             session->settings[vREM_Flex] = 0;
@@ -503,8 +506,7 @@ int VREMLoader::OscarDataParser(QStringList OdataList,Machine* machine,QVector<v
                         }
                         task+=1;
                         isValidData = true;
-                        flow = session->AddEventList(CPAP_FlowRate, EVL_Waveform, 1.0f, 0.0f, 0.0f, 0.0f, 20);
-                        // leak = session->AddEventList(CPAP_Leak, EVL_Waveform, 1.0f, 0.0f, 0.0f, 0.0f, 1000);
+                        flow = session->AddEventList(CPAP_FlowRate, EVL_Waveform, 1.0f, 0.0f, 0.0f, 0.0f, 40);
                         pressure = session->AddEventList(CPAP_Pressure, EVL_Waveform, 0.1f, 0.0f, 0.0f, 0.0f, 1000);
                     }
                     
@@ -542,11 +544,11 @@ int VREMLoader::OscarDataParser(QStringList OdataList,Machine* machine,QVector<v
                     eventParser(reducedArray, session);
                 }else if (packageTypeInt == 29 && time != 0)
                 {
-                    QByteArray subArray = byteArray.mid(index, 54);
+                    QByteArray subArray = byteArray.mid(index, 29);
                     QPair<QByteArray, int> result = reduce7BBytes(subArray);
                     QByteArray reducedArray = result.first;
                     int reductionCount = result.second;
-                    index+=54;
+                    index+=29;
                     while (reductionCount > 1)
                     {
                         QPair<QByteArray, int> result = reduce7BBytes(byteArray.mid(index, reductionCount));
@@ -559,7 +561,7 @@ int VREMLoader::OscarDataParser(QStringList OdataList,Machine* machine,QVector<v
                         reducedArray.append(byteArray.mid(index, reductionCount));
                         index+=1;
                     }
-                    index-=54;
+                    index-=29;
                     flowParser(reducedArray, flow, time );
                     updatePressure(time , pressure);
                     time += 1000;
