@@ -3,7 +3,7 @@
  * Notes: Intellipap DV54 requires the SmartLink attachment to access this data.
  *
  * Copyright (c) 2011-2018 Mark Watkins 
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -18,6 +18,7 @@
 //#define DEBUG6
 
 ChannelID INTP_SmartFlexMode, INTP_SmartFlexLevel;
+extern bool openOk;
 
 Intellipap::Intellipap(Profile *profile, MachineID id)
     : CPAP(profile, id)
@@ -103,7 +104,7 @@ int IntellipapLoader::OpenDV5(const QString & path)
         return -1;
     }
 
-    f.open(QFile::ReadOnly);
+    openOk = f.open(QFile::ReadOnly);
     QTextStream tstream(&f);
 
     const QString INT_PROP_Serial = "Serial";
@@ -281,7 +282,7 @@ int IntellipapLoader::OpenDV5(const QString & path)
 
     quint32 ts1, ts2;//, length;
     //unsigned char cs;
-    f.open(QFile::ReadOnly);
+    openOk = f.open(QFile::ReadOnly);
     int cnt = 0;
     QDateTime epoch(QDate(2002, 1, 1), QTime(0, 0, 0), QTimeZone("UTC")); // Intellipap Epoch
     int ep = epoch.toSecsSinceEpoch();
@@ -309,7 +310,7 @@ int IntellipapLoader::OpenDV5(const QString & path)
 
     if (!f.exists()) { return -1; }
 
-    f.open(QFile::ReadOnly);
+    openOk = f.open(QFile::ReadOnly);
     long size = f.size();
     int recs = size / 26;
     m_buffer = new unsigned char [size];

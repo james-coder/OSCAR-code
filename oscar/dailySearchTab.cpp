@@ -1,6 +1,6 @@
 /* user graph settings Implementation
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -27,6 +27,7 @@
 #include <QtGlobal>
 #include <QHeaderView>
 #include <QCoreApplication>
+#include <QFileInfo>
 #include "dailySearchTab.h"
 #include "SleepLib/day.h"
 #include "SleepLib/profiles.h"
@@ -430,9 +431,11 @@ void DailySearchTab::showOnlyAhiChannels(bool ahiOnly) {
 };
 
 void DailySearchTab::on_matchGroupButton_toggled(QAbstractButton* topicButton ) {
+    DEBUGCI ;
     if (topicButton) {
         int topic = buttonGroup->id(topicButton);
         if (lastTopic == ST_APNEA_LENGTH ) {
+            DEBUGCI Q(topic) Q(topicStr(topic)) ;
             //menu was only ahi channels
             apneaLikeChannels.clear();
             if (topic == ST_APNEA_ALL ) {
@@ -444,31 +447,40 @@ void DailySearchTab::on_matchGroupButton_toggled(QAbstractButton* topicButton ) 
             }
             process_match_info(lastButton->text(), ST_APNEA_LENGTH );
             return;
+        } else {
+            DEBUGCI ;
         }
         lastButton = topicButton;
         lastTopic = buttonGroup->id(topicButton);
         if (lastTopic == ST_APNEA_LENGTH ) {
+            DEBUGCI ;
             initApneaLikeChannels();
-            showOnlyAhiChannels(true);
             setState(allApneaSelect);
             return;
         }
     } else {
         return;
     }
+    DEBUGCI Q(lastButton->text()) Q(lastTopic);
     process_match_info(lastButton->text(), lastTopic );
 }
 
 void DailySearchTab::initApneaLikeChannels() {
+    DEBUGCI ;
     apneaLikeChannels = QVector<ChannelID>(ahiChannels);
     if (p_profile->cpap->userEventFlagging()) {
         apneaLikeChannels.push_back(CPAP_UserFlag1);
         apneaLikeChannels.push_back(CPAP_UserFlag2);
     }
+    apneaLikeChannels.push_back(CPAP_CSR);
+    apneaLikeChannels.push_back(CPAP_PB);
+    apneaLikeChannels.push_back(CPAP_LargeLeak);
+    //DEBUGCI ;
 }
 
 void DailySearchTab::updateEvents(ChannelID id,QString fullname) {
     if (commandEventList.contains(fullname)) return;
+    DEBUGCI ;
     commandEventList.insert(fullname);
     addCommandItem(fullname,id);
 }
@@ -532,13 +544,14 @@ void    DailySearchTab::setState(STATE newState) {
             STATE prev=state;
             state = newState;
 
-            DEBUGCI O(stateStr(prev)) O("==>") O(stateStr(state)) Q(matches.size());
+            //DEBUGCI O(stateStr(prev)) O("==>") O(stateStr(state)) Q(matches.size());
             //enum STATE { reset , waitForSearchTopic   ,  matching , multpileMatches , waitForStart ,  autoStart , searching ,  endOfSeaching ,  waitForContinue , allApneaSelect , noDataFound};
             switch (state) {
                 case multpileMatches :
                     if (daysSkippedItem) daysSkippedItem->setHidden(matches.size()>1) ;
                     break;
                 case matching :
+                    showOnlyAhiChannels(false);
                     if (prev == multpileMatches) {
                         matchButton->show();
                         addMatchButton->hide();
@@ -581,6 +594,7 @@ void    DailySearchTab::setState(STATE newState) {
                     break;
                 case allApneaSelect :
                     startButton->hide();
+                    showOnlyAhiChannels(true);
                     break;
                 case waitForContinue :
                     startButton->setEnabled(true);
@@ -1287,7 +1301,7 @@ void    DailySearchTab::process_match_info(QString text, int topic) {
                 match->nextTab = TW_EVENTS ;
                 setoperation(OP_GE,secondsDisplayString);
 
-                selectInteger->setRange(0,999);
+                selectInteger->setRange(0,9999);
                 selectInteger->setValue(25);
                 setText(selectUnits,tr(" Seconds"));
                 break;
@@ -1349,6 +1363,7 @@ void    DailySearchTab::process_match_info(QString text, int topic) {
 }
 
 void    DailySearchTab::on_operationButton_clicked() {
+        DEBUGCI ;
         setState( waitForStart );
         // only gets here for string operations
         if (match->operationOpCode == OP_CONTAINS ) {
@@ -1364,6 +1379,7 @@ void    DailySearchTab::on_operationButton_clicked() {
 };
 
 void    DailySearchTab::on_operationCombo_activated(int index) {
+    DEBUGCI ;
         // only gets here for numeric comparisions.
         setState( waitForStart );
         QString text = operationCombo->itemText(index);
@@ -1376,10 +1392,12 @@ void    DailySearchTab::on_operationCombo_activated(int index) {
 };
 
 void    DailySearchTab::on_commandButton_clicked() {
+    DEBUGCI ;
         setCommandPopupEnabled(true);
 }
 
 void    DailySearchTab::on_helpButton_clicked() {
+    DEBUGCI ;
         helpMode = !helpMode;
         if (helpMode) {
             resultTable->setMinimumSize(QSize(50,200)+textsize(helpText->font(),helpString));
@@ -1393,8 +1411,8 @@ void    DailySearchTab::on_helpButton_clicked() {
         }
 }
 
-void    DailySearchTab::on_clearButton_clicked()
-{
+void    DailySearchTab::on_clearButton_clicked() {
+    DEBUGCI ;
         setState( reset);
 }
 
@@ -1527,7 +1545,9 @@ void    DailySearchTab::on_matchButton_clicked() {
 }
 
 void    DailySearchTab::on_addMatchButton_clicked() {
+    DEBUGCI ;
         if (match->matchName.isEmpty()) { return; };
+    DEBUGCI ;
         match->createMatchDescription();
         QLabel* label = getCmdDescLabel();
         label->setText(match->label);
@@ -1542,6 +1562,7 @@ void    DailySearchTab::on_addMatchButton_clicked() {
 }
 
 void    DailySearchTab::on_startButton_clicked() {
+    DEBUGCI ;
         setState( searching );
         clearStatistics();
         if (startButton_1stPass) {
@@ -1561,20 +1582,24 @@ void    DailySearchTab::on_startButton_clicked() {
 }
 
 void    DailySearchTab::on_intValueChanged(int ) {
+    DEBUGCI ;
         selectInteger->findChild<QLineEdit*>()->deselect();
         criteriaChanged();
 }
 
 void    DailySearchTab::on_doubleValueChanged(double ) {
+    DEBUGCI ;
         selectDouble->findChild<QLineEdit*>()->deselect();
         criteriaChanged();
 }
 
 void    DailySearchTab::on_textEdited(QString ) {
+    DEBUGCI ;
         criteriaChanged();
 }
 
 void    DailySearchTab::on_activated(GPushButton* item ) {
+    DEBUGCI ;
         int row=item->row();
         int col=item->column();
         if (row<DS_ROW_DATA) return;

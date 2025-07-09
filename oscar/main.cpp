@@ -1,6 +1,6 @@
 /* OSCAR Main
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -56,8 +56,10 @@
 #include "SleepLib/loader_plugins/prisma_loader.h"
 #include "SleepLib/loader_plugins/resvent_loader.h"
 #include "SleepLib/loader_plugins/vrem_loader.h"
+// #include "SleepLib/loader_plugins/bmc_loader.h"
 
 MainWindow *mainwin = nullptr;
+extern bool openOk;
 
 int numFilesCopied = 0;
 
@@ -127,8 +129,8 @@ bool processPreferenceFile( QString path ) {
     QFile fl(fullpath);
     QFile tmp(fullpath+".tmp");
     QString line;
-    fl.open(QIODevice::ReadOnly);
-    tmp.open(QIODevice::WriteOnly);
+    openOk = fl.open(QIODevice::ReadOnly);
+    openOk = tmp.open(QIODevice::WriteOnly);
     QTextStream instr(&fl);
     QTextStream outstr(&tmp);
     bool isSleepyHead = false;
@@ -155,8 +157,8 @@ bool processFile( QString fullpath ) {
     QFile fl(fullpath);
     QFile tmp(fullpath+".tmp");
     QString line;
-    fl.open(QIODevice::ReadOnly);
-    tmp.open(QIODevice::WriteOnly);
+    openOk = fl.open(QIODevice::ReadOnly);
+    openOk = tmp.open(QIODevice::WriteOnly);
     QTextStream instr(&fl);
     QTextStream outstr(&tmp);
     while (instr.readLineInto(&line)) {
@@ -746,6 +748,8 @@ int main(int argc, char *argv[]) {
     PrismaLoader::Register();
     ResventLoader::Register();
     VREMLoader::Register();
+    //BmcLoader::Register();
+
 
     // Begin logging device connection activity.
     QString connectionsLogDir = GetLogDir() + "/connections";

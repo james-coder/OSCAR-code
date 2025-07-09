@@ -1,7 +1,7 @@
 /* gFlagsLine Implementation
  *
  * Copyright (c) 2011-2018 Mark Watkins 
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -46,8 +46,8 @@ gFlagsGroup::gFlagsGroup()
 }
 gFlagsGroup::~gFlagsGroup()
 {
+    delete_flag_lines();
 }
-
 
 qint64 gFlagsGroup::Minx()
 {
@@ -110,6 +110,7 @@ void gFlagsGroup::SetDay(Day *d)
         availableChans = chans.keys();
     }
 
+    delete_flag_lines();
     lvisible.clear();
     for (const auto code : availableChans) {
 //        const schema::Channel & chan = schema::channel[code];

@@ -1,6 +1,6 @@
-﻿/* Common GUI Functions Header
+/* Common GUI Functions Header
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (C) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -56,6 +56,13 @@ const QString STR_GRAPH_PressureMeasured = "PressureMeasured";
 const QString STR_GRAPH_rRMV = "rRMV";
 const QString STR_GRAPH_rMVFluctuation = "rMVFluctuation";
 const QString STR_GRAPH_FlowFull = "FlowFull";
+const QString STR_GRAPH_PressureWave = "PressureWave";
+const QString STR_GRAPH_FlowAbnormality = "FlowAbnormality";
+const QString STR_GRAPH_IE_Ratio = "IERatio";
+#if defined(STEADY_BREATHING)
+const QString STR_GRAPH_CPAP_SteadyBreathing = "SteadyBreathing";
+const QString STR_GRAPH_CPAP_SteadyBreathingEvent = "SteadyBreathingSpan";
+#endif
 
 
 //OXI_Pulse, OXI_SPO2, OXI_Perf, OXI_Plethy
@@ -80,6 +87,11 @@ extern QColor COLOR_PulseChange;
 extern QColor COLOR_SPO2Drop;
 extern QColor COLOR_UserFlag1;
 extern QColor COLOR_UserFlag2;
+
+#if defined(STEADY_BREATHING)
+extern QColor COLOR_SteadyBreathingFlag;
+extern QColor COLOR_SteadyBreathing;
+#endif
 
 // Chart Colors
 extern QColor COLOR_EPAP;

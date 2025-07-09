@@ -1,7 +1,7 @@
 /* SleepLib Weinmann SOMNOsoft/Balance Loader Implementation
  *
  * Copyright (c) 2011-2018 Mark Watkins 
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -172,7 +172,7 @@ int WeinmannLoader::Open(const QString & dirpath)
         QDateTime date = QDateTime(QDate(year,month,day), QTime(hour,minute,second));
         quint32 ts = date.toSecsSinceEpoch();
         if (!mach->SessionExists(ts)) {
-            qDebug() << date;
+            // qDebug() << date;
         }
 
         // stores used length of data at 0x46, in 16bit integers, for IPAP, EPAP, snore, leak,

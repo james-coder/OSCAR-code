@@ -1,6 +1,6 @@
 /* Overview GUI Headers
  *
- * Copyright (c) 2022-2024 The OSCAR Team
+ * Copyright (c) 2022-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -11,14 +11,14 @@
 
 #include <QWidget>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QPushButton>
 #include <QLabel>
 #include <QMessageBox>
-#include <QRegularExpression>
-#include <QDir>
+class QVBoxLayout;
+class QListWidget;
+class QListWidgetItem;
+class QRegularExpression;
+class QDir;
+class QPushButton;
 
 #include "Graphs/gGraphView.h"
 
@@ -189,7 +189,6 @@ private slots:
 
     void    closeHint();
 };
-
 
 #endif // SAVEGRAPHLAYOUTSETTINGS_H
 

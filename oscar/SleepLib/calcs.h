@@ -1,6 +1,6 @@
 /* Custom CPAP/Oximetry Calculations Header
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (C) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -125,6 +125,11 @@ class FlowParser
 
     // Minute vent needs Resp & TV calcs made here..
     void calc(bool calcResp, bool calcTv, bool calcTi, bool calcTe, bool calcMv);
+#if defined(STEADY_BREATHING)
+    EventDataType RMSOfVectorFluctuation(QVector<EventDataType> vector);
+    void calcSteadyBreathingWaveform();
+    void flagSteadyBreathing(Session *session);
+#endif
     void flagEvents();
     void flagUserEvents(ChannelID code, EventDataType restriction, EventDataType duration);
 

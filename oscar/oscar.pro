@@ -85,6 +85,12 @@ contains(DEFINES, STATIC) {
     }
 }
 
+DEFINES += STEADY_BREATHING
+#### STEADY_BREATHING_ENHANCED_TESTING should NOT be defined for offical builds.
+#### STEADY_BREATHING_ENHANCED_TESTING requires STEADY_BREATHING
+####  DEFINES += STEADY_BREATHING_ENHANCED_TESTING
+
+
 TARGET = OSCAR
 unix:!macx:!haiku {
     TARGET.path=/usr/bin
@@ -647,6 +653,7 @@ test {
         tests/deviceconnectiontests.cpp \
         tests/cryptotests.cpp \
         tests/dreemtests.cpp \
+        tests/eventstabtests.cpp \
         tests/zeotests.cpp
 
     HEADERS += \
@@ -660,6 +667,7 @@ test {
         tests/deviceconnectiontests.h \
         tests/cryptotests.h \
         tests/dreemtests.h \
+        tests/eventstabtests.h \
         tests/zeotests.h
 }
 

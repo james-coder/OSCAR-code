@@ -1,6 +1,6 @@
-﻿/* SleepLib Fisher & Paykel SleepStyle Loader Implementation
+/* SleepLib Fisher & Paykel SleepStyle Loader Implementation
  *
- * Copyright (c) 2020-2024 The Oscar Team
+ * Copyright (c) 2020-2025 The Oscar Team
  *
  * Derived from icon_loader.cpp
  * Copyright (c) 2011-2018 Mark Watkins 
@@ -20,6 +20,7 @@
 #include "sleepstyle_EDFinfo.h"
 
 const QString FPHCARE = "FPHCARE";
+extern bool openOk;
 
 ChannelID SS_SensAwakeLevel;
 ChannelID SS_EPR;
@@ -123,7 +124,7 @@ QStringList getSleepStyleMachines (QString iconPath) {
 
         QString line;
 
-        sumFile.open(QIODevice::ReadOnly);
+        openOk = sumFile.open(QIODevice::ReadOnly);
         QTextStream instr(&sumFile);
         for (int j = 0; j < 5; j++) {
             line = "";

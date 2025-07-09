@@ -1,6 +1,6 @@
 /* Custom CPAP/Oximetry Calculations Header
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -962,7 +962,13 @@ void calcRespRate(Session *session, FlowParser *flowparser)
         if (flow->count() > 20) {
             flowparser->openFlow(session, flow);
             flowparser->calc(calcResp, calcTv, calcTi , calcTe, calcMv);
+            #if defined(STEADY_BREATHING)
+                if (AppSetting->steadyBreathing()==SB_ACTIVE) flowparser->calcSteadyBreathingWaveform();
+            #endif
             flowparser->flagEvents();
+            #if defined(STEADY_BREATHING)
+                if (AppSetting->steadyBreathing()==SB_ACTIVE) flowparser->flagSteadyBreathing(session);
+            #endif
         }
     }
 
@@ -1618,3 +1624,187 @@ int calcSPO2Drop(Session *session)
     session->setLast(OXI_SPO2Drop, pc->last());
     return pc->count();
 }
+
+
+
+#if defined(STEADY_BREATHING)
+EventDataType FlowParser::RMSOfVectorFluctuation(QVector<EventDataType> vector){
+    EventDataType rms = 0;
+    EventDataType value;
+
+    for (int i=0;i<vector.count();++i){
+        value = vector.at(i);
+        rms = rms + value*value;
+    }
+
+    rms = sqrt(rms/vector.count());
+
+    return rms;
+}
+
+void FlowParser::calcSteadyBreathingWaveform(){
+    /////////////////////////////////////////////////////////////////////////////////
+    // Steady Breathing wavefrom
+    /////////////////////////////////////////////////////////////////////////////////
+    /// Deep sleep, Löwenstein: https://www.apneaboard.com/wiki/index.php?title=Lowenstein_PrismaLine_optimization
+    /// Minute ventilation: https://www.apneaboard.com/wiki/index.php/OSCAR_-_The_Guide#Minute_Vent
+    EventList *SB = nullptr;
+    EventDataType sq;
+    if (m_flow == NULL)
+    {
+        return;
+    }
+
+    if (m_session->eventlist.contains(CPAP_SteadyBreathing)){
+        return;
+    }
+
+    //Calculate a "steady breathing waveform" from the full flow waveform delivered by the machine.
+    //Take the RMS of 20 second chunks of the flow waveform.
+    //Calculate the difference of consecutive chunks, then take the RMS of such chunks for 2 minutes.
+    //Low pass filter the results.
+
+
+    EventDataType samplingRate = m_flow->rate(); // milliseconds per sample
+    EventDataType spsFlow =  1000.0/samplingRate; // Samples Per Second
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+        EventDataType flowPeriod_Seconds = AppSetting->steadyBreathingDuration();
+    #else
+        EventDataType flowPeriod_Seconds = 20.0;
+    #endif
+
+    EventDataType spsSB = 1.0/flowPeriod_Seconds;
+    EventDataType samplingRateSB =  1000.0/spsSB;
+    EventDataType samplePerPeriodFlow =  flowPeriod_Seconds*spsFlow;
+
+    SB = m_session->AddEventList(CPAP_SteadyBreathing, EVL_Waveform);
+    SB->setGain(0.125);
+    SB->setFirst(m_flow->first());
+    SB->setLast(m_flow->last());
+    SB->setRate(samplingRateSB);
+
+    EventDataType defaultFilterValue = 30;   // is this the correct name for 30?
+    EventDataType samplesPerFilter = 120;   // is this the correct name for 120?
+    quint32 rmsLengthSB = samplesPerFilter*spsSB;
+    QVector<EventDataType> rmsBufferSB(rmsLengthSB,defaultFilterValue);   //what is 30?
+
+    EventDataType filter = 0;
+    EventDataType filterStepSize = 1/(EventDataType)rmsLengthSB ; // 1/(samplesPerFilter*spsSB);
+
+    quint32 rmsLengthFlow = samplePerPeriodFlow; //flowPeriod_Seconds*spsFlow; //Calculate the RMS value of the flow rate over 10 seconds (period)
+    QVector<EventDataType> rmsBufferFlow(rmsLengthFlow,defaultFilterValue);
+
+
+    EventDataType value=0;
+    EventDataType maxsq;
+    quint32 rmsIndexFlow = 0;
+    quint32 rmsIndexSB = 0;
+    EventDataType previousValue = m_flow->data(0);
+    EventDataType difference = 0;
+
+    maxsq = previousValue;
+
+    quint32 countFlow = m_flow->count();
+
+    //If there's not enough data in the session to fill the calculation buffer, just skip the whole thing.
+    if (countFlow<rmsLengthFlow){
+        return;
+    }
+
+
+    quint32 countSB = countFlow/rmsLengthFlow;
+    QVector<qint16> sqv((QVector<qint16>(countSB)));
+
+    for (quint32 SBCounter=0;SBCounter<countSB;++SBCounter){
+            quint32 index=0;
+        for (quint32 i=0;i<rmsLengthFlow;++i){
+            index = i+SBCounter*rmsLengthFlow;
+            if (index<countFlow){
+                value = m_flow->data(index);
+            }
+
+            rmsBufferFlow.replace(rmsIndexFlow, value);
+            rmsIndexFlow = (rmsIndexFlow+1) % rmsLengthFlow;
+        }
+        sq = RMSOfVectorFluctuation(rmsBufferFlow);
+        difference = sq-previousValue;
+        previousValue = sq;
+        rmsBufferSB.replace(rmsIndexSB, difference);
+        rmsIndexSB = (rmsIndexSB+1) % rmsLengthSB;
+        sq = RMSOfVectorFluctuation(rmsBufferSB);
+        filter = filter + (sq-filter)*filterStepSize;
+        sqv[SBCounter]= filter*8;
+        if (filter > maxsq) { maxsq = filter; }
+    }
+    SB->AddWaveform(SB->first(), (qint16*)sqv.constData(),sqv.count(), m_flow->duration());
+    SB->setMin(0);
+    SB->setMax(maxsq);
+
+}
+
+void FlowParser::flagSteadyBreathing(Session *session)
+{
+    // Already contains?
+    if (session->eventlist.contains(CPAP_SteadyBreathingFlag)){
+        return;
+    }
+    if (!session->eventlist.contains(CPAP_SteadyBreathing)){
+        return;
+    }
+
+    //Detect regions of steady breathing from the steady breathing waveform.
+    //Values below 1.51 (arbitrary, eyeballed value to approximate the Löwenstein results) are steady breathing.
+    //Skip regions shorter than 60 seconds.
+
+    #if defined(STEADY_BREATHING_ENHANCED_TESTING)
+        EventDataType threshold = AppSetting->steadyBreathingThreshold();
+    #else
+        EventDataType threshold = 1.51;
+    #endif
+
+    QVector<EventList *> & EVL = session->eventlist[CPAP_SteadyBreathing];
+    int evlsize = EVL.size();
+
+    if (evlsize == 0)
+        return;
+
+    EventList * BF = nullptr;
+    BF = session->AddEventList(CPAP_SteadyBreathingFlag, EVL_Event);
+    qint64 time = 0;
+    EventDataType value, lastvalue=-1;
+    qint64 steadytime=0;
+    int count;
+    int minimumFlagTime_Seconds = 60;
+    for (auto & el : EVL) {
+        count = el->count();
+        if (!count) continue;
+
+        steadytime = 0;
+        lastvalue = 10000;
+
+        for (int i=0; i < count; ++i) {
+            time = el->time(i);
+            value = el->data(i);
+            if (value <= threshold) {
+                if (lastvalue > threshold) {
+                    steadytime = time;
+                }
+            } else if (lastvalue < threshold) {
+                int duration = (time - steadytime) / 1000L;
+                if (duration>=minimumFlagTime_Seconds){
+                     BF->AddEvent(time, duration);
+                }
+            }
+            lastvalue = value;
+        }
+    }
+
+    if (lastvalue <= threshold) {
+        int duration = (time - steadytime) / 1000L;
+        if (duration>=minimumFlagTime_Seconds){
+             BF->AddEvent(time, duration);
+        }
+    }
+}
+#endif
+

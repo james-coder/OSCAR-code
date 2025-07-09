@@ -1,6 +1,6 @@
 /* SleepLib Common Device Header
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (C) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -164,7 +164,11 @@ extern ChannelID CPAP_IPAP, CPAP_IPAPLo, CPAP_IPAPHi, CPAP_EPAP, CPAP_EPAPLo, CP
        CPAP_LeakMedian, CPAP_LeakTotal, CPAP_MaxLeak, CPAP_FLG, CPAP_IE, CPAP_Te, CPAP_Ti, CPAP_TgMV,
        CPAP_UserFlag1, CPAP_UserFlag2, CPAP_UserFlag3, /*CPAP_BrokenSummary, CPAP_BrokenWaveform,*/ CPAP_RDI,
        CPAP_PresReliefMode, CPAP_PresReliefLevel, CPAP_Test1, CPAP_Test2,
-       CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet;
+       CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet
+       #if defined(STEADY_BREATHING)
+       , CPAP_SteadyBreathing, CPAP_SteadyBreathingFlag
+       #endif
+       ;
 
 extern ChannelID RMS9_E01, RMS9_E02, RMS9_SetPressure, RMS9_MaskOnTime;
 extern ChannelID CPAP_LargeLeak, PRS1_BND,
@@ -189,6 +193,8 @@ extern ChannelID ZEO_SleepStage, ZEO_ZQ, ZEO_TotalZ, ZEO_TimeToZ, ZEO_TimeInWake
        ZEO_RiseTime;
 
 extern ChannelID POS_Orientation, POS_Inclination, POS_Movement;
+
+// extern ChannelID BMC_PressureWave, BMC_FlowAbnormality, BMC_IE_Ratio;
 
 const QString GRP_CPAP = "CPAP";
 const QString GRP_POS = "POS";

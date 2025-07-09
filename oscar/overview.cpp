@@ -1,6 +1,6 @@
 /* Overview GUI Implementation
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -36,8 +36,10 @@
 #include "Graphs/gUsageChart.h"
 #include "Graphs/gTTIAChart.h"
 #include "cprogressbar.h"
+#include "saveGraphLayoutSettings.h"
 
 #include "mainwindow.h"
+
 extern MainWindow *mainwin;
 
 
@@ -308,6 +310,14 @@ void Overview::CreateAllGraphs() {
         if (chan->showInOverview()) {
             ChannelID code = chan->id();
             QString name = chan->fullname();
+
+            #if defined(STEADY_BREATHING)
+            if (AppSetting->steadyBreathing()!=SB_ACTIVE ) {
+                if (code == CPAP_SteadyBreathingFlag)  continue;
+                if (code == CPAP_SteadyBreathing)  continue;
+            }
+            #endif
+
             if (name.length() > 16) name = chan->label();
             gGraph *G = createGraph(chan->code(), name, chan->description());
             gSummaryChart * sc = nullptr;

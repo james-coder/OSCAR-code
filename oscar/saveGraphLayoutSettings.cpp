@@ -1,6 +1,6 @@
 /* user graph settings Implementation
  *
- * Copyright (c) 2022-2024 The OSCAR Team
+ * Copyright (c) 2022-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code
@@ -19,6 +19,11 @@
 #include <QPixmap>
 #include <QSize>
 #include <QChar>
+#include <QDir>
+#include <QRegularExpression>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QVBoxLayout>
 #include "SleepLib/profiles.h"
 #include "saveGraphLayoutSettings.h"
 
@@ -26,6 +31,7 @@
 
 #define USE_FRAMELESS_WINDOW_off
 #define USE_PROFILE_SPECIFIC_FOLDERoff      // off implies saved layouts worked for all profiles.
+extern bool openOk;
 
 SaveGraphLayoutSettings::SaveGraphLayoutSettings(QString title,QWidget* parent) : parent(parent),title(title)
 {
@@ -923,7 +929,7 @@ QString DescriptionMap::get(QString key) {
 
 void DescriptionMap::save() {
     QFile file(filename);
-    file.open(QFile::WriteOnly);
+    openOk = file.open(QFile::WriteOnly);
     QTextStream out(&file);
     QMapIterator<QString, QString>it(descriptions);
     while (it.hasNext()) {
@@ -939,7 +945,7 @@ void DescriptionMap::load() {
     QFile file(filename);
     descriptions.clear();
     if (!file.exists()) return;
-    file.open(QFile::ReadOnly);
+    openOk = file.open(QFile::ReadOnly);
     QTextStream instr(&file);
     while (instr.readLineInto(&line)) {
         QRegularExpressionMatch match = parseDescriptionsRe->match(line);

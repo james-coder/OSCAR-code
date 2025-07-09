@@ -1,6 +1,6 @@
 /* SleepLib Common Device Stuff
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -27,7 +27,12 @@ ChannelID CPAP_IPAP, CPAP_IPAPLo, CPAP_IPAPHi, CPAP_EPAP, CPAP_EPAPLo, CPAP_EPAP
           CPAP_UserFlag1, CPAP_UserFlag2, CPAP_UserFlag3, /*CPAP_BrokenSummary, CPAP_BrokenWaveform,*/ CPAP_RDI,
           CPAP_PresReliefMode, CPAP_PresReliefLevel, CPAP_PSMin, CPAP_PSMax, CPAP_Test1,
           CPAP_Test2, CPAP_HumidSetting,
-          CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet, CPAP_EEPAP, CPAP_EEPAPLo, CPAP_EEPAPHi;
+          CPAP_PressureSet, CPAP_IPAPSet, CPAP_EPAPSet, CPAP_EEPAP, CPAP_EEPAPLo, CPAP_EEPAPHi
+          #if defined(STEADY_BREATHING)
+          , CPAP_SteadyBreathing,CPAP_SteadyBreathingFlag
+          #endif
+          ;
+
 
 
 ChannelID RMS9_E01, RMS9_E02, RMS9_SetPressure, RMS9_MaskOnTime;
@@ -53,3 +58,5 @@ ChannelID ZEO_SleepStage, ZEO_ZQ, ZEO_TotalZ, ZEO_TimeToZ, ZEO_TimeInWake, ZEO_T
           ZEO_RiseTime;
 
 ChannelID POS_Orientation, POS_Inclination, POS_Movement;
+
+// ChannelID BMC_PressureWave, BMC_FlowAbnormality, BMC_IE_Ratio;

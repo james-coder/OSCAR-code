@@ -1,6 +1,6 @@
 /* SleepLib Löwenstein Prisma Loader Header
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (C) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -11,7 +11,7 @@
 #define PRISMA_LOADER_H
 #include "SleepLib/machine_loader.h"
 #include "SleepLib/loader_plugins/edfparser.h"
-#include <QDir>
+class QDir;
 
 #ifdef UNITTEST_MODE
 #define private public

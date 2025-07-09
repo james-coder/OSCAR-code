@@ -84,7 +84,7 @@ void RawDataTests::testQIODeviceInterface()
 
     // seek/pos/getChar/ungetChar/readAll/atEnd
     // skip() is 5.10 or later, so we don't use or test it
-    char ch;
+    char ch=-1;
     int pos = raw.pos();
     Q_ASSERT(raw.pos() == qio.pos() - 1);  // peek (above) only retracts raw's position after reading qio
     Q_ASSERT(raw.getChar(&ch) == true);

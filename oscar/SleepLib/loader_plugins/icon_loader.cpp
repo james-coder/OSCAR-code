@@ -1,6 +1,6 @@
-﻿/* SleepLib Fisher & Paykel Icon Loader Implementation
+/* SleepLib Fisher & Paykel Icon Loader Implementation
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -27,6 +27,7 @@
 #endif
 
 const QString FPHCARE = "FPHCARE";
+extern bool openOk;
 
 FPIcon::FPIcon(Profile *profile, MachineID id)
     : CPAP(profile, id)
@@ -124,7 +125,7 @@ QStringList getIconMachines (QString iconPath) {
 
         QString line;
 
-        sumFile.open(QIODevice::ReadOnly);
+        openOk = sumFile.open(QIODevice::ReadOnly);
         QTextStream instr(&sumFile);
         for (int j = 0; j < 5; j++) {
             line = "";

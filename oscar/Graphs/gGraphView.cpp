@@ -11,9 +11,7 @@
 #include "test_macros.h"
 
 
-#include "Graphs/gGraphView.h"
 
-#include <QDir>
 #include <QTimeZone>
 #include <QFontMetrics>
 #include <QLabel>
@@ -28,6 +26,8 @@
 #include <QScreen>
 #include <QWindow>
 #include <QMessageBox>
+#include <QFile>
+#include "Graphs/gGraphView.h"
 
 
 #ifdef DEBUG_EFFICIENCY
@@ -47,6 +47,7 @@
 #include "Graphs/gFlagsLine.h"
 #include "SleepLib/profiles.h"
 #include "overview.h"
+extern bool openOk;
 
 
 #if 0
@@ -1326,6 +1327,10 @@ void gGraphView::GetXBounds(qint64 &st, qint64 &et)
 void gGraphView::SetXBounds(qint64 minx, qint64 maxx, short group, bool refresh)
 {
     bool changed= (minx!=m_minx)||(maxx!=m_maxx);
+    if (maxx<=minx) {
+        qDebug() << "Request Failed to setXbounds maxx<=minx" <<maxx <<minx;
+        return;
+    }
 
     for (auto & graph : m_graphs) {
         if ((graph->group() == group)) {
@@ -3398,14 +3403,11 @@ void gGraphView::keyPressEvent(QKeyEvent *event)
     if (m_metaselect && ((event->key() == Qt::Key_B) || (event->key() == 8747))) {
         if (mainwin->getDaily()->graphView() == this) {
             if (m_graph_index >= 0) {
-                m_metaselect=false;
-                qint64 start,end;
-                getSelectionTimes(start,end);
-                QDateTime d1 = QDateTime::fromMSecsSinceEpoch(start, QTimeZone::systemTimeZone());
-
-                mainwin->getDaily()->addBookmark(start, end, QString("Bookmark at %1").arg(d1.time().toString("HH:mm:ss")));
-                m_graphs[m_graph_index]->cancelSelection();
-                m_graph_index = -1;
+                // this code was copied from daily.cpp because daily::on_addBookmarkButton_clicked was private.
+                qint64 st,et;
+                GetXBounds(st,et);
+                QDateTime d=QDateTime::fromSecsSinceEpoch(st/1000L, QTimeZone::systemTimeZone());
+                mainwin->getDaily()->addBookmark(st,et,"" );
                 timedRedraw(0);
             }
             event->accept();
@@ -3681,7 +3683,7 @@ void gGraphView::SaveSettings(QString title,QString folderName)
     qDebug() << "Saving" << title << "settings";
     QString filename=settingsFilename(title,folderName) ;
     QFile f(filename);
-    f.open(QFile::WriteOnly);
+    openOk = f.open(QFile::WriteOnly);
     QDataStream out(&f);
     out.setVersion(QDataStream::Qt_4_6);
     out.setByteOrder(QDataStream::LittleEndian);
@@ -3745,7 +3747,7 @@ bool gGraphView::LoadSettings(QString title,QString folderName)
         return false;
     }
 
-    f.open(QFile::ReadOnly);
+    openOk = f.open(QFile::ReadOnly);
     QDataStream in(&f);
     in.setVersion(QDataStream::Qt_4_6);
     in.setByteOrder(QDataStream::LittleEndian);

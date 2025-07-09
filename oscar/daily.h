@@ -1,6 +1,6 @@
-﻿/* Daily GUI Headers
+/* Daily GUI Headers
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (C) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -34,7 +34,7 @@
 #include "Graphs/gLineChart.h"
 #include "sessionbar.h"
 #include "mytextbrowser.h"
-#include "saveGraphLayoutSettings.h"
+class SaveGraphLayoutSettings;
 
 
 namespace Ui {
@@ -266,7 +266,7 @@ private slots:
     void setup_ZombieUIWidgets(int zombieValue, bool zombieMode, bool setup);
     void set_ZombieUI(int ,bool init=false);
     void on_ZombieSlider_valueChanged(int value);
-    void on_ZombieSpinBox_editingFinished();
+    void on_ZombieSpinBox_valueChanged(double d);
     void on_Units10_100_clicked();
 
     void set_WeightUI(double weight_kg);

@@ -1,7 +1,7 @@
 /* OSCAR ZIP archive creation
  * Provides a Qt-convenient wrapper around miniz, see https://github.com/richgel999/miniz
  *
- * Copyright (c) 2020-2024 The OSCAR Team
+ * Copyright (c) 2020-2025 The OSCAR Team
  *
  * This file is subject to the terms and conditions of the GNU General Public
  * License. See the file COPYING in the main directory of the source code

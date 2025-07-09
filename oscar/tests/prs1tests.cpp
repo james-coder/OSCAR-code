@@ -16,10 +16,22 @@
 #define TESTDATA_PATH "./testdata/"
 //#define TEST_OSCAR_CALCS
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    #define QTHEX     Qt::hex
+    #define QTDEC     Qt::dec
+    #define QT_SKIP_EMPTY_PARTS Qt::SkipEmptyParts
+#else
+    #define QTHEX     hex
+    #define QTDEC     dec
+    #define QT_SKIP_EMPTY_PARTS QString::SkipEmptyParts
+#endif
+
 static PRS1Loader* s_loader = nullptr;
 static void iterateTestCards(const QString & root, void (*action)(const QString &));
 static QString prs1OutputPath(const QString & inpath, const QString & serial, const QString & basename, const QString & suffix);
 static QString prs1OutputPath(const QString & inpath, const QString & serial, int session, const QString & suffix);
+
+
 
 void PRS1Tests::initTestCase(void)
 {
@@ -200,9 +212,9 @@ void ChunkToYaml(QTextStream & out, PRS1DataChunk* chunk, bool ok)
 {
     // chunk header
     out << "chunk:" << '\n';
-    out << "  at: " << hex << chunk->m_filepos << '\n';
+    out << "  at: " << QTHEX << chunk->m_filepos << '\n';
     out << "  parsed: " << ok << '\n';
-    out << "  version: " << dec << chunk->fileVersion << '\n';
+    out << "  version: " << QTDEC << chunk->fileVersion << '\n';
     out << "  size: " << chunk->blockSize << '\n';
     out << "  htype: " << chunk->htype << '\n';
     out << "  family: " << chunk->family << '\n';
@@ -235,9 +247,9 @@ void ChunkToYaml(QTextStream & out, PRS1DataChunk* chunk, bool ok)
     }
     
     // header checksum
-    out << "  checksum: " << hex << chunk->storedChecksum << '\n';
+    out << "  checksum: " << QTHEX << chunk->storedChecksum << '\n';
     if (chunk->storedChecksum != chunk->calcChecksum) {
-        out << "  calcChecksum: " << hex << chunk->calcChecksum << '\n';
+        out << "  calcChecksum: " << QTHEX << chunk->calcChecksum << '\n';
     }
     
     // data
@@ -273,9 +285,9 @@ void ChunkToYaml(QTextStream & out, PRS1DataChunk* chunk, bool ok)
     }
     
     // data CRC
-    out << "  crc: " << hex << chunk->storedCrc << '\n';
+    out << "  crc: " << QTHEX << chunk->storedCrc << '\n';
     if (chunk->storedCrc != chunk->calcCrc) {
-        out << "  calcCrc: " << hex << chunk->calcCrc << '\n';
+        out << "  calcCrc: " << QTHEX << chunk->calcCrc << '\n';
     }
     out << '\n';
 }
@@ -360,7 +372,7 @@ void parseAndEmitChunkYaml(const QString & path)
             QTextStream out(&file);
 
             // keep only P1234568/Pn/00000000.001
-            QStringList pathlist = QDir::toNativeSeparators(inpath).split(QDir::separator(), QString::SkipEmptyParts);
+            QStringList pathlist = QDir::toNativeSeparators(inpath).split(QDir::separator(), QT_SKIP_EMPTY_PARTS);
             QString relative = pathlist.mid(pathlist.size()-3).join(QDir::separator());
             bool first_chunk_from_file = true;
 
@@ -424,7 +436,7 @@ QString prs1OutputPath(const QString & inpath, const QString & serial, const QSt
 {
     // Output to prs1/output/FOLDER/SERIAL-000000(-session.yml, etc.)
     QDir path(inpath);
-    QStringList pathlist = QDir::toNativeSeparators(inpath).split(QDir::separator(), QString::SkipEmptyParts);
+    QStringList pathlist = QDir::toNativeSeparators(inpath).split(QDir::separator(), QT_SKIP_EMPTY_PARTS);
     pathlist.pop_back();  // drop serial number directory
     pathlist.pop_back();  // drop P-Series directory
     QString foldername = pathlist.last();

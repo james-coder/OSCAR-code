@@ -1,6 +1,6 @@
-﻿/* Common GUI Functions Implementation
+/* Common GUI Functions Implementation
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -29,6 +29,10 @@ QColor COLOR_PulseChange    = COLOR_LightGray;
 QColor COLOR_SPO2Drop       = COLOR_LightBlue;
 QColor COLOR_UserFlag1      = QColor("#e0e0e0");
 QColor COLOR_UserFlag2      = QColor("#c0c0e0");
+#if defined(STEADY_BREATHING)
+QColor COLOR_SteadyBreathingFlag  = COLOR_LightRed ;
+QColor COLOR_SteadyBreathing      = COLOR_Red ;
+#endif
 
 // Chart Colors
 QColor COLOR_EPAP         = Qt::blue;

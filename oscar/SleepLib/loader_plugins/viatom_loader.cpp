@@ -1,6 +1,6 @@
 /* SleepLib Viatom Loader Implementation
  *
- * Copyright (c) 2020-2024 The OSCAR Team
+ * Copyright (c) 2020-2025 The OSCAR Team
  * (Initial importer written by dave madden <dhm@mersenne.com>)
  *
  * This file is subject to the terms and conditions of the GNU General Public

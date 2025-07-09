@@ -1,6 +1,6 @@
 /* Overview GUI Headers
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (C) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -27,11 +27,11 @@
 #include "Graphs/gOverviewGraph.h"
 #endif
 #include "Graphs/gSummaryChart.h"
-#include "saveGraphLayoutSettings.h"
 
 #include <QRegularExpression>
 #include <QListWidget>
 #include <QListWidgetItem>
+class SaveGraphLayoutSettings;
 
 namespace Ui {
 class Overview;

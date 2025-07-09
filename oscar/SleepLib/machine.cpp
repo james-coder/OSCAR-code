@@ -1,6 +1,6 @@
 /* SleepLib Device Class Implementation
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -694,11 +694,15 @@ bool Machine::Load(ProgressDialog *progress)
         return false;
     }
 
+#ifndef UNITTEST_MODE
+    // Add loader pixmap to progress
+    // Note: not used during test due to non-QGuiApplication quirks
     QPixmap image = getPixmap();
     if (!image.isNull()) {
         image = image.scaled(64,64);
         progress->setPixmap(image);
     }
+#endif
     progress->setMessage(QObject::tr("Loading %1 data for %2...").arg(info.brand).arg(profile->user->userName()));
 
     if (loader()) {
@@ -926,12 +930,51 @@ bool Machine::LoadSummary(ProgressDialog * progress)
     QByteArray data = file.readAll();
     QByteArray uncompressed = gUncompress(data);
 
-    QString errorMsg;
+#if QT_VERSION < QT_VERSION_CHECK(6,8,0)
 
-    if (! doc.setContent(&file) ){
-        qWarning() << "Invalid XML Content in" << filename;
+    QString errorMsg;
+    int errorLine;
+    int errorColumn;
+    if (!doc.setContent(uncompressed, false, &errorMsg, &errorLine, &errorColumn)) {
+        qWarning() << "Invalid XML Content in" << filename
+                   << "at line" << errorLine << ", column" << errorColumn
+                   << ":" << errorMsg;
+        file.close();
         return false;
     }
+#else
+    auto result = doc.setContent(uncompressed) ;
+    if (!result) {
+        qWarning() << "Invalid XML Content in" << filename 
+                   << "at line:" << result.errorLine << ", column: " <<  result.errorColumn
+                   << ":" << result.errorMessage;
+        file.close();
+        return false;
+    }
+#endif
+
+#if 0
+///////////////////////////////////////////////////////////////////////////////////////////////
+QByteArray uncompressed = gUncompress(data);
+    QString errorMsg;
+    int errorLine;
+    int errorColumn;
+
+    QDomDocument::ParseOptions options;
+    options |= QDomDocument::ParseError; // Enable error reporting
+
+    if (!doc.setContent(uncompressed, options, &errorMsg, &errorLine, &errorColumn)) {
+        qWarning() << "Invalid XML Content in" << filename
+                   << "at line" << errorLine << ", column" << errorColumn
+                   << ":" << errorMsg;
+        file.close();
+        return false;
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+#endif
+
+
     file.close();
 
     QDomElement root = doc.documentElement();

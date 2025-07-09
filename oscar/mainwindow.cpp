@@ -1,6 +1,6 @@
 /* OSCAR MainWindow Implementation
  *
- * Copyright (c) 2020-2024 The OSCAR Team
+ * Copyright (c) 2020-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -84,6 +84,7 @@
 #endif
 
 CheckUpdates *updateChecker;
+bool openOk;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),

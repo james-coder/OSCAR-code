@@ -1,6 +1,6 @@
 /* SleepLib Profiles Implementation
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (c) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -35,6 +35,7 @@
 #include "version.h"
 
 extern MainWindow *mainwin;
+extern bool openOk;
 Preferences *p_pref;
 Preferences *p_layout;
 Profile *p_profile;
@@ -138,7 +139,7 @@ QString Profile::checkLock()
     if (!file.exists())
         return QString();
 
-    file.open(QFile::ReadOnly);
+    openOk = file.open(QFile::ReadOnly);
     QString lockhost = file.readLine(1024).trimmed();
     return lockhost;
 }
@@ -157,7 +158,7 @@ const QString STR_PROP_PurgeDate = "purgedate";
 void Profile::addLock()
 {
     QFile lockfile(p_path+"lockfile");
-    lockfile.open(QFile::WriteOnly);
+    openOk = lockfile.open(QFile::WriteOnly);
     QByteArray ba;
     ba.append(QHostInfo::localHostName().toUtf8());
     lockfile.write(ba);
@@ -2012,7 +2013,7 @@ void Profile::saveChannels()
     QString filename = Get("{DataFolder}/") + "channels.dat";
     QFile f(filename);
     qDebug() << "Saving Channel States";
-    f.open(QFile::WriteOnly);
+    openOk = f.open(QFile::WriteOnly);
     QDataStream out(&f);
     out.setVersion(QDataStream::Qt_4_6);
     out.setByteOrder(QDataStream::LittleEndian);

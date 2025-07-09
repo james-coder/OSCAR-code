@@ -131,14 +131,14 @@ static void testDownload(const QString & loaderName)
 
 void DeviceConnectionTests::testOximeterConnection()
 {
-    CMS50F37Loader::Register();
-
     // Initialize main event loop to initialize threads and enable signals and slots.
     int argc = 1;
     const char* argv = "test";
     QCoreApplication app(argc, (char**) &argv);
     
 #if ENABLE
+    CMS50F37Loader::Register();
+
     DeviceConnectionManager & devices = DeviceConnectionManager::getInstance();
     /*
     QString string;

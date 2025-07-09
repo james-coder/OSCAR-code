@@ -8,6 +8,16 @@
 
 #include "resmedtests.h"
 #include "sessiontests.h"
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    #define QTHEX     Qt::hex
+    #define QTDEC     Qt::dec
+    #define QT_SKIP_EMPTY_PARTS Qt::SkipEmptyParts
+#else
+    #define QTHEX     hex
+    #define QTDEC     dec
+    #define QT_SKIP_EMPTY_PARTS QString::SkipEmptyParts
+#endif
+
 
 #define TESTDATA_PATH "./testdata/"
 
@@ -72,7 +82,7 @@ QString resmedOutputPath(const QString & inpath, int session, const QString & su
 {
     // Output to resmed/output/FOLDER/000000(-session.yml, etc.)
     QDir path(inpath);
-    QStringList pathlist = QDir::toNativeSeparators(inpath).split(QDir::separator(), QString::SkipEmptyParts);
+    QStringList pathlist = QDir::toNativeSeparators(inpath).split(QDir::separator(), QT_SKIP_EMPTY_PARTS);
     QString foldername = pathlist.last();
 
     QDir outdir(TESTDATA_PATH "resmed/output/" + foldername);

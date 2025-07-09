@@ -1,6 +1,6 @@
 /* glcommon GL code & font stuff Header
  *
- * Copyright (c) 2019-2024 The OSCAR Team
+ * Copyright (c) 2019-2025 The OSCAR Team
  * Copyright (C) 2011-2018 Mark Watkins 
  *
  * This file is subject to the terms and conditions of the GNU General Public
@@ -20,6 +20,7 @@ float brightness(QColor color);
 
 const QColor COLOR_Black = Qt::black;
 const QColor COLOR_LightGreen = QColor("light green");
+const QColor COLOR_LightRed = QColor("light pink");
 const QColor COLOR_DarkGreen = Qt::darkGreen;
 const QColor COLOR_Purple = QColor("purple");
 const QColor COLOR_Aqua = QColor("#40c0ff");
