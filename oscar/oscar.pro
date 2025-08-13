@@ -339,6 +339,8 @@ SOURCES += \
     SleepLib/event.cpp \
     SleepLib/importcontext.cpp \
     SleepLib/journal.cpp \
+    SleepLib/loader_plugins/bmcDataParsing.cpp \
+    SleepLib/loader_plugins/bmc_loader.cpp \
     SleepLib/loader_plugins/cms50f37_loader.cpp \
     SleepLib/loader_plugins/cms50_loader.cpp \
     SleepLib/loader_plugins/dreem_loader.cpp \
@@ -442,6 +444,8 @@ HEADERS  += \
     SleepLib/profiles.h \
     SleepLib/schema.h \
     SleepLib/session.h \
+    SleepLib/loader_plugins/bmcDataParsing.h \
+    SleepLib/loader_plugins/bmc_loader.h \
     SleepLib/loader_plugins/cms50_loader.h \
     SleepLib/loader_plugins/dreem_loader.h \
     SleepLib/loader_plugins/icon_loader.h \
