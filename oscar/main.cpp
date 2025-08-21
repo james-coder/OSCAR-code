@@ -56,7 +56,7 @@
 #include "SleepLib/loader_plugins/prisma_loader.h"
 #include "SleepLib/loader_plugins/resvent_loader.h"
 #include "SleepLib/loader_plugins/vrem_loader.h"
-// #include "SleepLib/loader_plugins/bmc_loader.h"
+#include "SleepLib/loader_plugins/bmc_loader.h"
 
 MainWindow *mainwin = nullptr;
 extern bool openOk;
@@ -747,8 +747,8 @@ int main(int argc, char *argv[]) {
     ViatomLoader::Register();
     PrismaLoader::Register();
     ResventLoader::Register();
+    BmcLoader::Register();
     VREMLoader::Register();
-    //BmcLoader::Register();
 
 
     // Begin logging device connection activity.
