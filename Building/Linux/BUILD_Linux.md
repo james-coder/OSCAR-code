@@ -20,7 +20,7 @@ After installing the required packages:
     $ git clone https://gitlab.com/CrimsonNape/OSCAR-code.git
     $ mkdir build
     $ cd build
-    $ qmake ../OSCAR-code/OSCAR_QT.pro.
+    $ qmake ../OSCAR-code/OSCAR_QT.pro
     $ make
 
 After successful compilation, you can execute in place with ./oscar/OSCAR,
