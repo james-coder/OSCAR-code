@@ -1253,6 +1253,7 @@ QString Daily::getMachineSettings(Day * day) {
         } else {
             html+="<tr><td colspan=5>&nbsp;</td></tr>";
         }
+        QString fmt = QString("<tr><td colspan=3><p title='%2'>%1</p></td><td colspan=2>%3</td></tr>");
 
         QMap<QString, QString> other;
         Session * sess = day->firstSession(MT_CPAP);
@@ -1267,7 +1268,7 @@ QString Daily::getMachineSettings(Day * day) {
 
         ChannelID cpapmode = loader->CPAPModeChannel();
         schema::Channel & chan = schema::channel[cpapmode];
-        first[cpapmode] = QString("<tr><td><p title='%2'>%1</p></td><td colspan=4>%3</td></tr>")
+        first[cpapmode] = QString(fmt)
                 .arg(chan.label())
                 .arg(chan.description())
                 .arg(day->getCPAPModeStr());
@@ -1309,7 +1310,7 @@ QString Daily::getMachineSettings(Day * day) {
             if (code ==0xe202)      // Format EPR relief correctly
                 data = formatRelief(data);
 
-            QString tmp = QString("<tr><td><p title='%2'>%1</p></td><td colspan=4>%3</td></tr>")
+            QString tmp = QString(fmt)
                     .arg(schema::channel[code].label())
                     .arg(schema::channel[code].description())
                     .arg(data);
