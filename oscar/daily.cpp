@@ -1628,7 +1628,7 @@ QString Daily::getAHI(Day * day, bool isBrick) {
             ahichan=CPAP_RDI;
             ahiname=STR_TR_RDI;
         }
-        html +=QString("<td colspan=5 bgcolor='%1' align=center><p title='%4'><font size=+3 color='%2'><b>%3</b></font></p> &nbsp; <font size=+3 color='%2'><b>%5</b></font></td>\n")
+        html +=QString("<td colspan=5 bgcolor='%1' align=center><div title='  %4 \t  ' style='white-space: nowrap;'><font size=+3 color='%2'><b>%3</b></font>&nbsp;&nbsp;&nbsp;&nbsp; <font size=+3 color='%2'><b>%5</b></font></div></td>\n")
                 .arg("#F88017").arg(COLOR_Text.name()).arg(ahiname).arg(schema::channel[ahichan].fullname()).arg(ahi,0,'f',2);
     } else {
         html +=QString("<td colspan=5 bgcolor='%1' align=center><font size=+3 color='yellow'><b>%2</b></font></td>\n")
