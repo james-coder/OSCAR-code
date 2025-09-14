@@ -5036,7 +5036,7 @@ Would you like do this now?</source>
         <location filename="../oscar/Graphs/gXAxis.cpp" line="74"/>
         <location filename="../oscar/Graphs/gXAxis.cpp" line="423"/>
         <source>Aug</source>
-        <translation>AHI</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../oscar/Graphs/gXAxis.cpp" line="74"/>
