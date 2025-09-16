@@ -1661,7 +1661,9 @@ void FlowParser::calcSteadyBreathingWaveform(){
 
     //Calculate a "steady breathing waveform" from the full flow waveform delivered by the machine.
     //Take the RMS of 20 second chunks of the flow waveform.
-    //Calculate the difference of consecutive chunks, then take the RMS of such chunks for 2 minutes.
+    //Calculate the difference of consecutive chunks
+    //Convert the difference to a percentage of the first chunk
+    //Take the RMS of such chunks for 2 minutes.
     //Low pass filter the results.
 
 
@@ -1700,7 +1702,7 @@ void FlowParser::calcSteadyBreathingWaveform(){
     quint32 rmsIndexFlow = 0;
     quint32 rmsIndexSB = 0;
     EventDataType previousValue = m_flow->data(0);
-    EventDataType difference = 0;
+    EventDataType difference = 0.00;
 
     maxsq = previousValue;
 
@@ -1727,7 +1729,10 @@ void FlowParser::calcSteadyBreathingWaveform(){
             rmsIndexFlow = (rmsIndexFlow+1) % rmsLengthFlow;
         }
         sq = RMSOfVectorFluctuation(rmsBufferFlow);
-        difference = sq-previousValue;
+        if (previousValue<=0){
+            previousValue=sq;
+        }
+        difference = 100*(sq-previousValue)/previousValue;
         previousValue = sq;
         rmsBufferSB.replace(rmsIndexSB, difference);
         rmsIndexSB = (rmsIndexSB+1) % rmsLengthSB;
@@ -1753,13 +1758,13 @@ void FlowParser::flagSteadyBreathing(Session *session)
     }
 
     //Detect regions of steady breathing from the steady breathing waveform.
-    //Values below 1.51 (arbitrary, eyeballed value to approximate the Löwenstein results) are steady breathing.
+    //Flag regions with a difference of less than 10% (eyeballed value to approximate the Löwenstein Deep Sleep event.)
     //Skip regions shorter than 60 seconds.
 
     #if defined(STEADY_BREATHING_ENHANCED_TESTING)
         EventDataType threshold = AppSetting->steadyBreathingThreshold();
     #else
-        EventDataType threshold = 1.51;
+        EventDataType threshold = 10;
     #endif
 
     QVector<EventList *> & EVL = session->eventlist[CPAP_SteadyBreathing];
