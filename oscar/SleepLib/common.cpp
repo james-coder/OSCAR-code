@@ -425,7 +425,11 @@ void validateFont (QString which, int size, bool bold, bool italic) {
 
 #ifdef Q_OS_MAC
     // Don't allow private font to be set for anything other than Application font (Mac restricts use to UI)
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (which != "Application" && fontdatabase.isPrivateFamily(desiredFont)) {
+    #else
+    if (which != "Application" && QFontDatabase::isPrivateFamily(desiredFont)) {
+    #endif
         desiredFont = "Helvetica";              // We assume "Helvetica" is universally available on Mac
         forceFont = true;
     }
