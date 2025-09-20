@@ -186,15 +186,14 @@ Session* ViatomLoader::ParseFilePOD2(const QString & filename, bool *existing)
         //Lacking better information, I've kept the limit checks from the other Viatom devices.
         //In testing, there were some streaks of 0 values for SPO2 and HR
         //These seem to be invalid measurements.
-        //Skip zeros.
         // Viatom advertises a range of 30 - 250 bpm.
         if (rec.hr>0 && (rec.hr < 30 || rec.hr > 250)) {
             UNEXPECTED_VALUE(rec.hr, "30-250");
         }
         else{
-            //if (rec.hr>0){
+            if (rec.hr>0){
                 AddEvent(OXI_Pulse, time_ms, rec.hr);
-            //}
+            }
         }
 
 
@@ -214,21 +213,24 @@ Session* ViatomLoader::ParseFilePOD2(const QString & filename, bool *existing)
             }
             else
             {
-                //if (rec.spo2>0)
-                //{
+                if (rec.spo2>0)
+                {
                     AddEvent(OXI_SPO2, time_ms, rec.spo2);
-                //}
+                }
             }
 
         }
         float pi = (float)rec.pi / 10;
-        if (pi>20)
+        if (pi>24)
         {
             //The POD2 manual says the perfusion index ranges from 0 to 20
             //The logged values range from 0 to 200.  2% PI = value of 20
             //The logged values are 10 times the displayed value.
+            //2025-08-31: Further experience with the POD2 shows that it will occasionally log
+            //perfusion index values above 20%.
+            //Changed to throw a warning at 24% instead of 20%
 
-             UNEXPECTED_VALUE(pi, "0-20%");
+             UNEXPECTED_VALUE(pi, "0-24%");
         }
         else
         {
