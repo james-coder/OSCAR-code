@@ -44,20 +44,20 @@ const QString &getUserName()
 #if defined (Q_OS_WIN)
 #if defined(UNICODE)
 
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_NT) {
+//        if (QSysInfo::WindowsVersion >= QSysInfo::WV_NT) {
             TCHAR winUserName[UNLEN + 1]; // UNLEN is defined in LMCONS.H
             DWORD winUserNameSize = sizeof(winUserName);
             GetUserNameW(winUserName, &winUserNameSize);
             userName = QString::fromStdWString(winUserName);
-        } else
-#endif
+//        } else
+#else
         {
             char winUserName[UNLEN + 1]; // UNLEN is defined in LMCONS.H
             DWORD winUserNameSize = sizeof(winUserName);
             GetUserNameA(winUserName, &winUserNameSize);
             userName = QString::fromLocal8Bit(winUserName);
         }
-
+#endif
 #endif
     }
 
