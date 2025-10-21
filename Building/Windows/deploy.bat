@@ -135,16 +135,19 @@ windeployqt.exe --force --compiler-runtime --no-translations --verbose 1 OSCAR.e
 
 :cleanup
 ::: Clean up unwanted translation files
-::::For unknown reasons, Win64 build copies the .ts files into the release dir/ectory, while Win32 does not
+::::For unknown reasons, Win64 build copies the .ts files into the release directory, while Win32 does not
 if exist Translations\*.ts del /q Translations\*.ts
 
 
 ::: Create installer
 cd ..
 IF %doSkipInstall%==1 goto :endProgram
-echo Creating OSCAR Installation Exec
+echo Creating OSCAR Installer
 "%ProgramFiles(x86)%\Inno Setup 6\iscc" /Q BuildInstall.iss 		|| (call :err 88	& goto :endProgram)
 if NOT exist %shadowBuildDir%\Installer\OSCAR*.exe  (call :err 89	& goto :endProgram)
+echo Installers in %shadowBuildDir%\Installer are:
+dir %shadowBuildDir%\Installer\ >%TEMP%\dirout.txt
+FINDSTR /C:".exe" %TEMP%\dirout.txt
 :endProgram
 echo Finished %~nx0 %errDescription%
 exit /b %errvalue%

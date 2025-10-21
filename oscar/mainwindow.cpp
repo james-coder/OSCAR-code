@@ -8,7 +8,7 @@
  * for more details. */
 
 #define TEST_MACROS_ENABLEDoff
-#include <test_macros.h>
+#include "test_macros.h"
 
 #include <QHostInfo>
 #include <QFileDialog>
@@ -20,7 +20,7 @@
 #include <QSettings>
 #include <QPixmap>
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QDesktopWidget>
+  #include <QDesktopWidget>
 #endif
 #include <QListView>
 #include <QPrinter>
@@ -40,9 +40,12 @@
 #include <QStorageInfo>
 #include <cmath>
 #if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
-#include <QRandomGenerator>
+  #include <QRandomGenerator>
 #endif
 
+#ifdef Q_OS_WIN
+  #include "windows.h"
+#endif
 #include "common_gui.h"
 #include "version.h"
 #include "SleepLib/appsettings.h"       // defines for REMSTAR_M_SUPPORT
