@@ -2,7 +2,7 @@ setlocal
 :::@echo off
 ::: You must set these paths to your QT configuration
 set qtpath=C:\Qt
-set qtVersion=5.15.2
+set qtVersion=5.15.0
 
 ::: This file has been updated to work with Qt 5.15.2 and mingw 8.1.0
 :::
