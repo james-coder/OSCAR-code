@@ -49,8 +49,8 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}-{#MyPlatform}-{#MyGitRevision}{#MySuffix}
 AppVerName={#MyAppName} {#MyAppVersion}-{#MyPlatform}-{#MyGitRevision}{#MySuffix}
 AppPublisher={#MyAppPublisher}
-AppCopyright=Copyright 2019-2020 {#MyAppPublisher}
-; **** AppCopyright=Copyright {GetDateTimeString('yyyy', #0, #0)} {%MyAppPublisher}
+#define MyInstDateTime GetDateTimeString('yyyy', '', '')
+AppCopyright=Copyright 2019-{#MyInstDateTime} {#MyAppPublisher}
 DefaultDirName={pf}\{#MyDirName}
 DefaultGroupName={#MyGroupName}
 OutputDir=.\Installer
@@ -83,7 +83,7 @@ Name: "finnish"; MessagesFile: "compiler:Languages\Finnish.isl"
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "hebrew"; MessagesFile: "compiler:Languages\Hebrew.isl"
-Name: "icelandic"; MessagesFile: "compiler:Languages\Icelandic.isl"
+;Name: "icelandic"; MessagesFile: "compiler:Languages\Icelandic.isl"
 Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"
