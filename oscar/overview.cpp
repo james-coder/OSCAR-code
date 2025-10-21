@@ -45,7 +45,7 @@ extern MainWindow *mainwin;
 
 qint64 convertDateToTimeRtn(const QDate &date,int hours,int min,int sec) {
     // date.startOfDay was introduced in 5.14.  ubuntu 22.04 LTS used QT5.15
-    #if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+    #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
         return date.startOfDay().addSecs(((hours*60+min)*60)+sec).toMSecsSinceEpoch();
     #else
         // this version works in QT 5.12
