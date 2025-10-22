@@ -1,11 +1,7 @@
 Creating OSCAR development environment on Windows, compiling, and building installers
 =====================================================================================
 
-This document is intended to be a brief description of how to install the necessary components to build OSCAR and create installers for Windows 64-bit using Qt6. (See BUILD-WIN-515.md for Qt5 and 32-bit Windows.)
-
-All references in the deploy.bat file are relative, so it should run with Oscar-code installed at any location.
-
-The deploy.bat file is required to build release and install versions of Oscar using QtCreator or with buildall.bat. The buildall.bat compiles Oscar, builds Oscar and calls deploy.bat to create release and install versions of Oscar.
+This document is intended to be a brief description of how to install the necessary components to build OSCAR and create installers for Windows 64-bit using Qt6. This document was written when Qt 6.9.3 was current and may become dated with future releases of Qt. (See BUILD-WIN-515.md for Qt5 and 32-bit Windows.)
 
 There are three sections to this documentation.
 
@@ -65,7 +61,13 @@ From <http://gnuwin32.sourceforge.net/packages/gawk.htm>, download setup for “
         - For development use, check:
           - Sources
           - QT Debug Information Files
--    Accept the license and complete the installation *(this takes a longer while)*.
+-    Accept the license and complete the installation *(this takes a longer while)*. 
+
+#### Clone Repository
+Whether you use batch files or QTCreator, you will need to get a copy of the OSCAR code.c
+- In a browser, log into your account at gitlab.com.
+- Select the Oscar project at https://gitlab.com/CrimsonNape/OSCAR-code.
+- Clone a copy of the repository to a location on your computer.
 
 #### Validate the installed software.
 
@@ -73,7 +75,7 @@ From <http://gnuwin32.sourceforge.net/packages/gawk.htm>, download setup for “
 
         dir C:\Qt
     -   You should see a list of files and folders, including "Tools"
--   Verify Git
+-   Verify Git 
 
         git --version
     -   You should see the version number
@@ -83,58 +85,11 @@ From <http://gnuwin32.sourceforge.net/packages/gawk.htm>, download setup for “
         "C:\Program Files (x86)\Inno Setup 6\ISCC"
     - You should see a list of command line options
 
-## Start Developing using batch files
+## Developing Oscar using Qt Creator
 
--   Requires Qt, Git and Inno setup described in above section.
--   Batch files buildall-693.bat and deploy.bat are used.
--   buildall-693.bat creates a build folder, compiles and executes deploy.bat
--   Supports 64 bit Windows
--   Supports Qt 6.9.3
--   Auto detection for which compiler to use.
--   buildall-693.bat supports command Line options
--   deploy.bat creates a release version and an install version.
--   deploy.bat is also used by QtCreator
--   The release folder contains OSCAR.exe and all other files necessary to run OSCAR
--   The install sub-folder contains the installable version of OSCAR...exe
--   Lists the release and install versions of OSCAR in the build folder.
+The advantage of usiing QT Creator rather than batch files is easier transition to new versions of Qt. QT Creater will adjust automatically to new versions, while batch files may require that you modify the batch files.  As a starter, we have provided a BUILDALL-693.BAT file that works with Qt 6.9.3.
 
-#### Examples use the following assumptions
-
-Git, Qt, and OSCAR may be located in different locations, for example:
-
--   "C:\\Program Files\\Git"
--   "D:\\Qt"
--   "E:\\OSCAR"
-
-The examples below show all three as being installed on C:\, but other drives may be used.
-
-#### Building Commands
-
--  Build install version for OSCAR 64 bit Windows
-    -   C:\\OSCAR\OSCAR-code\\Building\\Windows\buildall-693.bat C:\\Qt
--  Build Just release version for OSCAR for 64 bit version
-    -   C:\\OSCAR\OSCAR-code\\Building\\Windows\buildall-693.bat C:\\Qt skipInstall
--  Build release version for OSCAR for 64 bit version - without deleting build folder first
-    -   C:\\OSCAR\OSCAR-code\\Building\\Windows\buildall-693.bat C:\\Qt skipInstall remake
--  The current folder is not used by the buildall.bat
--  There is a pause when the build completes.
-    -  This insure that the user has a chance to read the build results.
--  Allows using windows shortcuts to build OSCAR and see results.
-
-*Note:* The default folder of Qt is C:\\Qt. If the Qt is located at the default folder then the \<QtFolder\> is not required as a command line option.
-
-#### Windows Shortcuts
--   Windows shortcuts can be used to execute the build commands or run OSCAR.
-    See BUILD-WIN.md for examples
-
-## Start Developing Oscar in Qt Creator
-
-**Clone Repository**
-- In a browser, log into your account at gitlab.com.
-- Select the Oscar project at https://gitlab.com/CrimsonNape/OSCAR-code.
-- Clone a copy of the repository to a location on your computer.
-
-**Run and configure Qt Creator**
+### Run and configure Qt Creator
 
 There are two QT Oscar project files: OSCAR_QT.pro in the Oscar-code directory, and Oscar.pro in the Oscar-code\\oscar directory. You may use *either* project file. Both will create a running version of Oscar. Building with Oscar.pro in the Oscar-code\\oscar directory may be very slightly faster, but the difference is negligible.
 
@@ -154,7 +109,7 @@ There are two QT Oscar project files: OSCAR_QT.pro in the Oscar-code directory, 
 
 With these changes, you can build, debug, and run Oscar from QT Creator. However, to run Oscar from a Windows shortcut, not in the QT environment, you must create a deployment directory that contains all files required by Oscar. 
 
-Creating an installer also requires an additional step. A deploy.bat file performs both functions. It creates a release directory and an installer. You can include this deployment file in QT Creator in one of two ways.
+Creating an installer also an additional step. A deploy.bat file performs two functions. It creates a release directory from which OSCAR may be run and an installer. You can include this deployment file in QT Creator in one of two ways.
    - You can include it as part of QT Creator's build process,
    - or you can do this as a separate deployment step.
 To include deployment as part of the Release build process, add a custom process step to the configuration.
@@ -171,11 +126,56 @@ If you prefer to run deploy.bat as a separate deployment step,
 - Now create a custom process step just as described earlier.
 - Menu item Build/Deploy will now run this deployment script.
 
+## Developing using batch files
+
+-   Requires Qt, Git and Inno setup described in above section.
+-   Batch files buildall-693.bat and deploy.bat are used.
+-   buildall-693.bat creates a build folder, compiles and executes deploy.bat
+-   Supports 64 bit Windows
+-   Supports Qt 6.9.3
+-   Auto detection for which compiler to use.
+-   buildall-693.bat has no command Line options
+-   deploy.bat creates a release version and an install version.
+-   deploy.bat is also used by QtCreator
+-   The release folder contains OSCAR.exe and all other files necessary to run OSCAR
+-   The install sub-folder contains the installer for OSCAR*.exe
+-   Places the release and install versions of OSCAR in the build folder.
+
+#### Examples use the following assumptions
+
+Git, Qt, and OSCAR may be located in different locations, for example:
+
+-   "C:\\Program Files\\Git"
+-   "D:\\Qt"
+-   "E:\\OSCAR"
+
+The examples below show all three as being installed on C:\, but other drives may be used.
+
+#### Building Commands
+
+-  Build install version for OSCAR 64 bit Windows
+    -   C:\\OSCAR\OSCAR-code\\Building\\Windows\buildall-693.bat
+-  The current folder is not used by the buildall.bat
+-  There is a pause when the build completes.
+    -  This insure that the user has a chance to read the build results.
+-  Allows using windows shortcuts to build OSCAR and see results.
+
+#### Deploy.bat builds a release directory and a Windows installer.
+
+All references in the deploy.bat file are relative, so it should run with Oscar-code installed at any location.
+
+The deploy.bat file is required to build release and install versions of Oscar using QtCreator or with buildall-693.bat. The buildall file compiles Oscar, builds Oscar and calls deploy.bat to create release and install versions of Oscar.
+
+
+#### Windows Shortcuts
+-   Windows shortcuts can be used to execute the build commands or run OSCAR.
+    See BUILD-WIN.md for examples
+
 **Compiling and building from the command line**
 
 If you prefer to build from the command line and not use QT Creator, a batch script buildall-693.bat will build and create installers for 64-bit Windows. This script has some hard-coded paths, so will need to be modified for your system configuration. 
 
-See BUILD-WIN.md for instructions on building a 32-bit version of OSCAR using an older version of Qt.
+See BUILD-WIN.md for instructions on building a 32-bit version of OSCAR using an older version of Qt -- Qt5.
 
 **The Deploy.BAT file**
 
@@ -183,4 +183,4 @@ The deployment batch file creates two folders inside the shadow build folder:
 
 Release – everything needed to run OSCAR. You can run OSCAR from this directory just by clicking on it.
 
-Installer – contains an installer exe file that will install this product.
+Installer – contains an installer exe file that will install OSCAR.
