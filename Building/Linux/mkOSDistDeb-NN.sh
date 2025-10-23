@@ -150,8 +150,12 @@ corePkg=$PKGNAME
 getPkg libdouble
 dblPkg=$PKGNAME
 
+getPkg libpcre
+libpcrePkg=$PKGNAME
+
 echo "QT name version " $corePkg $qtver
 echo "DblConv package " $dblPkg
+echo "libcrePkg package " $libpcrePkg
 
 # clean folders need to create the package
 if [ -d "${temp_folder}" ]; then
@@ -240,7 +244,7 @@ fpm --input-type dir --output-type deb  \
     --replaces "${package_name} ( << ${VERSION})" \
     --deb-no-default-config-files   \
     --depends $dblPkg \
-    --depends libpcre16-3 \
+    --depends ${libpcrePkg} \
     --depends qttranslations5-l10n \
     --depends "${corePkg} >= ${qtver}"   \
     --depends libqt5serialport5     \
