@@ -23,8 +23,7 @@ Setting aside the religious wars that can arise over any development methodology
 
 0. Create your own fork of the repo and configure it to stay up-to-date with the upstream repo.
 	* Go to https://gitlab.com/CrimsonNape/OSCAR-code and click on **Fork** in the top right of the project page.
-	* In your fork's sidebar, go to **Settings > Repository** then click on **Expand** for "Mirroring repositories".
-	* Enter "https://gitlab.com/CrimsonNape/OSCAR-code.git" for the repository **URL**, make sure the mirror is set to **Pull** and then click **Mirror repository**.
+	* Note that your repository is not updated automatically when changes are merged into the CrimsonNape repository. You must check manually that you have all changes in your forked repository!
 
 1. Create a branch to work on your feature or bugfix:
 
@@ -35,10 +34,11 @@ Setting aside the religious wars that can arise over any development methodology
 
 2. Write your code, committing to your branch as you go, using `git add` and `git commit -a`.
 
-3. Test your code. See the instructions on how to build the project. It should build successfully, without warnings, and your feature should work as intended.
+3. Test your code. See the instructions on how to build the project. It should build successfully, without warnings, and your feature should work as intended. Update your code as needed
 
-4. Bring your branch up to date with the current master: while you've been working, the "master" branch might have advanced past where it was when you first created your branch from it. Before you try to reincorporate your branch back into the "master" branch, you need to make sure your branch has incorporated any intervening changes in master:
+4. Bring your branch up to date with the current master: while you've been working, the "master" branch might have advanced past where it was when you first created your branch from it. Before you try to reincorporate your branch back into the "master" branch, you need to make sure both that your fork has incorporated any changes in the CrimsonNape repository and that your branch has incorporated any intervening changes in master:
 
+        Open your fork in the browser and if any new commits have been made, update your fork. Then:
         git checkout master
         git pull
         git checkout my-branch
