@@ -62,6 +62,20 @@ function getOS () {
   fi
 }
 
+function getPkg () {
+    unset PKGNAME
+    unset PKGVERS
+    while read stat pkg ver other ;
+        do 
+            if [[ ${stat} == "ii" ]] ; then
+                PKGNAME=`awk -F: '{print $1}' <<< ${pkg}`
+                PKGVERS=`awk -F. '{print $1 "." $2}' <<< ${ver}`
+                break
+            fi ;
+        done <<< $(dpkg -l | grep $1)
+}
+
+
 # generate the script from sources
 gene_script
 
@@ -128,6 +142,15 @@ if [ -f "./$deb_file" ]; then
     echo "destination file (./$deb_file) exists. fatal error"
     exit
 fi
+
+getPkg libqt6printsupport
+libprintsup=$PKGNAME
+
+getPkg libqt6openglwidgets
+libopenw=$PKGNAME
+
+getPkg libqt6xml
+libxml=$PKGNAME
 
 # clean folders need to create the package
 if [ -d "${temp_folder}" ]; then
@@ -216,9 +239,9 @@ fpm --input-type dir --output-type deb  \
     --replaces "${package_name} ( << ${VERSION})" \
     --deb-no-default-config-files   \
     --no-deb-generate-changes \
-    --depends libqt6printsupport6t64 \
-    --depends libqt6openglwidgets6t64 \
-    --depends libqt6xml6t64 \
+    --depends ${libprintsup} \
+    --depends ${libopenw} \
+    --depends ${libxml} \
     --depends libqt6serialport6 \
     -C ${temp_folder} \
     .
