@@ -1021,6 +1021,7 @@ QList<ImportPath> MainWindow::selectCPAPDataCards(const QString & prompt, bool a
     // TODO: This should either iterate over all detected cards and prompt for each, or it should only
     // provide the one confirmed card in the list.
     if (datacards.size() > 0) {
+        while (datacards.size() > 1) {datacards.removeLast();} // Process only the confirmed card
         MachineInfo info = datacards[0].loader->PeekInfo(datacards[0].path);
         QString infostr;
         if (!info.model.isEmpty()) {
@@ -1034,7 +1035,7 @@ QList<ImportPath> MainWindow::selectCPAPDataCards(const QString & prompt, bool a
             QMessageBox mbox(QMessageBox::NoIcon,
                 tr("CPAP Data Located"), infostr+"\n\n"+QDir::toNativeSeparators(datacards[0].path)+"\n\n"+
                 prompt,
-                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, this);
+                QMessageBox::Yes | QMessageBox::Cancel, this);
             mbox.setDefaultButton(QMessageBox::Yes);
             mbox.addButton(tr("Specify"), QMessageBox::NoRole);
 
@@ -1043,16 +1044,15 @@ QList<ImportPath> MainWindow::selectCPAPDataCards(const QString & prompt, bool a
             //QPixmap pixmap = QPixmap(getCPAPPixmap(datacards[0].loader->loaderName())).scaled(64,64);
             mbox.setIconPixmap(pixmap);
             int res = mbox.exec();
-
             if (res == QMessageBox::Cancel) {
                 // Give the communal progress bar back
                 datacards.clear();
                 return datacards;
-            } else if (res == QMessageBox::No) {
+            } else if (res != 0) {
                 //waitmsg->setText(tr("Please wait, launching file dialog..."));
                 datacards.clear();
                 asknew = true;
-            }
+            }// res==0 (yes button) falls through
         }
     } else {
         //waitmsg->setText(tr("No CPAP data card detected, launching file dialog..."));
