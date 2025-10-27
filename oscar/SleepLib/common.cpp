@@ -23,6 +23,7 @@
         #include <QtOpenGLWidgets/QOpenGLWidget>
         #include <QOpenGLFunctions>
         #include <QSurfaceFormat>
+        #include <QOffscreenSurface>
     #endif
 #endif //BROKEN_OPENGL_BUILD
 #include <QOpenGLFunctions>
@@ -150,13 +151,13 @@ QString getOpenGLVersionString()
             f.initializeOpenGLFunctions();
             glversion = QString(QLatin1String(reinterpret_cast<const char*>(f.glGetString(GL_VERSION))));
         #else
-            QOpenGLWidget w;
-            w.show();
-            w.makeCurrent();
-            QOpenGLFunctions f;
-            f.initializeOpenGLFunctions();
-            glversion = QString(QLatin1String(reinterpret_cast<const char*>(f.glGetString(GL_VERSION))));
-            w.doneCurrent();
+            QOffscreenSurface surf;
+            surf.create();
+            QOpenGLContext ctx;
+            ctx.create();
+            ctx.makeCurrent(&surf);
+            glversion = (const char*)ctx.functions()->glGetString(GL_VERSION);
+            surf.destroy();
         #endif
     #endif
     }
