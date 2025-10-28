@@ -224,7 +224,7 @@ void NewProfile::on_nextButton_clicked()
         //QString profileName = originalProfileName.isEmpty()? newProfileName : originalProfileName;
 
         if ( staticQMessageBox::question(this, tr("Profile Changes"), tr("Accept and save this information?"),
-                                  QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes) {
+                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes) {
 
             Profile *profile = Profiles::Get(profileName);
             if (!profile) { // No profile, create one.
