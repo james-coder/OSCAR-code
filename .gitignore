@@ -12,6 +12,7 @@
 *.qm
 
 build/*
+oscar/build/*
 git_info.h
 
 # Qt-es
