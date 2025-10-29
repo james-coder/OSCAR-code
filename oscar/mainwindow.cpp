@@ -138,6 +138,27 @@ MainWindow::MainWindow(QWidget *parent) :
 
 bool setupRunning = false;
 
+// Get a unique identifier for this computer or VM
+// We use this to determine whether machine has changed and openGL test needs to be repeated
+// This is a Windows-only requirement (at this time)
+QString getFingerprint() {
+    QString machid = "n/a";
+    QString glversion = getOpenGLVersionString();
+    QString graphEngine = getGraphicsEngine();
+    QString version = getVersion();
+#ifdef Q_OS_WIN
+    QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography",
+                       QSettings::NativeFormat);
+    machid = settings.value("MachineGuid").toString();
+#endif
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    hash.addData(machid.toUtf8());
+    hash.addData(glversion.toUtf8());
+    hash.addData(graphEngine.toUtf8());
+    hash.addData(version.toUtf8());
+    return hash.result().toHex();
+}
+
 QString MainWindow::getMainWindowTitle()
 {
     QString title = STR_TR_OSCAR + " " + getVersion().displayString();
@@ -294,6 +315,8 @@ void MainWindow::closeEvent(QCloseEvent * event)
         // Save current window position
         QSettings settings;
         settings.setValue("MainWindow/geometry", saveGeometry());
+
+        settings.setValue("Fingerprint", getFingerprint());
 
         // Trash anything allocated by the Graph objects
         DestroyGraphGlobals();
@@ -654,7 +677,9 @@ void MainWindow::TestWindowsOpenGL()
 void MainWindow::Startup()
 {
 #ifdef Q_OS_WIN
-    TestWindowsOpenGL();
+    QSettings settings;
+    if (getFingerprint() != settings.value("Fingerprint"))
+        TestWindowsOpenGL();
 #endif
 
     for (auto & loader : GetLoaders()) {
