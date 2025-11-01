@@ -134,7 +134,7 @@ fi
 getOS
 echo "osname='$OSNAME'"
 
-deb_file="${appli_name}_${VERSION}-${OSNAME}_$archi.deb"
+deb_file="${package_name}_${VERSION}-${OSNAME}_$archi-Qt5.deb"
 
 # if deb file exists, fatal error
 if [ -f "./$deb_file" ]; then
@@ -259,6 +259,7 @@ fpm --input-type dir --output-type deb  \
     --depends libc6                 \
     --no-deb-generate-changes \
     -C ${temp_folder} \
+    -p ${deb_file} \
     .
 
 # Suppress the *result* files : if not, it can make trouble with git
