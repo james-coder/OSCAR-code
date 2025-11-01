@@ -135,7 +135,7 @@ fi
 getOS
 echo "osname='$OSNAME'"
 
-deb_file="${appli_name}_${VERSION}-${OSNAME}_$archi.deb"
+deb_file="${package_name}_${VERSION}-${OSNAME}_$archi-Qt6.deb"
 
 # if deb file exists, fatal error
 if [ -f "./$deb_file" ]; then
@@ -244,21 +244,9 @@ fpm --input-type dir --output-type deb  \
     --depends ${libxml} \
     --depends libqt6serialport6 \
     -C ${temp_folder} \
+    -p ${deb_file} \
     .
 
 # Suppress the *result* files : if not, it can make trouble with git
 rm *result*
-
-# Rename the deb file oscar_xx to oscar-qt6_xxx
-debname=$(ls *.deb)
-part1=$(echo $debname | cut -d "_" -f 1)
-part2=$(echo $debname | cut -d "_" -f 2)
-part3=$(echo $debname | cut -d "_" -f 3)
-
-echo " "
-echo "debname = '$debname', part1 = '$part1', part2 = '$part2'"
-echo " "
-echo "--> ${part1}-qt6_${part2}_${part3}"
-
-mv "$debname" "${part1}-qt6_${part2}_${part3}"
 
