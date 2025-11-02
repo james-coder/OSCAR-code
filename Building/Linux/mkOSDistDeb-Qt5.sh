@@ -2,8 +2,6 @@
 # No parameter is not required
 # This script will identify the distribution and release version
 #
-#Updated to set the executuion bit. - CN
-#
 
 function gene_script () {
   # generate script shell from 2 files
@@ -68,7 +66,7 @@ function getPkg () {
     unset PKGNAME
     unset PKGVERS
     while read stat pkg ver other ;
-        do 
+        do
             if [[ ${stat} == "ii" ]] ; then
                 PKGNAME=`awk -F: '{print $1}' <<< ${pkg}`
                 PKGVERS=`awk -F. '{print $1 "." $2}' <<< ${ver}`
@@ -85,7 +83,8 @@ if [  -z ${ITERATION} ]; then
     ITERATION="1"
 fi
 
-SRC=/home/$USER/OSCAR/OSCAR-code/oscar
+#SRC=/home/$USER/OSCAR/OSCAR-code/oscar
+SRC="$(pwd)/../../oscar"
 
 VERSION=`awk '/#define VERSION / { gsub(/"/, "", $3); print $3 }' ${SRC}/VERSION`
 if [[ ${VERSION} == *-* ]]; then
@@ -126,10 +125,19 @@ dest_folder="/usr/"
 
 # the .deb file mustn't exist
 archi_tmp=$(lscpu | grep -i architecture | awk -F: {'print $2'} | tr -d " ")
+echo "archi_tmp = '${archi_tmp}'"
 if [ "$archi_tmp" = "x86_64" ];then
     archi="amd64"
+ elif [ "$archi_tmp" = "armv7l" ];then
+   archi="armhf"
+elif [ "$archi_tmp" = "aarch64" ];then
+   archi="arm64"
+elif [ "$archi_tmp" = "i686" ];then
+   archi="i386"
+elif [ "$archi_tmp" = "arm64" ];then
+   archi="arm64"
 else
-    archi="unknown"
+    archi="arch_unknown"
 fi
 
 # detection of the OS with version for Ubuntu
