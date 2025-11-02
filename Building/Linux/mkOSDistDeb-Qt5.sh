@@ -2,6 +2,8 @@
 # No parameter is not required
 # This script will identify the distribution and release version
 #
+#Updated to set the executuion bit. - CN
+#
 
 function gene_script () {
   # generate script shell from 2 files
