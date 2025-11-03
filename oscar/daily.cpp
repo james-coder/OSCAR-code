@@ -161,6 +161,8 @@ void Daily::setSidebarVisible(bool visible)
 Daily::Daily(QWidget *parent,gGraphView * shared)
     :QWidget(parent), ui(new Ui::Daily)
 {
+    setAttribute(Qt::WA_NativeWindow); // Prevents long repaint of entire window when creating first new gGraphView
+
     qDebug() << "Creating new Daily object";
     ui->setupUi(this);
 
