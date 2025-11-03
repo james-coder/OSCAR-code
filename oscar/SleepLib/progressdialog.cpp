@@ -8,10 +8,12 @@
  * for more details. */
 
 #include "progressdialog.h"
+#include <QDebug>
 
 ProgressDialog::ProgressDialog(QWidget * parent):
     QDialog(parent, Qt::Tool | Qt::FramelessWindowHint)
 {
+    qDebug() << "Progress Dialog opened";
     statusMsg = new QLabel(QObject::tr("Please Wait..."));
     hlayout = new QHBoxLayout;
 
@@ -27,7 +29,6 @@ ProgressDialog::ProgressDialog(QWidget * parent):
     progress->setMaximum(100);
     abortButton = nullptr;
     setWindowModality(Qt::ApplicationModal);
-
 }
 
 ProgressDialog::~ProgressDialog()
@@ -49,8 +50,11 @@ void ProgressDialog::setProgressValue(int val)
 }
 
 
-void ProgressDialog::setMessage(QString msg) {
+void ProgressDialog::setMessage(QString msg)
+{
     statusMsg->setText(msg);
+//    progress->raise();
+    qDebug() << "progress msg" << msg;
 }
 
 void ProgressDialog::addAbortButton()
