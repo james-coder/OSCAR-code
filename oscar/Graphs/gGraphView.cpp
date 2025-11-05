@@ -691,7 +691,7 @@ void gGraphView::popoutGraph()
         newgraph->setHeight(graph->height());
 
         short group = 0;
-        gv->m_graphs.insert(m_graphs.indexOf(graph)+1, newgraph);
+        gv->m_graphs.insert(gv->m_graphs.indexOf(graph)+1, newgraph);
         gv->m_graphsbyname[newname] = newgraph;
         newgraph->m_graphview = gv;
 
