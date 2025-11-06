@@ -2615,7 +2615,8 @@ void gGraphView::onSnapshotGraphToggle()
             }
         }
         m_graphsbyname.remove(graph->name());
-        m_graphs.removeAll(it.value());
+//        m_graphs.removeAll(it.value());
+        m_graphs.removeAll(graph);
         delete graph;
 
         updateScale();
