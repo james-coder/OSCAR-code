@@ -5,6 +5,18 @@
 #-------------------------------------------------
 
 message(Platform is $$QMAKESPEC )
+#message("CONFIG: $$CONFIG")
+
+# the debug option is set by default by qmake
+# to enable debug builds from the command line a new option "crash" is enable
+# crash was used since debug mode is always used to identify the cause of crashes.
+# a better name might be possible.
+# this can be enabled by CONFIG += crash in the qmake make.
+# qmake <buldFolderPath> OSCAR-code/OSCAR_QT.pro "CONFIG+=crash"  
+contains(CONFIG, crash) {
+    message("DEBUG BUILDS - set by OPTION  'crash' ")
+}
+
 
 lessThan(QT_MAJOR_VERSION,5) {
     error("You need Qt 5.8 or newer to build OSCAR");
@@ -70,11 +82,29 @@ greaterThan(QT_MAJOR_VERSION, 5) {
 }
 
 DEFINES += LOCK_RESMED_SESSIONS
-
 CONFIG += rtti
-CONFIG -= debug_and_release
-## for debug symbols comment out above line and add next line
-##CONFIG += debug
+!contains(CONFIG, crash) {
+    CONFIG -= debug_and_release
+} else {
+    # This requires CONFIG = debug set in qmake command
+    #message("DEBUG BUILDS - set by OPTION  'crash' ")
+
+    CONFIG -= crash  # Enable debug mode
+    CONFIG += debug  # Enable debug mode
+    # Debugging Configurations
+    CONFIG -= release  # Ensure release mode is disabled
+
+    # Debugging Symbols
+    QMAKE_CXXFLAGS += -g3  # Most comprehensive debugging symbols
+    QMAKE_CXXFLAGS += -ggdb  # GDB-specific debug information
+
+    # Optimization Level
+    #QMAKE_CXXFLAGS_DEBUG += -O0  # Disable optimizations completely
+
+    # Additional Debugging Flags
+    DEFINES += QT_ENABLE_GLIB  # Enable additional debugging support
+    DEFINES += QT_MESSAGELOGCONTEXT  # Include source file and line number in debug messages
+}
 
 contains(DEFINES, STATIC) {
     static {
