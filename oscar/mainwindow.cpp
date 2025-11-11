@@ -168,11 +168,27 @@ QString MainWindow::getMainWindowTitle()
     return title;
 }
 
+// Prevents long repaint of entire window when creating first new gGraphView
+void prepOpenGL (QWidget * widg) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0) && !defined(BROKEN_OPENGL_BUILD)
+    #ifdef Q_OS_WIN
+        widg->setAttribute(Qt::WA_NativeWindow);
+    #endif
+        QOpenGLWidget* gl;
+        gl = new QOpenGLWidget(widg);
+        gl->hide();
+#else
+    Q_UNUSED (widg)
+#endif
+}
+
 void MainWindow::SetupGUI()
 {
     setupRunning = true;
 
     setWindowTitle(getMainWindowTitle());
+
+    prepOpenGL(ui->tabWidget);
 
 #ifdef Q_OS_MAC
     ui->action_About->setMenuRole(QAction::AboutRole);
@@ -551,7 +567,7 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
     }
     m_clinicalMode = p_profile->cpap->clinicalMode();
 
-    progress->setMessage(tr("Loading profile \"%1\"").arg(profileName));
+    progress->setMessage(tr("Finishing profile \"%1\"").arg(profileName));
 
     // Show the logo?
 //    QPixmap logo=QPixmap(":/icons/logo-md.png").scaled(64,64);
@@ -566,11 +582,14 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
         qDebug() << "Abandon opening Profile";
         return false;
     }
+//    qDebug() << "creating Welcome page";
     welcome = new Welcome(ui->tabWidget);
     ui->tabWidget->insertTab(1, welcome, tr("Welcome"));
 
+//    qDebug() << "Creating Daily page";
     daily = new Daily(ui->tabWidget, nullptr);
     ui->tabWidget->insertTab(2, daily, STR_TR_Daily);
+//    qDebug() << "reloading daily graphs";
     daily->ReloadGraphs();
 
     if (overview) {
@@ -578,15 +597,19 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
         qDebug() << "Abandon opening Profile";
         return false;
     }
+//    qDebug() << "Creating Overview page";
     overview = new Overview(ui->tabWidget, daily->graphView());
     ui->tabWidget->insertTab(3, overview, STR_TR_Overview);
+//    qDebug() << "reloading overview graphs";
     overview->ReloadGraphs();
 
     // Should really create welcome and statistics here, but they need redoing later anyway to kill off webkit
     ui->tabWidget->setCurrentIndex(AppSetting->openTabAtStart());
 
     // always use last user setting - so don't reset. // p_profile->general->setStatReportMode(STAT_MODE_STANDARD);
+//    qDebug() << "Creating Statistics page";
     GenerateStatistics();
+//    qDebug() << "Creating Purge menu";
     PopulatePurgeMenu();
 
     AppSetting->setProfileName(p_profile->user->userName());
@@ -605,7 +628,6 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
     ui->tabWidget->setTabEnabled(2, !noMachines);       // daily, STR_TR_Daily);
     ui->tabWidget->setTabEnabled(3, !noMachines);       // overview, STR_TR_Overview);
     ui->tabWidget->setTabEnabled(4, !noMachines);       // statistics, STR_TR_Statistics);
-
 
     progress->close();
     delete progress;
