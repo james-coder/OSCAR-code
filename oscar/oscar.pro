@@ -303,13 +303,6 @@ macx {
     }
 }
 
-lessThan(QT_MAJOR_VERSION,5)|lessThan(QT_MINOR_VERSION,12) {
-    unix {
-        system("/bin/bash $$_PRO_FILE_PWD_/fix_5-12_UI_files.sh");
-        message("Fixing UI files for old QT versions")
-    }
-}
-
 SOURCES += \
     aboutdialog.cpp \
     checkupdates.cpp \
