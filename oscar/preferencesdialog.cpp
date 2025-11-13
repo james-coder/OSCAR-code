@@ -252,7 +252,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent, Profile *_profile) :
             AppSetting->setSteadyBreathing(SB_INACTIVE);
         }
         ui->steadyBreathing->setCheckable(false);
-        ui->steadyBreathing->setTitle(tr("Must enable Passive Mode (see Clinical Tab)"));
+        ui->steadyBreathing->setTitle(tr("Must enable Permissive Mode (see Clinical Tab)"));
         ui->steadyBreathing->setDisabled(true);
     }
     #if defined(STEADY_BREATHING_ENHANCED_TESTING)
