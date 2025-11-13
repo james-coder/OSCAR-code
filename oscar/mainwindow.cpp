@@ -1011,6 +1011,10 @@ QList<ImportPath> MainWindow::detectCPAPCards()
         }
     } while (detectedCards.size() == 0);
 
+    if (detectedCards.size() == 0) {
+        qDebug() << "Did not find a CPAP datacard in 20 seconds";
+    }
+
     popup.hide();
     popup.disconnect(&skipbtn, SIGNAL(clicked()), &popup, SLOT(hide()));
     popup.disconnect(&cancelbtn, SIGNAL(clicked()), &popup, SLOT(hide()));
