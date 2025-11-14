@@ -932,6 +932,17 @@ QList<ImportPath> MainWindow::detectCPAPCards()
     QString lastpath = (*p_profile)[STR_PREF_LastCPAPPath].toString();
 
     QList<MachineLoader *>loaders = GetLoaders(MT_CPAP);
+
+    // See if last import location still has CPAP data. If so, consider it selected.
+    Q_FOREACH(MachineLoader * loader, loaders) {
+        if (loader->Detect(lastpath)) {
+            detectedCards.append(ImportPath(lastpath, loader));
+            qDebug() << "Found existing" << loader->loaderName() << "datacard at" << lastpath;
+            return detectedCards;
+        }
+    }
+
+    // Don't have existing import location. Search for others.
     QElapsedTimer time;
     time.start();
 
@@ -961,10 +972,10 @@ QList<ImportPath> MainWindow::detectCPAPCards()
 //    importScanCancelled = false;
     popup.show();
     QApplication::processEvents();
-//    QString lastpath = (*p_profile)[STR_PREF_LastCPAPPath].toString();
 
+    // Look for a mount point that contains CPAP data
     do {
-        // Rescan in case card inserted
+        // Rescan for mount points in case user inserted a card
         QStringList AutoScannerPaths = getDriveList();
         if (AutoScannerPaths.contains("CROSTINI")) {  // no Crostini removable drives found!
             if (( lastpath.size() > 0) && ( ! AutoScannerPaths.contains(lastpath))) {
@@ -979,7 +990,7 @@ QList<ImportPath> MainWindow::detectCPAPCards()
                 break;                                    // break out of the 20 second wait loop
             }
         }
-//      AutoScannerPaths.push_back(lastpath);
+
         qDebug() << "Drive list size:" << AutoScannerPaths.size();
 
         if ( (lastpath.size()>0) && ( ! AutoScannerPaths.contains(lastpath))) {
@@ -992,7 +1003,6 @@ QList<ImportPath> MainWindow::detectCPAPCards()
             Q_FOREACH(MachineLoader * loader, loaders) {
                 if (loader->Detect(path)) {
                     detectedCards.append(ImportPath(path, loader));
-
                     qDebug() << "Found" << loader->loaderName() << "datacard at" << path;
                 }
                 QApplication::processEvents();
@@ -1099,11 +1109,13 @@ QList<ImportPath> MainWindow::selectCPAPDataCards(const QString & prompt, bool a
                 // Give the communal progress bar back
                 datacards.clear();
                 return datacards;
-            } else if (res != 0) {
+            } else if (res == QMessageBox::Yes) {
+                // let it fall through.
+            } else {
                 //waitmsg->setText(tr("Please wait, launching file dialog..."));
                 datacards.clear();
                 asknew = true;
-            }// res==0 (yes button) falls through
+            }
         }
     } else {
         //waitmsg->setText(tr("No CPAP data card detected, launching file dialog..."));
