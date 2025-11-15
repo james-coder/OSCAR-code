@@ -582,14 +582,14 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
         qDebug() << "Abandon opening Profile";
         return false;
     }
-//    qDebug() << "creating Welcome page";
+    qDebug() << "creating Welcome page";
     welcome = new Welcome(ui->tabWidget);
     ui->tabWidget->insertTab(1, welcome, tr("Welcome"));
 
-//    qDebug() << "Creating Daily page";
+    qDebug() << "Creating Daily page";
     daily = new Daily(ui->tabWidget, nullptr);
     ui->tabWidget->insertTab(2, daily, STR_TR_Daily);
-//    qDebug() << "reloading daily graphs";
+    qDebug() << "reloading daily graphs";
     daily->ReloadGraphs();
 
     if (overview) {
@@ -597,19 +597,19 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
         qDebug() << "Abandon opening Profile";
         return false;
     }
-//    qDebug() << "Creating Overview page";
+    qDebug() << "Creating Overview page";
     overview = new Overview(ui->tabWidget, daily->graphView());
     ui->tabWidget->insertTab(3, overview, STR_TR_Overview);
-//    qDebug() << "reloading overview graphs";
+    qDebug() << "reloading overview graphs";
     overview->ReloadGraphs();
 
     // Should really create welcome and statistics here, but they need redoing later anyway to kill off webkit
     ui->tabWidget->setCurrentIndex(AppSetting->openTabAtStart());
 
     // always use last user setting - so don't reset. // p_profile->general->setStatReportMode(STAT_MODE_STANDARD);
-//    qDebug() << "Creating Statistics page";
+    qDebug() << "Creating Statistics page";
     GenerateStatistics();
-//    qDebug() << "Creating Purge menu";
+    qDebug() << "Creating Purge menu";
     PopulatePurgeMenu();
 
     AppSetting->setProfileName(p_profile->user->userName());
@@ -934,13 +934,14 @@ QList<ImportPath> MainWindow::detectCPAPCards()
     QList<MachineLoader *>loaders = GetLoaders(MT_CPAP);
 
     // See if last import location still has CPAP data. If so, consider it selected.
-    Q_FOREACH(MachineLoader * loader, loaders) {
-        if (loader->Detect(lastpath)) {
-            detectedCards.append(ImportPath(lastpath, loader));
-            qDebug() << "Found existing" << loader->loaderName() << "datacard at" << lastpath;
-            return detectedCards;
+    if (lastpath.size() > 0)
+        Q_FOREACH(MachineLoader * loader, loaders) {
+            if (loader->Detect(lastpath)) {
+                detectedCards.append(ImportPath(lastpath, loader));
+                qDebug() << "Found existing" << loader->loaderName() << "datacard at" << lastpath;
+                return detectedCards;
+            }
         }
-    }
 
     // Don't have existing import location. Search for others.
     QElapsedTimer time;
