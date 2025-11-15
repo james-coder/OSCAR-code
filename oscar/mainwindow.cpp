@@ -934,7 +934,7 @@ QList<ImportPath> MainWindow::detectCPAPCards()
     QList<MachineLoader *>loaders = GetLoaders(MT_CPAP);
 
     // See if last import location still has CPAP data. If so, consider it selected.
-    if (lastpath.size() > 0)
+    if (lastpath.size() > 0) {
         Q_FOREACH(MachineLoader * loader, loaders) {
             if (loader->Detect(lastpath)) {
                 detectedCards.append(ImportPath(lastpath, loader));
@@ -942,6 +942,7 @@ QList<ImportPath> MainWindow::detectCPAPCards()
                 return detectedCards;
             }
         }
+    }
 
     // Don't have existing import location. Search for others.
     QElapsedTimer time;
