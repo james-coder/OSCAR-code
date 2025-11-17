@@ -1,8 +1,13 @@
 setlocal
 :::@echo off
 ::: You must set these paths to your QT configuration
+::: Optional parameter sets a different qtVersion.  For example, to build with 6.10.0 instead:
+:::     buildall-qt6.bat 6.10.0
+::: This batch file confirmed to work with Qt 6.9.3 and 6.10.0
+set	qtVersion=%1
+if "%1" == "" set qtVersion=6.9.3
+
 set qtpath=C:\Qt
-set qtVersion=6.9.3
 set minver=1310
 
 ::: This file has been updated to work with Qt 6.9.3 and mingw1310_64

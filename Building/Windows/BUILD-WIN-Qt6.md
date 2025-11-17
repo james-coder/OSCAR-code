@@ -54,8 +54,8 @@ From <http://gnuwin32.sourceforge.net/packages/gawk.htm>, download setup for “
 -    Set your installation directory to C:\\Qt. If you choose a different directory, you will need to edit the build BAT file(s).
 -    In "Components"
      - Select Qt
-     - Select 6.9.3
-        - Under Qt 6.9.3 Additional Libraries, check:
+     - Select 6.9.3 (or 6.10.0)
+        - Under Qt 6.9.3 (or 6.10.0) Additional Libraries, check:
           - Qt 5 Compatibility Module
           - Qt Serial Port.
         - For development use, check:
@@ -64,7 +64,7 @@ From <http://gnuwin32.sourceforge.net/packages/gawk.htm>, download setup for “
 -    Accept the license and complete the installation *(this takes a longer while)*. 
 
 #### Clone Repository
-Whether you use batch files or QTCreator, you will need to get a copy of the OSCAR code.c
+Whether you use batch files or QTCreator, you will need to get a copy of the OSCAR code.
 - In a browser, log into your account at gitlab.com.
 - Select the Oscar project at https://gitlab.com/CrimsonNape/OSCAR-code.
 - Clone a copy of the repository to a location on your computer.
@@ -74,20 +74,23 @@ Whether you use batch files or QTCreator, you will need to get a copy of the OSC
 -   Verify Qt
 
         dir C:\Qt
+    
     -   You should see a list of files and folders, including "Tools"
--   Verify Git 
+- Verify Git 
 
-        git --version
-    -   You should see the version number
+      git --version
+
+  -   You should see the version number
 
 -   Verify Inno
 
         "C:\Program Files (x86)\Inno Setup 6\ISCC"
+    
     - You should see a list of command line options
 
 ## Developing Oscar using Qt Creator
 
-The advantage of usiing QT Creator rather than batch files is easier transition to new versions of Qt. QT Creater will adjust automatically to new versions, while batch files may require that you modify the batch files.  As a starter, we have provided a BUILDALL-693.BAT file that works with Qt 6.9.3.
+The advantage of using QT Creator rather than batch files is easier transition to new versions of Qt. QT Creater will adjust automatically to new versions, while batch files may require that you modify the batch files.  As a starter, we have provided a BUILDALL-qt6.BAT file that works with Qt 6.9.3 or 6.10.0.
 
 ### Run and configure Qt Creator
 
@@ -98,14 +101,14 @@ There are two QT Oscar project files: OSCAR_QT.pro in the Oscar-code directory, 
 
 *QT will ask you to select your kits and configure them.*
 
-- Select the Desktop Qt 6.9.3 MinGW 64-bit kit.
+- Select the Desktop Qt 6.9.3 or 6.10.0 MinGW 64-bit kit.
 - Click on Projects in the left panel to show your active project (“oscar”) and **Build & Run** settings.
 - Click on the **Build** line
 - In the Build settings in the center panel, select “Release” rather than the default “Debug” in the pull-down at the top of the Build Settings.
 - By default, “Enable Qt Quick Compiler” is checked. Remove that check – errors result if it is on. QT will ask if you want to recompile everything now. **Don’t**, as there is more to do before compiling. 
 - Make this same change for the Debug build for the kit. 
 - If you want to use the QT Creator Debug tools, Select the Build Debug pull-down and disable the QT Quick Compiler there as well.
-- 'Build' menu > 'Build Project "OSCAR_QT"' menu item
+- 'Build' menu > 'Build Project "OSCAR_QT"' menu item.
 
 With these changes, you can build, debug, and run Oscar from QT Creator. However, to run Oscar from a Windows shortcut, not in the QT environment, you must create a deployment directory that contains all files required by Oscar. 
 
@@ -129,12 +132,12 @@ If you prefer to run deploy.bat as a separate deployment step,
 ## Developing using batch files
 
 -   Requires Qt, Git and Inno setup described in above section.
--   Batch files buildall-693.bat and deploy.bat are used.
--   buildall-693.bat creates a build folder, compiles and executes deploy.bat
+-   Batch files buildall-qt6.bat and deploy.bat are used.
+-   buildall-qt6.bat creates a build folder, compiles and executes deploy.bat
 -   Supports 64 bit Windows
--   Supports Qt 6.9.3
+-   Supports Qt 6.9.3 or 6.10.0
 -   Auto detection for which compiler to use.
--   buildall-693.bat has no command Line options
+-   buildall-qt6.bat has one command Line option: the Qt6 version to use (e.g, "buildall-qt6.bat 6.10.0")
 -   deploy.bat creates a release version and an install version.
 -   deploy.bat is also used by QtCreator
 -   The release folder contains OSCAR.exe and all other files necessary to run OSCAR
@@ -154,7 +157,7 @@ The examples below show all three as being installed on C:\, but other drives ma
 #### Building Commands
 
 -  Build install version for OSCAR 64 bit Windows
-    -   C:\\OSCAR\OSCAR-code\\Building\\Windows\buildall-693.bat
+    -   C:\\OSCAR\OSCAR-code\\Building\\Windows\buildall-qt6.bat
 -  The current folder is not used by the buildall.bat
 -  There is a pause when the build completes.
     -  This insure that the user has a chance to read the build results.
@@ -164,7 +167,7 @@ The examples below show all three as being installed on C:\, but other drives ma
 
 All references in the deploy.bat file are relative, so it should run with Oscar-code installed at any location.
 
-The deploy.bat file is required to build release and install versions of Oscar using QtCreator or with buildall-693.bat. The buildall file compiles Oscar, builds Oscar and calls deploy.bat to create release and install versions of Oscar.
+The deploy.bat file is required to build release and install versions of Oscar using QtCreator or with buildall-qt6.bat. The buildall file compiles Oscar, builds Oscar and calls deploy.bat to create release and install versions of Oscar.
 
 
 #### Windows Shortcuts
@@ -173,7 +176,7 @@ The deploy.bat file is required to build release and install versions of Oscar u
 
 **Compiling and building from the command line**
 
-If you prefer to build from the command line and not use QT Creator, a batch script buildall-693.bat will build and create installers for 64-bit Windows. This script has some hard-coded paths, so will need to be modified for your system configuration. 
+If you prefer to build from the command line and not use QT Creator, a batch script buildall-qt6.bat will build and create installers for 64-bit Windows. This script has some hard-coded paths, so will need to be modified for your system configuration. 
 
 See BUILD-WIN.md for instructions on building a 32-bit version of OSCAR using an older version of Qt -- Qt5.
 
