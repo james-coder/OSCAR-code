@@ -67,6 +67,10 @@ contains(DEFINES, NoGL) {
 ## qt6 requires c++17
 greaterThan(QT_MAJOR_VERSION, 5) {
     CONFIG += c++17
+## Added for Qt6-Clang compiler - Crimson Nape 25-11-17
+    CONFIG += warn_off
+    QMAKE_CXXFLAGS += -Wno-nonportable-include-path
+
 } else {
     CONFIG += c++11
     #keep old configuration for qt5.
