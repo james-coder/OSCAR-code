@@ -85,7 +85,7 @@ if [  -z ${ITERATION} ]; then
 fi
 
 #SRC=/home/$USER/OSCAR/OSCAR-code/oscar
-SRC="$(pwd)/../../oscar"
+SRC=${PWD%/*/*}/oscar
 
 VERSION=`awk '/#define VERSION / { gsub(/"/, "", $3); print $3 }' ${SRC}/VERSION`
 if [[ ${VERSION} == *-* ]]; then
@@ -104,8 +104,11 @@ echo Version: ${VERSION}
 appli_name="OSCAR"
 package_name="oscar"
 pre_inst="tst_user.sh"
+
 # build folder (absolute path is better)
-build_folder="/home/$USER/OSCAR/build"
+build_folder=${PWD%/*/*/*}/build
+
+
 if [[ -n ${PRERELEASE}  && -z ${RC} ]] ; then
     appli_name=${appli_name}-test
     package_name=${package_name}-test
@@ -120,6 +123,7 @@ fi
 
 # temporary folder (absolute path is better)
 temp_folder="/home/$USER/tmp_deb_${appli_name}/"
+echo "124 - temp_folder ="$temp_folder
 
 # destination folder in the .deb file
 dest_folder="/usr/"
