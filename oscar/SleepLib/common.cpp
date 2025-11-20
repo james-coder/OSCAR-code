@@ -241,15 +241,15 @@ QStringList buildInfo;
 QStringList makeBuildInfo (QString forcedEngine){
     // application name and version has already been added
     buildInfo << (QObject::tr("Built with Qt %1 on %2").arg(QT_VERSION_STR).arg(getBuildDateTime()));
-    buildInfo << QString("");
-    buildInfo << (QObject::tr("Operating system:") + " " + QSysInfo::prettyProductName());
-    buildInfo << (QObject::tr("Graphics Engine:") + " " + getOpenGLVersionString());
-    buildInfo << (QObject::tr("Graphics Engine type:") + " " + getGraphicsEngine());
     QString compiler = getCompilerVersion();
     if (compiler.length() >0 )
         buildInfo << (QObject::tr("Compiler:") + " " + compiler);
     if (!getCppVersion().isEmpty())
         buildInfo << getCppVersion();
+    buildInfo << QString("");
+    buildInfo << (QObject::tr("Operating system:") + " " + QSysInfo::prettyProductName());
+    buildInfo << (QObject::tr("Graphics Engine:") + " " + getOpenGLVersionString());
+    buildInfo << (QObject::tr("Graphics Engine type:") + " " + getGraphicsEngine());
 
     if (forcedEngine != "")
         buildInfo << forcedEngine;

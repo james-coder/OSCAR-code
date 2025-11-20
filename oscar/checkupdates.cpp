@@ -177,10 +177,14 @@ void CheckUpdates::compareVersions () {
         msg = QObject::tr("A more recent version of OSCAR is available");
         msg += "<p>" + QObject::tr("You are running OSCAR %1").arg(getVersion()) + "</p>";
         if (releaseVersion.version.length() > 0) {
-            msg += "<p>" + QObject::tr("OSCAR %1 is available <a href='%2'>here</a>.").arg(releaseVersion.version).arg(releaseVersion.urlInstaller) + "</p>";
+            msg += "<p>" + QObject::tr("OSCAR %1 is available <a href='%2'>here</a>.")
+                               .arg(releaseVersion.version,
+                               releaseVersion.urlInstaller) + "</p>";
         }
         if (showTestVersion && (testVersion.version.length() > 0)) {
-            msg += "<p>" + QObject::tr("Information about more recent test version %1 is available at <a href='%2'>%2</a>").arg(testVersion.version).arg(testVersion.urlInstaller) + "</p>";
+            msg += "<p>" + QObject::tr("Information about more recent test version %1 is available at <a href='%2'>%2</a>")
+                               .arg(testVersion.version,
+                                testVersion.urlInstaller) + "</p>";
         }
     }
 
@@ -210,7 +214,16 @@ void CheckUpdates::showMessage()
     QMessageBox msgBox;
     msgBox.setWindowTitle(QObject::tr("Check for OSCAR Updates"));
     msgBox.setTextFormat(Qt::RichText);
-    msgBox.setText(msg);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // For Ubuntu 22 on Qt6, we have to show the message box before inserting the message to get the box sized correctly.
+    // This will cause a flicker on Ubuntu platform but at least the message box will look appropriate after flickering.
+    if (QSysInfo::prettyProductName().contains("Ubuntu 22", Qt::CaseInsensitive)) {
+        msgBox.show();
+        msgBox.setText(msg);
+    }
+#endif
+    if (msgBox.text().size() <= 0)
+        msgBox.setText(msg);
     msgBox.exec();
 
     msgIsReady = false;
