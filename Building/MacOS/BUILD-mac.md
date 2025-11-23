@@ -2,21 +2,24 @@
 
 ## Prerequisites
 
-- [Qt 5.12.8] (the current LTS release as of OSCAR 1.1.0)
-- [macOS 10.12 Sierra] or higher for building (required by Qt 5.12)
-- Command-Line Tools for Xcode 9.2, and optionally [Xcode] itself
-    - Xcode 9.2 is the last version that runs on macOS 10.12
-    - Xcode 10.1 is the last version that runs on macOS 10.13
-    - Xcode 10.3 is the latest version that runs on macOS 10.14
+- [Qt 5] 
+- [macOS 10.12 Sierra] or higher for building (recommended: Qt 5.12)
+- Xcode command line tools. (Download instructions are below.)
+- Xcode - Website for the most current versio for your mac distro: https://xcodereleases.com/
 
-NOTE: Official builds are currently made with [macOS 10.14 Mojave] and Command-Line Tools for [Xcode] 10.3.
+NOTE: Official Qt5 builds are currently made with [macOS 10.14 Catalina] and Command-Line Tools for [Xcode] 12.4.
+
+- [Qt 6] 
+- [macOS 13 Ventura] or higher for building (recommended: Qt 6.9 or higher)
+- Xcode command line tools. (Download instructions are below.)
+- Xcode - Website for the most current versio for your mac distro: https://xcodereleases.com/
+
 
 ## Setup
-1. Install Mac OS X 10.12.6 Sierra (or later) and apply all updates.
-     * Optionally create a "build" user.
+1. Apply all updates to your OS.
 
-2. (Optional) Install Xcode 9.2 (or later, if using a newer version of macOS), approx. 7GB:
-    1. Open Xcode_9.2.xip to expand it with Archive Utility. This will take a while.
+2. (Optional) Install Xcode.
+    1. Open the Xcode's .xip file to extract it with Archive Utility, or double-click on the file itself.
     2. Delete the .xip archive.
     3. Move Xcode.app into /Applications.
     4. Launch Xcode.app and agree to the license.
@@ -24,11 +27,8 @@ NOTE: Official builds are currently made with [macOS 10.14 Mojave] and Command-L
     6. Xcode > Quit
 
 3. Install the command-line developer tools, approx. 0.6GB:
-
     1. Launch Terminal.app and run:
-
-            xcode-select --install
-
+           sudo xcode-select --install
     2. Click "Install".
     3. Click "Agree".
 
@@ -37,29 +37,42 @@ NOTE: Official builds are currently made with [macOS 10.14 Mojave] and Command-L
    _Alternatively, the command-line tools installer .dmg can be downloaded from the [Xcode] download site, but you will need a (free) developer account and will
    need to pick the appropriate download for your version of macOS._
 
-4. Install Qt (as "build" user, if created), approx. 3GB:
-    1. Mount qt-opensource-mac-x64-5.12.8.dmg
-    2. Launch qt-opensource-mac-x64-5.12.8
-    3. Next, Skip, Continue, (optionally change the installation directory), Continue
-        * Qt is entirely self-contained and can be installed anywhere. It defaults to ~/Qt5.12.8.
+4. Install the Qt Opensource IDE platform
+    1. Use the Qt Online Opensource Installer: https://www.qt.io/download-qt-installer-oss.
+    2. Select the version you wish.  For QT5 versions, you may need to search the Archive section.
+    3. You do not need the following pakages
+        a. Sources
+        b. iOS 
+        c. Any web development package
+    4. Extensions that are needed - Qtserialio
+
+5. Install Qt 
+    1. Mount and launch qt-opensource-mac dmg file.  This can be done by double-clicking on the file name.
+    2. Follow the installer's instructions. (optionally you can change the installation directory)
+        * Qt is entirely self-contained and can be installed anywhere. It defaults to the ~/Qt/version number directory.
         * If you only have the command-line tools installed, the Qt installer will complain that "You need to install Xcode and set up Xcode command line tools." Simply click OK.
-    4. Expand Qt 5.12.8 and select "macOS", Continue
+    4. Expand Qt select "macOS", Continue
     5. Select "I have read and agree..." and Continue, Install
     6. Uncheck "Launch Qt Creator", Done
-    7. Eject qt-opensource-mac-x64-5.12.8
+    7. Eject qt-opensource-mac installer file.
 
 ## Build
 
-1. Build OSCAR:
+1. Build OSCAR (All Qt versions):
 
         git clone https://gitlab.com/CrimsonNape/OSCAR-code.git
         cd OSCAR-code
         mkdir build
         cd build
-        ~/Qt5.12.8/5.12.8/clang_64/bin/qmake ../oscar/oscar.pro
+
+Qt5:
+        ~/Qt/Qt version number/clang_64/bin/qmake ../oscar/oscar.pro
         make
 
-   The application is in OSCAR.app.
+Qt6:
+        ~/Qt/Qt version number/macos/bin/qmake ../OSCAR-code/oscar/oscar.pro
+        make
+
 
 2. (Optional) Package for distribution:
 
@@ -86,7 +99,4 @@ NOTE: Official builds are currently made with [macOS 10.14 Mojave] and Command-L
     * Progress in "Compile Output" will pause for several seconds while "Creating .dmg". This is normal.
 
 [Qt 5.12.8]: http://download.qt.io/archive/qt/5.12/5.12.8/qt-opensource-mac-x64-5.12.8.dmg
-[macOS 10.14 Mojave]: https://apps.apple.com/us/app/macos-mojave/id1398502828?ls=1&mt=12
-[macOS 10.13 High Sierra]: https://apps.apple.com/us/app/macos-high-sierra/id1246284741?ls=1&mt=12
-[macOS 10.12 Sierra]: https://apps.apple.com/us/app/macos-sierra/id1127487414?ls=1&mt=12
-[Xcode]: https://developer.apple.com/download/more/
+
