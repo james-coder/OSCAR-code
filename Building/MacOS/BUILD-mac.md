@@ -58,7 +58,7 @@ NOTE: Official Qt5 builds are currently made with [macOS 10.14 Catalina] and Com
 
 ## Build
 
-1. Build OSCAR from the command line (All Qt versions - exacpt where noted):
+1. Build OSCAR from the command line (All Qt versions - except where noted):
 
     Launch Terminal.app
     Type the following commands:
