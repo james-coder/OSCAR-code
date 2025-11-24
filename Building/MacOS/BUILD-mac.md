@@ -66,7 +66,7 @@ NOTE: Official Qt5 builds are currently made with [macOS 10.14 Catalina] and Com
         cd build
 
 Qt5:
-        ~/Qt/Qt version number/clang_64/bin/qmake ../oscar/oscar.pro
+        ~/Qt/Qt version number/clang_64/bin/qmake .../OSCAR-code/oscar/oscar.pro
         make
 
 Qt6:
