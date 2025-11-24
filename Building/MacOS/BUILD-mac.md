@@ -103,7 +103,9 @@ NOTE: Official Qt5 builds are currently made with [macOS 10.14 Catalina] and Com
     D. Set the Make arguments for the Make step to "dist-mac".  
 7. To build OSCAR, select "Release" from the "oscar" button in the left panel. Then select Build > Build Project "oscar". The application is in OSCAR.app.  
 8. To build OSCAR and package for distribution, select "Deploy" from the "oscar" button in the left panel. Then select Build > Build Project "oscar". The dmg is at OSCAR.dmg.  
-    * Progress in "Compile Output" will pause for several seconds while "Creating .dmg". This is normal.
+    * Progress in "Compile Output" will pause for several seconds while "Creating .dmg". This is normal.  
 
-[Qt 5.12.8]: http://download.qt.io/archive/qt/5.12/5.12.8/qt-opensource-mac-x64-5.12.8.dmg
+[Qt 5.12.8]: http://download.qt.io/archive/qt/5.12/5.12.8/qt-opensource-mac-x64-5.12.8.dmg  
+
+
 
