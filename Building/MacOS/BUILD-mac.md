@@ -62,13 +62,21 @@ NOTE: Official Qt5 builds are currently made with [macOS 10.14 Catalina] and Com
 
     Launch Terminal.app
     Type the following commands:
+   
       mkdir YourDirectoryName
+   
       cd YourDirectoryName
+   
       git clone https://gitlab.com/CrimsonNape/OSCAR-code.git
+   
       mkdir build
+   
       cd build
+
       Qt5:  ~/Qt/Qt version number/clang_64/bin/qmake ../OSCAR-code/oscar/oscar.pro
+      
       Qt6:  ~/Qt/Qt version number/macos/bin/qmake ../OSCAR-code/oscar/oscar.pro
+      
       make
 
 
