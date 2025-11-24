@@ -63,32 +63,25 @@ NOTE: Official Qt5 builds are currently made with [macOS 10.14 Catalina] and Com
     Launch Terminal.app
     Type the following commands:
    
-      mkdir YourDirectoryName
-   
-      cd YourDirectoryName
-   
-      git clone https://gitlab.com/CrimsonNape/OSCAR-code.git
-   
-      mkdir build
-   
-      cd build
-
-      Qt5:  ~/Qt/Qt version number/clang_64/bin/qmake ../OSCAR-code/oscar/oscar.pro
-      
-      Qt6:  ~/Qt/Qt version number/macos/bin/qmake ../OSCAR-code/oscar/oscar.pro
-      
-      make
+      mkdir YourDirectoryName  
+      cd YourDirectoryName  
+      git clone https://gitlab.com/CrimsonNape/OSCAR-code.git  
+      mkdir build  
+      cd build  
+      Qt5:  ~/Qt/Qt version number/clang_64/bin/qmake ../OSCAR-code/oscar/oscar.pro  
+      Qt6:  ~/Qt/Qt version number/macos/bin/qmake ../OSCAR-code/oscar/oscar.pro  
+      make  
 
 
 2. (Optional) Package for distribution:
 
-        make dist-mac
+        make dist-mac  
 
-   The dmg is at OSCAR.dmg in the build directory.
+   The dmg is at OSCAR.dmg in the build directory.  
 
 ## (Optional) Using Qt Creator
 
-1. Launch Qt Creator where you installed Qt above, by default ~/Qt5.12.8/Qt Creator.app.
+1. Launch Qt Creator where you installed Qt above, by default ~/Qt5.12.8/Qt Creator.app.  
 2. File > Open File or Project... and select ~/OSCAR-code/oscar/oscar.pro (or wherever you cloned it above), then click "Configure Project".
 3. Configure building:
     1. Click on "Projects" in the left panel.
