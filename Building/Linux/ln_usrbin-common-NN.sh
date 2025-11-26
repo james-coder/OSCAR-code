@@ -16,12 +16,21 @@ if [ ! -z "$SUDO_USER" ]; then
         tmp_dir=`cat /home/$SUDO_USER/.config/user-dirs.dirs | grep XDG_DESKTOP_DIR | awk -F= '{print $2}' | awk -F\" '{print $2}' | awk -F\/ '{print $2}'`
     fi
 
-    # don't overwrite if translated name or doesn't exist
-    if [ -n "$tmp_dir" ];  then
-        # calculate the full folder
-        tmp_dir_full="/home/${SUDO_USER}/${tmp_dir}"
-        if [ -d "$tmp_dir_full" ]; then
-            desktop_folder_name=$tmp_dir_full
+# if doesn't exist, try to find it translated name
+    translate_file="/home/$SUDO_USER/.config/user-dirs.dirs"
+    if [ -f $translate_file ]; then
+        tmp_dir="" 
+        if [ ! -d "$desktop_folder_name" ]; then
+            tmp_dir=`cat /home/$translate_file | grep XDG_DESKTOP_DIR | awk -F= '{print $2}' | awk -F\" '{print $2}' | awk -F\/ '{print $2}'`
+        fi
+
+       # don't overwrite if translated name or doesn't exist
+        if [ -n "$tmp_dir" ];  then
+            # calculate the full folder
+            tmp_dir_full="/home/${SUDO_USER}/${tmp_dir}"
+            if [ -d "$tmp_dir_full" ]; then
+                desktop_folder_name=$tmp_dir_full
+            fi
         fi
     fi
 
