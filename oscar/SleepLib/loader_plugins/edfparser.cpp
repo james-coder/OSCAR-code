@@ -8,7 +8,7 @@
  * for more details. */
 
 #define TEST_MACROS_ENABLEDoff
-#include <test_macros.h>
+#include "test_macros.h"
 
 #include <QDateTime>
 #include <QTimeZone>

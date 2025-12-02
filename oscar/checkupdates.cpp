@@ -219,11 +219,9 @@ void CheckUpdates::showMessage()
     // This will cause a flicker on Ubuntu platform but at least the message box will look appropriate after flickering.
     if (QSysInfo::prettyProductName().contains("Ubuntu 22", Qt::CaseInsensitive)) {
         msgBox.show();
-        msgBox.setText(msg);
     }
 #endif
-    if (msgBox.text().size() <= 0)
-        msgBox.setText(msg);
+    msgBox.setText(msg);
     msgBox.exec();
 
     msgIsReady = false;

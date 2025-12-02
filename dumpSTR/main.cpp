@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     QStringList args = a.arguments();
     
 	if ( args.size() < 2 ) {
-		qDebug() << args[0] << " needs a filename" ;
+		usage();
 		exit(1);
 	}
 	
