@@ -4,7 +4,7 @@
  * SpeedCheck - Performance monitoring and logging class implementation
  */
 
-#include "SpeedCheck.h"
+#include "speedcheck.h"
 #include <QDebug>
 
 /**
