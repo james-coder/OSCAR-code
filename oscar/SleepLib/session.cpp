@@ -399,6 +399,7 @@ bool Session::LoadSummary(bool debug)
 {
 //    static int sumcnt = 0;
 
+    scLoad.restart();
     if (s_summary_loaded) return true;
     QString filename = s_machine->getSummariesPath() + toHexid(s_session) + ".000";
 

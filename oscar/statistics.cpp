@@ -255,7 +255,7 @@ void SummaryInfo::update(QDate earliestDate , QDate latestDate)
 {
     if  ( (!latestDate.isValid()) ||  (!earliestDate.isValid()) ) return;
     if  ( (latestDate == last()) &&  (earliestDate == start()) ) return;
-    scUpdate.setMsg("SummaryInfo::update(" + earliestDate.toString() + " - " + latestDate.toString() + ")");
+    scUpdate.restart(scUpdate.getLimit(), "SummaryInfo::update(" + earliestDate.toString() + " - " + latestDate.toString() + ")");
     clear(earliestDate,latestDate);
     _start = earliestDate;
     _last = latestDate;
