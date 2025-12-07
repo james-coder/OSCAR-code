@@ -21,6 +21,7 @@
 
 #include "session.h"
 #include "version.h"
+#include "speedcheck.h"
 #include "SleepLib/machine_common.h"
 #include "SleepLib/calcs.h"
 #include "SleepLib/profiles.h"
@@ -393,13 +394,15 @@ bool Session::StoreSummary()
     return true;
 }
 
-
+SpeedCheck scLoad(50); // Keep outside function so number of messages is limited
 bool Session::LoadSummary(bool debug)
 {
 //    static int sumcnt = 0;
 
     if (s_summary_loaded) return true;
     QString filename = s_machine->getSummariesPath() + toHexid(s_session) + ".000";
+
+    scLoad.setMsg("Session::LoadSummary processing " + filename);
 
     if (filename.isEmpty()) {
         if (debug) qDebug() << "Empty summary filename";
@@ -412,7 +415,6 @@ bool Session::LoadSummary(bool debug)
         if (debug) qWarning() << "Could not open summary file" << filename << "for reading, error code" << file.error() << file.errorString();
         return false;
     }
-
 
 //    qDebug() << "Loading" << s_machine->loaderName() << "Summary" << filename << sumcnt++;
 
@@ -668,6 +670,8 @@ bool Session::LoadSummary(bool debug)
         }
         StoreSummary();
     }
+
+    scLoad.check();
 
     s_summary_loaded = true;
     return true;

@@ -37,6 +37,8 @@ server= red 30+
 #include "version.h"
 #include "SleepLib/profiles.h"
 
+#include "speedcheck.h"
+
 extern MainWindow *mainwin;
 
 // HTML components that make up Statistics page and printed report
@@ -248,10 +250,12 @@ void Statistics::adjustRange(QDate& start , QDate& last) {
     summaryInfo.update(start,last);
 }
 
+SpeedCheck scUpdate(500); // Keep outside function so we can limit number of log messages
 void SummaryInfo::update(QDate earliestDate , QDate latestDate)
 {
     if  ( (!latestDate.isValid()) ||  (!earliestDate.isValid()) ) return;
     if  ( (latestDate == last()) &&  (earliestDate == start()) ) return;
+    scUpdate.setMsg("SummaryInfo::update(" + earliestDate.toString() + " - " + latestDate.toString() + ")");
     clear(earliestDate,latestDate);
     _start = earliestDate;
     _last = latestDate;
@@ -298,6 +302,7 @@ void SummaryInfo::update(QDate earliestDate , QDate latestDate)
     // convect ms to minutes
     maxDurationOfaDisabledsession/=60000 ;
     totalDurationOfDisabledSessions/=60000 ;
+    scUpdate.check();
 };
 
 QString SummaryInfo::display(QString typeStr)

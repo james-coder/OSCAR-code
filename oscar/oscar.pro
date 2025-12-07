@@ -330,6 +330,7 @@ SOURCES += \
     reports.cpp \
     saveGraphLayoutSettings.cpp \
     sessionbar.cpp \
+    speedcheck.cpp \
     staticQMessageBox.cpp \
     statistics.cpp \
     translation.cpp \
@@ -437,6 +438,7 @@ HEADERS  += \
 #    psettings.h \
     reports.h \
     sessionbar.h \
+    speedcheck.h \
 #    updateparser.h \
     version.h \
     VERSION \

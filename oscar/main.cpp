@@ -31,6 +31,7 @@
 #include "mainwindow.h"
 #include "SleepLib/profiles.h"
 #include "translation.h"
+#include "speedcheck.h"
 #include "SleepLib/common.h"
 #include "SleepLib/deviceconnection.h"
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -769,7 +770,9 @@ int main(int argc, char *argv[]) {
     schema::setOrders(); // could be called in init...
 
     // Scan for user profiles
+    SpeedCheck sc(500, "Scanning for profiles");
     Profiles::Scan();
+    sc.check();
 
 #ifndef NO_CHECKUPDATES
     if (check_updates) {
@@ -777,7 +780,9 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
+    sc.restart(400,"SetupGUI");
     mainwin->SetupGUI();
+    sc.check();
     mainwin->show();
 
     int result = mainapp.exec();

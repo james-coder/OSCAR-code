@@ -81,6 +81,7 @@
 #include "reports.h"
 #include "statistics.h"
 #include "zip.h"
+#include "speedcheck.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,4,0)
 #include <QOpenGLFunctions>
@@ -477,6 +478,7 @@ void MainWindow::firstRunMessage()
 bool MainWindow::OpenProfile(QString profileName, bool skippassword)
 {
     qDebug() << "Opening profile" << profileName;
+    SpeedCheck scOpen(10000, "opened profile " + profileName); // Log if over 10 seconds to open
 
     auto pit = Profiles::profiles.find(profileName);
     if (pit == Profiles::profiles.end())
@@ -582,14 +584,15 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
         qDebug() << "Abandon opening Profile";
         return false;
     }
-    qDebug() << "creating Welcome page";
+    SpeedCheck sc(500);
     welcome = new Welcome(ui->tabWidget);
     ui->tabWidget->insertTab(1, welcome, tr("Welcome"));
+    sc.check("created Welcome page");
 
-    qDebug() << "Creating Daily page";
     daily = new Daily(ui->tabWidget, nullptr);
     ui->tabWidget->insertTab(2, daily, STR_TR_Daily);
-    qDebug() << "reloading daily graphs";
+    sc.check("created Daily page");
+
     daily->ReloadGraphs();
 
     if (overview) {
@@ -597,19 +600,24 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
         qDebug() << "Abandon opening Profile";
         return false;
     }
-    qDebug() << "Creating Overview page";
+    sc.check("loaded Daily graphs");
+
     overview = new Overview(ui->tabWidget, daily->graphView());
     ui->tabWidget->insertTab(3, overview, STR_TR_Overview);
-    qDebug() << "reloading overview graphs";
+    sc.check("created Overview page");
+
     overview->ReloadGraphs();
 
     // Should really create welcome and statistics here, but they need redoing later anyway to kill off webkit
     ui->tabWidget->setCurrentIndex(AppSetting->openTabAtStart());
 
     // always use last user setting - so don't reset. // p_profile->general->setStatReportMode(STAT_MODE_STANDARD);
-    qDebug() << "Creating Statistics page";
+    sc.check("loaded Overview graphs");
+
     GenerateStatistics();
     qDebug() << "Creating Purge menu";
+    sc.check("created Statistics page");
+
     PopulatePurgeMenu();
 
     AppSetting->setProfileName(p_profile->user->userName());
@@ -631,7 +639,7 @@ bool MainWindow::OpenProfile(QString profileName, bool skippassword)
 
     progress->close();
     delete progress;
-    qDebug() << "Finished opening Profile";
+    scOpen.check();
 
     if (updateChecker != nullptr)
         updateChecker->showMessage();
