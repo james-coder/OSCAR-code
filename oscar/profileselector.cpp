@@ -18,18 +18,19 @@
 
 #include "SleepLib/profiles.h"
 #include "daily.h"
-#include "overview.h"
-#include "statistics.h"
+//#include "overview.h"
+//#include "statistics.h"
 #include "mainwindow.h"
 #include "newprofile.h"
-#include "version.h"
+//#include "version.h"
 
 extern MainWindow * mainwin;
 
 MySortFilterProxyModel2::MySortFilterProxyModel2(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
-
+    dateColumn = 4;
+    setSortCaseSensitivity(Qt::CaseInsensitive);
 }
 
 bool MySortFilterProxyModel2::filterAcceptsRow(int sourceRow,
@@ -143,7 +144,7 @@ void ProfileSelector::updateProfileList()
         // Problem: Can't access profile details until it's loaded.
         QString usersname;
         if (!prof->user->lastName().isEmpty()) {
-            usersname = QString("%1, %2").arg(prof->user->lastName()).arg(prof->user->firstName());
+            usersname = QString("%1, %2").arg(prof->user->lastName(), prof->user->firstName());
         }
 
         model->setData(model->index(row, 0, QModelIndex()), name);
@@ -185,6 +186,7 @@ void ProfileSelector::updateProfileList()
     proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     ui->profileView->setModel(proxy);
+    ui->profileView->setSortingEnabled(true);
 
     QHeaderView *headerView = ui->profileView->horizontalHeader();
     headerView->setStretchLastSection(true);
@@ -325,7 +327,7 @@ void ProfileSelector::on_buttonEditProfile_clicked()
         if (newprof->exec() != NewProfile::Rejected) {
             QString usersname;
             if (!prof->user->lastName().isEmpty()) {
-                usersname = QString("%1, %2").arg(prof->user->lastName()).arg(prof->user->firstName());
+                usersname = QString("%1, %2").arg(prof->user->lastName(), prof->user->firstName());
             }
 
             proxy->setData(proxy->index(ui->profileView->currentIndex().row(), 5, QModelIndex()), usersname);
@@ -513,7 +515,7 @@ void ProfileSelector::on_selectionChanged(const QModelIndex &index, const QModel
             Profile * profile = prof.value();
 
             if (!profile->user->lastName().isEmpty() && !profile->user->firstName().isEmpty()) {
-                html += tr("Name: %1, %2").arg(profile->user->lastName()).arg(profile->user->firstName())+"<br/>";
+                html += tr("Name: %1, %2").arg(profile->user->lastName(), profile->user->firstName())+"<br/>";
             }
             if (!profile->user->phone().isEmpty()) {
                 html += tr("Phone: %1").arg(profile->user->phone())+"<br/>";

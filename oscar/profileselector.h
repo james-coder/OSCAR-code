@@ -27,6 +27,40 @@ class MySortFilterProxyModel2:public QSortFilterProxyModel
     MySortFilterProxyModel2(QObject *parent = 0);
 
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
+
+    void setDateColumn(int column) {
+        dateColumn = column;
+    }
+
+    void setDateFormat(const QString &format) {
+        dateFormat = format;
+    }
+
+  protected:
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override
+    {
+        // Check if this is the date column
+        if (left.column() == dateColumn) {
+            QString leftString = sourceModel()->data(left).toString();
+            QString rightString = sourceModel()->data(right).toString();
+
+            // Parse strings back to QDate
+            QDate leftDate = QDate::fromString(leftString, dateFormat);
+            QDate rightDate = QDate::fromString(rightString, dateFormat);
+
+            // If both are valid dates, compare them
+            if (leftDate.isValid() && rightDate.isValid()) {
+                return leftDate < rightDate;
+            }
+        }
+
+        // For all other columns, use default case-insensitive comparison
+        return QSortFilterProxyModel::lessThan(left, right);
+  }
+
+  private:
+    int dateColumn = 4;
+    QString dateFormat = QLocale::system().dateFormat(QLocale::ShortFormat);
 };
 
 class ProfileSelector : public QWidget
