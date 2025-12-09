@@ -115,8 +115,9 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          qmake "QMAKE_LRELEASE=$Qt5_DIR/bin/lrelease.exe" ../OSCAR_QT.pro CONFIG+=release
-          mingw32-make -j"$(nproc)"
+          export QMAKE_LRELEASE="$Qt5_DIR/bin/lrelease.exe"
+          qmake "QMAKE_LRELEASE=$QMAKE_LRELEASE" ../OSCAR_QT.pro CONFIG+=release
+          mingw32-make -j"$(nproc)" "QMAKE_LRELEASE=$QMAKE_LRELEASE"
 
       - name: Deploy runtime and resources
         shell: bash
