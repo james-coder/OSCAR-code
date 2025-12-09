@@ -83,6 +83,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Sanitize PATH (remove WindowsApps python shim)
+        shell: pwsh
+        run: |
+          $paths = $env:PATH -split ';' | Where-Object {$_ -notmatch 'WindowsApps'}
+          "PATH=$($paths -join ';')" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
