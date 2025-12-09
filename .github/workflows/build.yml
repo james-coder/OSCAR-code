@@ -123,7 +123,10 @@ jobs:
           host: mac
           target: desktop
           arch: clang_64
-          modules: qtserialport
+
+      - name: Install Qt Serial Port module
+        run: |
+          python -m aqt install-module mac desktop 5.15.2 clang_64 qtserialport --outputdir "${Qt5_DIR}"
 
       - name: Configure
         run: |
