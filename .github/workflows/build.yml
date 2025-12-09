@@ -172,13 +172,19 @@ jobs:
           cd build/oscar
           macdeployqt OSCAR.app -dmg
 
+      - name: Rename DMG to include version and Qt suffix
+        run: |
+          VERSION=$(grep -Po '(?<=#define VERSION ")[^"]+' oscar/VERSION)
+          cd build/oscar
+          mv OSCAR.dmg "OSCAR-${VERSION}-Qt5.dmg"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: oscar-macos
           path: |
             build/oscar/OSCAR.app
-            build/oscar/OSCAR.dmg
+            build/oscar/OSCAR-*-Qt5.dmg
 
   release:
     name: Publish release
