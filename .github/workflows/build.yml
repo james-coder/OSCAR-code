@@ -1,6 +1,9 @@
 name: Build OSCAR
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       release_tag:
