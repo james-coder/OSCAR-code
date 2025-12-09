@@ -213,19 +213,23 @@ TRANSLATIONS += $$files($$PWD/../Translations/qt/*.ts)
 
 qtPrepareTool(LRELEASE, lrelease)
 
-for(file, TRANSLATIONS) {
+win32:contains(DEFINES, NO_LRELEASE) {
+    message("NO_LRELEASE defined: skipping lrelease translation generation on Windows")
+} else {
+    for(file, TRANSLATIONS) {
 
- qmfile = $$absolute_path($$basename(file), $$PWD/translations/)
- qmfile ~= s,.ts$,.qm,
+     qmfile = $$absolute_path($$basename(file), $$PWD/translations/)
+     qmfile ~= s,.ts$,.qm,
 
- qmdir = $$PWD/translations
- !exists($$qmdir) {
-     mkpath($$qmdir)|error("Aborting.")
- }
- qmout = $$qmfile
- command = $$LRELEASE -removeidentical $$file -qm $$qmfile
- system($$command)|error("Failed to run: $$command")
- TRANSLATIONS_FILES += $$qmfile
+     qmdir = $$PWD/translations
+     !exists($$qmdir) {
+         mkpath($$qmdir)|error("Aborting.")
+     }
+     qmout = $$qmfile
+     command = $$LRELEASE -removeidentical $$file -qm $$qmfile
+     system($$command)|error("Failed to run: $$command")
+     TRANSLATIONS_FILES += $$qmfile
+    }
 }
 
 HTML_FILES = $$files($$PWD/../Htmldocs/*.html)
