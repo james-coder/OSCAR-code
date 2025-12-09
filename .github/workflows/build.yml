@@ -107,22 +107,15 @@ jobs:
       - name: Add Qt and MinGW to PATH
         shell: bash
         run: |
-          echo "${Qt5_DIR}/bin" >> "$GITHUB_PATH"
-          echo "C:/Qt/Tools/mingw810_64/bin" >> "$GITHUB_PATH"
+          echo "$Qt5_DIR/bin" >> "$GITHUB_PATH"
+          echo "$IQTA_TOOLS/mingw810_64/bin" >> "$GITHUB_PATH"
 
       - name: Configure and build
         shell: bash
         run: |
           mkdir -p build
           cd build
-          mkdir -p tools
-          cat > tools/lrelease.bat <<'EOF'
-          @echo off
-          "%Qt5_DIR%\bin\lrelease.exe" %*
-          EOF
-          TOOLS_WIN=$(pwd -W)/tools
-          export PATH="$TOOLS_WIN:$PATH"
-          qmake ../OSCAR_QT.pro CONFIG+=release
+          qmake "QMAKE_LRELEASE=$Qt5_DIR/bin/lrelease.exe" ../OSCAR_QT.pro CONFIG+=release
           mingw32-make -j"$(nproc)"
 
       - name: Deploy runtime and resources
