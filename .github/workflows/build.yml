@@ -65,8 +65,12 @@ jobs:
           host: windows
           target: desktop
           arch: win64_mingw81
-          modules: qtserialport
           tools: tools_mingw81
+
+      - name: Install Qt Serial Port module
+        shell: bash
+        run: |
+          python -m aqt install-module windows desktop 5.15.2 win64_mingw81 qtserialport --outputdir "${Qt5_DIR}"
 
       - name: Add Qt and MinGW to PATH
         shell: bash
