@@ -82,6 +82,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Sanitize PATH (remove WindowsApps python shim)
         shell: pwsh
@@ -110,7 +112,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          LRELEASE_PATH=$(cygpath -m "$Qt5_DIR/bin/lrelease.exe")
+          LRELEASE_PATH=$(cygpath -u "$Qt5_DIR/bin/lrelease.exe")
           export QMAKE_LRELEASE="$LRELEASE_PATH"
           qmake ../OSCAR_QT.pro CONFIG+=release
           mingw32-make -j"$(nproc)"
