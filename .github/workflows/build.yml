@@ -122,6 +122,19 @@ jobs:
         shell: bash
         run: |
           cd build/oscar
+          BIN=OSCAR.exe
+          if [ ! -f "$BIN" ] && [ -f "release/OSCAR.exe" ]; then
+            BIN="release/OSCAR.exe"
+          fi
+          if [ ! -f "$BIN" ]; then
+            echo "OSCAR executable not found"
+            exit 1
+          fi
+          if [ "$BIN" = "OSCAR.exe" ]; then
+            mkdir -p release
+            mv "$BIN" release/
+            BIN="release/OSCAR.exe"
+          fi
           for d in Translations Html Help; do
             if [ -d "../$d" ]; then
               cp -r "../$d" "release/$d"
