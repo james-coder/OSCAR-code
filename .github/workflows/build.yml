@@ -139,7 +139,8 @@ jobs:
               cp -r "../$d" "release/$d"
             fi
           done
-          windeployqt --release release/OSCAR.exe
+          export QT_PLUGIN_PATH="$Qt5_DIR/plugins"
+          windeployqt --release "$BIN"
 
       - name: Rename Windows binary
         shell: bash
