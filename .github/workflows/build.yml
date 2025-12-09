@@ -142,7 +142,7 @@ jobs:
           PLUGIN_DIR=$(cygpath -w "$Qt5_DIR/plugins")
           export QT_PLUGIN_PATH="$PLUGIN_DIR"
           WINDEPLOY=$(cygpath -w "$Qt5_DIR/bin/windeployqt.exe")
-          "$WINDEPLOY" --release "$(cygpath -w "$BIN")"
+          cmd.exe /c "$WINDEPLOY --release $(cygpath -w "$BIN")"
 
       - name: Rename Windows binary
         shell: bash
