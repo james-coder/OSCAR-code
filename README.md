@@ -29,6 +29,10 @@ Contributing
 ------------
 We welcome issues, pull requests, translations, and testing on all supported platforms.
 
+Development Tips
+----------------
+- Install and run pre-commit hooks: `pip install pre-commit` then `pre-commit install`. Hooks cover whitespace/EOF checks, clang-format for C/C++, black for Python, and shfmt for shell scripts.
+
 Support
 -------
 - Release notes and docs: `oscar/docs`
