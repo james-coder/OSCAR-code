@@ -112,9 +112,8 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          LRELEASE_PATH=$(cygpath -u "$Qt5_DIR/bin/lrelease.exe")
-          export QMAKE_LRELEASE="$LRELEASE_PATH"
-          qmake ../OSCAR_QT.pro CONFIG+=release
+          LRELEASE_PATH=$(cygpath -m "$Qt5_DIR/bin/lrelease.exe")
+          qmake QMAKE_LRELEASE=$LRELEASE_PATH ../OSCAR_QT.pro CONFIG+=release
           mingw32-make -j"$(nproc)"
 
       - name: Deploy runtime and resources
@@ -127,6 +126,13 @@ jobs:
             fi
           done
           windeployqt --release release/OSCAR.exe
+
+      - name: Rename Windows binary
+        shell: bash
+        run: |
+          VERSION=$(grep -Po '(?<=#define VERSION ")[^"]+' oscar/VERSION)
+          cd build/oscar/release
+          mv OSCAR.exe "OSCAR-${VERSION}-Win64-Qt5.exe"
 
       - name: Archive artifact
         shell: bash
