@@ -24,6 +24,8 @@ jobs:
   linux:
     name: Linux (Qt 5)
     runs-on: ubuntu-latest
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,19 +35,30 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
+            ccache \
             qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools qttools5-dev qttools5-dev-tools \
             libqt5serialport5-dev libqt5svg5-dev libqt5opengl5-dev \
             libudev-dev zlib1g-dev libgl1-mesa-dev
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ hashFiles('**/*.pro') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
 
       - name: Configure
         run: |
           mkdir -p build
           cd build
+          export PATH="/usr/lib/ccache:${PATH}"
           qmake QMAKE_LRELEASE=lrelease ../OSCAR_QT.pro CONFIG+=release
 
       - name: Build
         run: |
           cd build
+          export PATH="/usr/lib/ccache:${PATH}"
           make -j"$(nproc)"
 
       - name: Package artifact
@@ -78,6 +91,7 @@ jobs:
           target: desktop
           arch: win64_mingw81
           tools: tools_mingw81
+          cache: true
 
       - name: Add Qt and MinGW to PATH
         shell: bash
@@ -130,6 +144,7 @@ jobs:
           host: mac
           target: desktop
           arch: clang_64
+          cache: true
 
       - name: Configure
         run: |
