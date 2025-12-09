@@ -141,7 +141,8 @@ jobs:
           done
           PLUGIN_DIR=$(cygpath -w "$Qt5_DIR/plugins")
           export QT_PLUGIN_PATH="$PLUGIN_DIR"
-          "$Qt5_DIR/bin/windeployqt.exe" --release "$(cygpath -w "$BIN")"
+          WINDEPLOY=$(cygpath -w "$Qt5_DIR/bin/windeployqt.exe")
+          "$WINDEPLOY" --release "$(cygpath -w "$BIN")"
 
       - name: Rename Windows binary
         shell: bash
@@ -196,7 +197,7 @@ jobs:
 
       - name: Rename DMG to include version and Qt suffix
         run: |
-          VERSION=$(grep -Po '(?<=#define VERSION ")[^"]+' oscar/VERSION)
+          VERSION=$(grep -oE '#define VERSION "[^"]+' oscar/VERSION | sed 's/.*"//')
           cd build/oscar
           mv OSCAR.dmg "OSCAR-${VERSION}-Qt5.dmg"
 
