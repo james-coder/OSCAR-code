@@ -2,6 +2,23 @@ name: Build OSCAR
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag name to create a GitHub release (leave empty to just build artifacts)"
+        required: false
+      release_name:
+        description: "Release title (defaults to tag name)"
+        required: false
+      draft:
+        description: "Publish as draft"
+        required: false
+        default: true
+        type: boolean
+      prerelease:
+        description: "Mark as prerelease"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   linux:
@@ -137,3 +154,24 @@ jobs:
           path: |
             build/oscar/OSCAR.app
             build/oscar/OSCAR.dmg
+
+  release:
+    name: Publish release
+    needs: [linux, windows, macos]
+    if: ${{ github.event.inputs.release_tag != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          name: ${{ github.event.inputs.release_name || github.event.inputs.release_tag }}
+          draft: ${{ github.event.inputs.draft }}
+          prerelease: ${{ github.event.inputs.prerelease }}
+          target_commitish: ${{ github.sha }}
+          files: release-artifacts/**
