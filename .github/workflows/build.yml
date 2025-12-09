@@ -122,19 +122,18 @@ jobs:
         shell: bash
         run: |
           cd build/oscar
-          BIN=OSCAR.exe
-          if [ ! -f "$BIN" ] && [ -f "release/OSCAR.exe" ]; then
-            BIN="release/OSCAR.exe"
-          fi
-          if [ ! -f "$BIN" ]; then
+          BIN=$(find .. -maxdepth 3 -name OSCAR.exe -print | head -n 1 || true)
+          echo "Discovered OSCAR.exe at: ${BIN:-<not found>}"
+          if [ -z "$BIN" ]; then
             echo "OSCAR executable not found"
             exit 1
           fi
-          if [ "$BIN" = "OSCAR.exe" ]; then
-            mkdir -p release
-            mv "$BIN" release/
-            BIN="release/OSCAR.exe"
+          # Ensure the binary lives in release/
+          mkdir -p release
+          if [ "$BIN" != "release/OSCAR.exe" ]; then
+            cp "$BIN" release/OSCAR.exe
           fi
+          BIN="release/OSCAR.exe"
           for d in Translations Html Help; do
             if [ -d "../$d" ]; then
               cp -r "../$d" "release/$d"
