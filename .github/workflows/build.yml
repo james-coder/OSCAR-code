@@ -117,9 +117,9 @@ jobs:
           cd build
           mkdir -p tools
           cat > tools/lrelease.bat <<'EOF'
-@echo off
-"%Qt5_DIR%\bin\lrelease.exe" %*
-EOF
+          @echo off
+          "%Qt5_DIR%\bin\lrelease.exe" %*
+          EOF
           TOOLS_WIN=$(pwd -W)/tools
           export PATH="$TOOLS_WIN:$PATH"
           qmake ../OSCAR_QT.pro CONFIG+=release
