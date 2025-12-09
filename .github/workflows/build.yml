@@ -112,8 +112,12 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          LRELEASE_PATH=$(cygpath -m "$Qt5_DIR/bin/lrelease.exe")
-          qmake QMAKE_LRELEASE=$LRELEASE_PATH ../OSCAR_QT.pro CONFIG+=release
+          cat > lrelease.sh <<'EOF'
+#!/usr/bin/env bash
+"$Qt5_DIR/bin/lrelease.exe" "$@"
+EOF
+          chmod +x lrelease.sh
+          qmake QMAKE_LRELEASE=$PWD/lrelease.sh ../OSCAR_QT.pro CONFIG+=release
           mingw32-make -j"$(nproc)"
 
       - name: Deploy runtime and resources
