@@ -112,12 +112,14 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cat > lrelease.sh <<'EOF'
-#!/usr/bin/env bash
-"$Qt5_DIR/bin/lrelease.exe" "$@"
+          mkdir -p tools
+          cat > tools/lrelease.bat <<'EOF'
+@echo off
+"%Qt5_DIR%\bin\lrelease.exe" %*
 EOF
-          chmod +x lrelease.sh
-          qmake QMAKE_LRELEASE=$PWD/lrelease.sh ../OSCAR_QT.pro CONFIG+=release
+          TOOLS_WIN=$(pwd -W)/tools
+          export PATH="$TOOLS_WIN:$PATH"
+          qmake ../OSCAR_QT.pro CONFIG+=release
           mingw32-make -j"$(nproc)"
 
       - name: Deploy runtime and resources
