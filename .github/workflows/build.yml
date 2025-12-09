@@ -139,8 +139,9 @@ jobs:
               cp -r "../$d" "release/$d"
             fi
           done
-          export QT_PLUGIN_PATH="$Qt5_DIR/plugins"
-          windeployqt --release "$BIN"
+          PLUGIN_DIR=$(cygpath -w "$Qt5_DIR/plugins")
+          export QT_PLUGIN_PATH="$PLUGIN_DIR"
+          "$Qt5_DIR/bin/windeployqt.exe" --release "$(cygpath -w "$BIN")"
 
       - name: Rename Windows binary
         shell: bash
