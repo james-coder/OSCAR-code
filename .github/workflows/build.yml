@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          qmake ../OSCAR_QT.pro CONFIG+=release
+          qmake QMAKE_LRELEASE=lrelease ../OSCAR_QT.pro CONFIG+=release
 
       - name: Build
         run: |
@@ -90,7 +90,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          qmake ../OSCAR_QT.pro CONFIG+=release
+          qmake QMAKE_LRELEASE=lrelease ../OSCAR_QT.pro CONFIG+=release
           mingw32-make -j"$(nproc)"
 
       - name: Deploy runtime and resources
@@ -135,7 +135,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          qmake ../OSCAR_QT.pro CONFIG+=release
+          qmake QMAKE_LRELEASE=lrelease ../OSCAR_QT.pro CONFIG+=release
 
       - name: Build
         run: |
