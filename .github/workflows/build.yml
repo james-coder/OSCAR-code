@@ -1,0 +1,146 @@
+name: Build OSCAR
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux (Qt 5)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools qttools5-dev qttools5-dev-tools \
+            libqt5serialport5-dev libqt5svg5-dev libqt5opengl5-dev \
+            libudev-dev zlib1g-dev libgl1-mesa-dev
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          qmake ../OSCAR_QT.pro CONFIG+=release
+
+      - name: Build
+        run: |
+          cd build
+          make -j"$(nproc)"
+
+      - name: Package artifact
+        run: |
+          cd build/oscar
+          extras=""
+          for d in Translations Html Help; do
+            [ -d "$d" ] && extras="$extras $d"
+          done
+          tar czf ../../OSCAR-linux.tar.gz OSCAR $extras
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oscar-linux
+          path: OSCAR-linux.tar.gz
+
+  windows:
+    name: Windows (Qt 5, MinGW)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 5.15.2
+          host: windows
+          target: desktop
+          arch: win64_mingw81
+          modules: qtserialport
+          tools: tools_mingw81
+
+      - name: Add Qt and MinGW to PATH
+        shell: bash
+        run: |
+          echo "${Qt5_DIR}/bin" >> "$GITHUB_PATH"
+          echo "C:/Qt/Tools/mingw810_64/bin" >> "$GITHUB_PATH"
+
+      - name: Configure and build
+        shell: bash
+        run: |
+          mkdir -p build
+          cd build
+          qmake ../OSCAR_QT.pro CONFIG+=release
+          mingw32-make -j"$(nproc)"
+
+      - name: Deploy runtime and resources
+        shell: bash
+        run: |
+          cd build/oscar
+          for d in Translations Html Help; do
+            if [ -d "../$d" ]; then
+              cp -r "../$d" "release/$d"
+            fi
+          done
+          windeployqt --release release/OSCAR.exe
+
+      - name: Archive artifact
+        shell: bash
+        run: |
+          cd build/oscar/release
+          zip -r ../../../OSCAR-windows.zip .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oscar-windows
+          path: OSCAR-windows.zip
+
+  macos:
+    name: macOS (Qt 5)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 5.15.2
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: qtserialport
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          qmake ../OSCAR_QT.pro CONFIG+=release
+
+      - name: Build
+        run: |
+          cd build
+          make -j"$(sysctl -n hw.logicalcpu)"
+
+      - name: Deploy app bundle
+        run: |
+          cd build/oscar
+          macdeployqt OSCAR.app -dmg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oscar-macos
+          path: |
+            build/oscar/OSCAR.app
+            build/oscar/OSCAR.dmg
