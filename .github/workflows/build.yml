@@ -98,9 +98,9 @@ jobs:
             [ -d "build/oscar/$d" ] && cp -r "build/oscar/$d" "$STAGE/opt/oscar/"
           done
           cat > "$STAGE/usr/bin/oscar" <<'EOF'
-#!/bin/sh
-exec /opt/oscar/OSCAR "$@"
-EOF
+          #!/bin/sh
+          exec /opt/oscar/OSCAR "$@"
+          EOF
           chmod +x "$STAGE/usr/bin/oscar"
           fpm -s dir -t deb -n oscar -v "$VERSION" --architecture amd64 \
             --description "Open Source CPAP Analysis Reporter" \
