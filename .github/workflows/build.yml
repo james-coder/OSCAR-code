@@ -155,7 +155,7 @@ jobs:
         shell: bash
         run: |
           cd build/oscar/release
-          zip -r ../../../OSCAR-windows.zip .
+          7z a ../../../OSCAR-windows.zip .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
