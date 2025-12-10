@@ -1,4 +1,5 @@
 name: Build OSCAR
+run-name: Build OSCAR${{ github.event.inputs.release_tag != '' && format(' ({0})', github.event.inputs.release_tag) || '' }}
 
 on:
   workflow_dispatch:
