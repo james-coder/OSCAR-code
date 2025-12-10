@@ -85,6 +85,68 @@ jobs:
           name: oscar-linux
           path: OSCAR-linux.tar.gz
 
+  debian:
+    name: Debian (Qt 5)
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - image: debian:bookworm-slim
+            label: debian12
+          - image: debian:trixie-slim
+            label: debian13
+    container:
+      image: ${{ matrix.image }}
+    env:
+      CCACHE_DIR: /__w/OSCAR-code/OSCAR-code/.ccache
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y git build-essential ccache \
+            qtbase5-dev qttools5-dev qttools5-dev-tools \
+            libqt5serialport5-dev libqt5svg5-dev libqt5opengl5-dev \
+            libudev-dev zlib1g-dev libgl1-mesa-dev
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ matrix.label }}-${{ hashFiles('**/*.pro') }}
+          restore-keys: |
+            ccache-${{ matrix.label }}-
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          export PATH="/usr/lib/ccache:${PATH}"
+          qmake QMAKE_LRELEASE=lrelease ../OSCAR_QT.pro CONFIG+=release
+
+      - name: Build
+        run: |
+          cd build
+          export PATH="/usr/lib/ccache:${PATH}"
+          make -j"$(nproc)"
+
+      - name: Package artifact
+        run: |
+          cd build/oscar
+          extras=""
+          for d in Translations Html Help; do
+            [ -d "$d" ] && extras="$extras $d"
+          done
+          tar czf "../../OSCAR-${{ matrix.label }}.tar.gz" OSCAR $extras
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oscar-${{ matrix.label }}
+          path: "OSCAR-${{ matrix.label }}.tar.gz"
+
   windows:
     name: Windows (Qt 5, MinGW)
     runs-on: windows-latest
@@ -241,6 +303,13 @@ jobs:
           mkdir -p dist
           # Linux tarball
           for f in release-artifacts/oscar-linux/*.tar.gz; do
+            [ -f "$f" ] && cp "$f" dist/
+          done
+          # Debian tarballs
+          for f in release-artifacts/oscar-debian12/*.tar.gz; do
+            [ -f "$f" ] && cp "$f" dist/
+          done
+          for f in release-artifacts/oscar-debian13/*.tar.gz; do
             [ -f "$f" ] && cp "$f" dist/
           done
           # macOS dmg
