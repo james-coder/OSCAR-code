@@ -240,6 +240,10 @@ jobs:
           draft: ${{ github.event.inputs.draft }}
           prerelease: ${{ github.event.inputs.prerelease }}
           target_commitish: ${{ github.sha }}
-          files: release-artifacts/**
+          files: |
+            release-artifacts/oscar-linux/oscar-linux.tar.gz
+            release-artifacts/oscar-macos/OSCAR-*-Qt5.dmg
+            release-artifacts/oscar-windows-Win64/OSCAR-Win64.zip
+            release-artifacts/oscar-windows-Win32/OSCAR-Win32.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
