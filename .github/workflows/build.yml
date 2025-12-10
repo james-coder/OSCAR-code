@@ -82,6 +82,15 @@ jobs:
   windows:
     name: Windows (Qt 5, MinGW)
     runs-on: windows-latest
+    strategy:
+        matrix:
+          include:
+            - qt_arch: win64_mingw81
+              mingw_dir: mingw810_64
+              arch_label: Win64
+            - qt_arch: win32_mingw81
+              mingw_dir: mingw810_32
+              arch_label: Win32
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -100,7 +109,7 @@ jobs:
           version: 5.15.2
           host: windows
           target: desktop
-          arch: win64_mingw81
+          arch: ${{ matrix.qt_arch }}
           tools: tools_mingw81
           cache: true
 
@@ -108,7 +117,7 @@ jobs:
         shell: bash
         run: |
           echo "$Qt5_DIR/bin" >> "$GITHUB_PATH"
-          echo "$IQTA_TOOLS/mingw810_64/bin" >> "$GITHUB_PATH"
+          echo "$IQTA_TOOLS/${{ matrix.mingw_dir }}/bin" >> "$GITHUB_PATH"
 
       - name: Configure and build
         shell: bash
@@ -149,19 +158,19 @@ jobs:
         run: |
           VERSION=$(sed -n 's/^#define VERSION "\(.*\)"/\1/p' oscar/VERSION)
           cd build/oscar/release
-          mv OSCAR.exe "OSCAR-${VERSION}-Win64-Qt5.exe"
+          mv OSCAR.exe "OSCAR-${VERSION}-${{ matrix.arch_label }}-Qt5.exe"
 
       - name: Archive artifact
         shell: bash
         run: |
           cd build/oscar/release
-          7z a ../../../OSCAR-windows.zip .
+          7z a "../../../OSCAR-${{ matrix.arch_label }}.zip" .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: oscar-windows
-          path: OSCAR-windows.zip
+          name: oscar-windows-${{ matrix.arch_label }}
+          path: "OSCAR-${{ matrix.arch_label }}.zip"
 
   macos:
     name: macOS (Qt 5)
