@@ -23,6 +23,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+
 jobs:
   linux:
     name: Linux (Qt 5)
@@ -238,3 +241,5 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
           target_commitish: ${{ github.sha }}
           files: release-artifacts/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
