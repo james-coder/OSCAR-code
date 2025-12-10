@@ -237,9 +237,9 @@ jobs:
         run: |
           mkdir -p dist
           # Linux tarball
-          if [ -f release-artifacts/oscar-linux/oscar-linux.tar.gz ]; then
-            cp release-artifacts/oscar-linux/oscar-linux.tar.gz dist/
-          fi
+          for f in release-artifacts/oscar-linux/*.tar.gz; do
+            [ -f "$f" ] && cp "$f" dist/
+          done
           # macOS dmg
           find release-artifacts -type f -name 'OSCAR-*-Qt5.dmg' -exec cp '{}' dist/ \; || true
           # Windows zips
