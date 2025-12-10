@@ -147,7 +147,7 @@ jobs:
       - name: Rename Windows binary
         shell: bash
         run: |
-          VERSION=$(grep -Po '(?<=#define VERSION ")[^"]+' oscar/VERSION)
+          VERSION=$(sed -n 's/^#define VERSION "\(.*\)"/\1/p' oscar/VERSION)
           cd build/oscar/release
           mv OSCAR.exe "OSCAR-${VERSION}-Win64-Qt5.exe"
 
