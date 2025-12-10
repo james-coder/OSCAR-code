@@ -31,7 +31,13 @@ jobs:
     name: Linux (Qt 5)
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        include:
+          - os: ubuntu-20.04
+            label: Ubuntu20
+          - os: ubuntu-22.04
+            label: Ubuntu22
+          - os: ubuntu-24.04
+            label: Ubuntu24
     runs-on: ${{ matrix.os }}
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -45,9 +51,11 @@ jobs:
           sudo apt-get install -y \
             build-essential \
             ccache \
+            ruby ruby-dev \
             qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools qttools5-dev qttools5-dev-tools \
             libqt5serialport5-dev libqt5svg5-dev libqt5opengl5-dev \
             libudev-dev zlib1g-dev libgl1-mesa-dev
+          sudo gem install --no-document fpm
 
       - name: Restore ccache
         uses: actions/cache@v4
@@ -79,11 +87,34 @@ jobs:
           done
           tar czf ../../OSCAR-linux.tar.gz OSCAR $extras
 
+      - name: Build deb package
+        run: |
+          VERSION=$(sed -n 's/^#define VERSION "\(.*\)"/\1/p' oscar/VERSION)
+          STAGE=/tmp/oscar-pkg
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE/opt/oscar" "$STAGE/usr/bin"
+          cp build/oscar/OSCAR "$STAGE/opt/oscar/"
+          for d in Translations Html Help; do
+            [ -d "build/oscar/$d" ] && cp -r "build/oscar/$d" "$STAGE/opt/oscar/"
+          done
+          cat > "$STAGE/usr/bin/oscar" <<'EOF'
+#!/bin/sh
+exec /opt/oscar/OSCAR "$@"
+EOF
+          chmod +x "$STAGE/usr/bin/oscar"
+          fpm -s dir -t deb -n oscar -v "$VERSION" --architecture amd64 \
+            --description "Open Source CPAP Analysis Reporter" \
+            -d libqt5widgets5 -d libqt5gui5 -d libqt5network5 -d libqt5xml5 -d libqt5printsupport5 -d libqt5serialport5 -d libqt5opengl5 \
+            -C "$STAGE" \
+            --package "oscar_${VERSION}-${{ matrix.label }}_amd64-Qt5.deb"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: oscar-linux
-          path: OSCAR-linux.tar.gz
+          name: oscar-linux-${{ matrix.label }}
+          path: |
+            OSCAR-linux.tar.gz
+            oscar_*${{ matrix.label }}_amd64-Qt5.deb
 
   debian:
     name: Debian (Qt 5)
@@ -327,7 +358,10 @@ EOF
         run: |
           mkdir -p dist
           # Linux tarball
-          for f in release-artifacts/oscar-linux/*.tar.gz; do
+          for f in release-artifacts/oscar-linux-*/**/*.tar.gz; do
+            [ -f "$f" ] && cp "$f" dist/
+          done
+          for f in release-artifacts/oscar-linux-*/**/*.deb; do
             [ -f "$f" ] && cp "$f" dist/
           done
           # Debian tarballs
