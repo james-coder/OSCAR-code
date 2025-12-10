@@ -29,8 +29,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
-            label: Ubuntu20
           - os: ubuntu-22.04
             label: Ubuntu22
           - os: ubuntu-24.04
