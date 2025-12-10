@@ -232,6 +232,25 @@ jobs:
         with:
           path: release-artifacts
 
+      - name: Collect release files
+        shell: bash
+        run: |
+          mkdir -p dist
+          # Linux tarball
+          if [ -f release-artifacts/oscar-linux/oscar-linux.tar.gz ]; then
+            cp release-artifacts/oscar-linux/oscar-linux.tar.gz dist/
+          fi
+          # macOS dmg
+          find release-artifacts -type f -name 'OSCAR-*-Qt5.dmg' -exec cp '{}' dist/ \; || true
+          # Windows zips
+          if [ -f release-artifacts/oscar-windows-Win64/OSCAR-Win64.zip ]; then
+            cp release-artifacts/oscar-windows-Win64/OSCAR-Win64.zip dist/
+          fi
+          if [ -f release-artifacts/oscar-windows-Win32/OSCAR-Win32.zip ]; then
+            cp release-artifacts/oscar-windows-Win32/OSCAR-Win32.zip dist/
+          fi
+          ls -l dist
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
@@ -240,10 +259,6 @@ jobs:
           draft: ${{ github.event.inputs.draft }}
           prerelease: ${{ github.event.inputs.prerelease }}
           target_commitish: ${{ github.sha }}
-          files: |
-            release-artifacts/oscar-linux/oscar-linux.tar.gz
-            release-artifacts/oscar-macos/OSCAR-*-Qt5.dmg
-            release-artifacts/oscar-windows-Win64/OSCAR-Win64.zip
-            release-artifacts/oscar-windows-Win32/OSCAR-Win32.zip
+          files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
