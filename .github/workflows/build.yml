@@ -29,7 +29,10 @@ permissions:
 jobs:
   linux:
     name: Linux (Qt 5)
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
@@ -50,9 +53,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ hashFiles('**/*.pro') }}
+          key: ccache-${{ matrix.os }}-${{ hashFiles('**/*.pro') }}
           restore-keys: |
-            ccache-${{ runner.os }}-
+            ccache-${{ matrix.os }}-
 
       - name: Configure
         run: |
