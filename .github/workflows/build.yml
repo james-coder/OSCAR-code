@@ -106,7 +106,9 @@ jobs:
           apt-get install -y git build-essential ccache \
             qtbase5-dev qttools5-dev qttools5-dev-tools \
             libqt5serialport5-dev libqt5svg5-dev libqt5opengl5-dev \
-            libudev-dev zlib1g-dev libgl1-mesa-dev
+            libudev-dev zlib1g-dev libgl1-mesa-dev \
+            ruby ruby-dev rpm
+          gem install --no-document fpm
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -141,11 +143,34 @@ jobs:
           done
           tar czf "../../OSCAR-${{ matrix.label }}.tar.gz" OSCAR $extras
 
+      - name: Build deb package
+        run: |
+          VERSION=$(sed -n 's/^#define VERSION "\(.*\)"/\1/p' oscar/VERSION)
+          STAGE=/tmp/oscar-pkg
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE/opt/oscar" "$STAGE/usr/bin"
+          cp build/oscar/OSCAR "$STAGE/opt/oscar/"
+          for d in Translations Html Help; do
+            [ -d "build/oscar/$d" ] && cp -r "build/oscar/$d" "$STAGE/opt/oscar/"
+          done
+          cat > "$STAGE/usr/bin/oscar" <<'EOF'
+#!/bin/sh
+exec /opt/oscar/OSCAR "$@"
+EOF
+          chmod +x "$STAGE/usr/bin/oscar"
+          fpm -s dir -t deb -n oscar -v "$VERSION" --architecture amd64 \
+            --description "Open Source CPAP Analysis Reporter" \
+            -d libqt5widgets5 -d libqt5gui5 -d libqt5network5 -d libqt5xml5 -d libqt5printsupport5 -d libqt5serialport5 -d libqt5opengl5 \
+            -C "$STAGE" \
+            --package "oscar_${VERSION}-${{ matrix.label }}_amd64-Qt5.deb"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: oscar-${{ matrix.label }}
-          path: "OSCAR-${{ matrix.label }}.tar.gz"
+          path: |
+            OSCAR-${{ matrix.label }}.tar.gz
+            oscar_*${{ matrix.label }}_amd64-Qt5.deb
 
   windows:
     name: Windows (Qt 5, MinGW)
@@ -310,6 +335,12 @@ jobs:
             [ -f "$f" ] && cp "$f" dist/
           done
           for f in release-artifacts/oscar-debian13/*.tar.gz; do
+            [ -f "$f" ] && cp "$f" dist/
+          done
+          for f in release-artifacts/oscar-debian12/*.deb; do
+            [ -f "$f" ] && cp "$f" dist/
+          done
+          for f in release-artifacts/oscar-debian13/*.deb; do
             [ -f "$f" ] && cp "$f" dist/
           done
           # macOS dmg
