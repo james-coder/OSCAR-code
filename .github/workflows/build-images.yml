@@ -1,0 +1,53 @@
+name: Build CI Images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-images:
+    name: Build ${{ matrix.label }} image
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - base: ubuntu:22.04
+            label: ubuntu22
+          - base: ubuntu:24.04
+            label: ubuntu24
+          - base: debian:bookworm-slim
+            label: debian12
+          - base: debian:trixie-slim
+            label: debian13
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set lower-case owner
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .github/docker/Dockerfile.builder
+          build-args: |
+            BASE=${{ matrix.base }}
+          tags: ghcr.io/${{ env.OWNER_LC }}/oscar-builder:${{ matrix.label }}
+          push: true
+          cache-from: type=registry,ref=ghcr.io/${{ env.OWNER_LC }}/oscar-builder:${{ matrix.label }}
+          cache-to: type=inline
