@@ -271,7 +271,16 @@ jobs:
           PLUGIN_DIR=$(cygpath -w "$Qt5_DIR/plugins")
           export QT_PLUGIN_PATH="$PLUGIN_DIR"
           WINDEPLOY=$(cygpath -w "$Qt5_DIR/bin/windeployqt.exe")
-          cmd.exe /c "\"$WINDEPLOY\" --release --dir $(cygpath -w release) $(cygpath -w "$BIN")"
+          # Run windeployqt to pull in Qt DLLs into release/
+          cmd.exe /c "\"$WINDEPLOY\" --release --compiler-runtime --dir $(cygpath -w release) $(cygpath -w "$BIN")"
+          # Fallback: ensure core Qt DLLs are present
+          for dll in Qt5Core.dll Qt5Gui.dll Qt5Widgets.dll Qt5Network.dll Qt5Xml.dll Qt5PrintSupport.dll Qt5SerialPort.dll Qt5OpenGL.dll; do
+            if [ ! -f "release/$dll" ] && [ -f "$Qt5_DIR/bin/$dll" ]; then
+              cp "$Qt5_DIR/bin/$dll" release/
+            fi
+          done
+          echo "Contents of release/:"
+          ls -lh release
 
       - name: Rename Windows binary
         shell: bash
