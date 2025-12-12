@@ -271,7 +271,7 @@ jobs:
           PLUGIN_DIR=$(cygpath -w "$Qt5_DIR/plugins")
           export QT_PLUGIN_PATH="$PLUGIN_DIR"
           WINDEPLOY=$(cygpath -w "$Qt5_DIR/bin/windeployqt.exe")
-          cmd.exe /c "$WINDEPLOY --release $(cygpath -w "$BIN")"
+          cmd.exe /c "\"$WINDEPLOY\" --release --dir $(cygpath -w release) $(cygpath -w "$BIN")"
 
       - name: Rename Windows binary
         shell: bash
@@ -283,8 +283,8 @@ jobs:
       - name: Archive artifact
         shell: bash
         run: |
-          cd build/oscar/release
-          7z a "../../../OSCAR-${{ matrix.arch_label }}.zip" .
+          cd build/oscar
+          7z a "../OSCAR-${{ matrix.arch_label }}.zip" release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
