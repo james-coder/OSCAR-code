@@ -240,14 +240,6 @@ jobs:
           $paths = $env:PATH -split ';' | Where-Object {$_ -notmatch 'WindowsApps'}
           "PATH=$($paths -join ';')" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Restore Qt cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.QT_BASE }}
-          key: qt-${{ matrix.arch_label }}-5.15.2
-          restore-keys: |
-            qt-${{ matrix.arch_label }}-
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
@@ -256,7 +248,7 @@ jobs:
           target: desktop
           arch: ${{ matrix.qt_arch }}
           tools: tools_mingw81
-          cache: false
+          cache: true
           dir: ${{ env.QT_BASE }}
 
       - name: Add Qt and MinGW to PATH
