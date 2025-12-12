@@ -1,0 +1,182 @@
+name: Build OSCAR (GHCR Images)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag name to create a GitHub release (leave empty to just build artifacts)"
+        required: false
+      release_name:
+        description: "Release title (defaults to tag name)"
+        required: false
+      draft:
+        description: "Publish as draft"
+        required: false
+        default: true
+        type: boolean
+      prerelease:
+        description: "Mark as prerelease"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  OWNER_LC: ${{ github.repository_owner && github.repository_owner != '' && toJson(github.repository_owner) || github.actor }}
+
+jobs:
+  linux:
+    name: Linux (GHCR)
+    strategy:
+      matrix:
+        include:
+          - image: ghcr.io/${{ github.repository_owner }}/oscar-builder:ubuntu22
+            label: Ubuntu22
+          - image: ghcr.io/${{ github.repository_owner }}/oscar-builder:ubuntu24
+            label: Ubuntu24
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+    env:
+      CCACHE_DIR: /ccache
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ matrix.label }}-${{ hashFiles('**/*.pro') }}
+          restore-keys: |
+            ccache-${{ matrix.label }}-
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          export PATH="/usr/lib/ccache:${PATH}"
+          qmake QMAKE_LRELEASE=lrelease ../OSCAR_QT.pro CONFIG+=release
+
+      - name: Build
+        run: |
+          cd build
+          export PATH="/usr/lib/ccache:${PATH}"
+          make -j"$(nproc)"
+
+      - name: Package artifact
+        run: |
+          cd build/oscar
+          extras=""
+          for d in Translations Html Help; do
+            [ -d "$d" ] && extras="$extras $d"
+          done
+          tar czf ../../OSCAR-linux.tar.gz OSCAR $extras
+
+      - name: Build deb package
+        run: |
+          VERSION=$(sed -n 's/^#define VERSION "\(.*\)"/\1/p' oscar/VERSION)
+          STAGE=/tmp/oscar-pkg
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE/opt/oscar" "$STAGE/usr/bin"
+          cp build/oscar/OSCAR "$STAGE/opt/oscar/"
+          for d in Translations Html Help; do
+            [ -d "build/oscar/$d" ] && cp -r "build/oscar/$d" "$STAGE/opt/oscar/"
+          done
+          cat > "$STAGE/usr/bin/oscar" <<'EOF'
+          #!/bin/sh
+          exec /opt/oscar/OSCAR "$@"
+          EOF
+          chmod +x "$STAGE/usr/bin/oscar"
+          fpm -s dir -t deb -n oscar -v "$VERSION" --architecture amd64 \
+            --description "Open Source CPAP Analysis Reporter" \
+            -d libqt5widgets5 -d libqt5gui5 -d libqt5network5 -d libqt5xml5 -d libqt5printsupport5 -d libqt5serialport5 -d libqt5opengl5 \
+            -C "$STAGE" \
+            --package "oscar_${VERSION}-${{ matrix.label }}_amd64-Qt5.deb"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oscar-linux-${{ matrix.label }}
+          path: |
+            OSCAR-linux.tar.gz
+            oscar_*${{ matrix.label }}_amd64-Qt5.deb
+
+  debian:
+    name: Debian (GHCR)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - image: ghcr.io/${{ github.repository_owner }}/oscar-builder:debian12
+            label: debian12
+          - image: ghcr.io/${{ github.repository_owner }}/oscar-builder:debian13
+            label: debian13
+    container:
+      image: ${{ matrix.image }}
+    env:
+      CCACHE_DIR: /ccache
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ matrix.label }}-${{ hashFiles('**/*.pro') }}
+          restore-keys: |
+            ccache-${{ matrix.label }}-
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          export PATH="/usr/lib/ccache:${PATH}"
+          qmake QMAKE_LRELEASE=lrelease ../OSCAR_QT.pro CONFIG+=release
+
+      - name: Build
+        run: |
+          cd build
+          export PATH="/usr/lib/ccache:${PATH}"
+          make -j"$(nproc)"
+
+      - name: Package artifact
+        run: |
+          cd build/oscar
+          extras=""
+          for d in Translations Html Help; do
+            [ -d "$d" ] && extras="$extras $d"
+          done
+          tar czf "../../OSCAR-${{ matrix.label }}.tar.gz" OSCAR $extras
+
+      - name: Build deb package
+        run: |
+          VERSION=$(sed -n 's/^#define VERSION "\(.*\)"/\1/p' oscar/VERSION)
+          STAGE=/tmp/oscar-pkg
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE/opt/oscar" "$STAGE/usr/bin"
+          cp build/oscar/OSCAR "$STAGE/opt/oscar/"
+          for d in Translations Html Help; do
+            [ -d "build/oscar/$d" ] && cp -r "build/oscar/$d" "$STAGE/opt/oscar/"
+          done
+          cat > "$STAGE/usr/bin/oscar" <<'EOF'
+          #!/bin/sh
+          exec /opt/oscar/OSCAR "$@"
+          EOF
+          chmod +x "$STAGE/usr/bin/oscar"
+          fpm -s dir -t deb -n oscar -v "$VERSION" --architecture amd64 \
+            --description "Open Source CPAP Analysis Reporter" \
+            -d libqt5widgets5 -d libqt5gui5 -d libqt5network5 -d libqt5xml5 -d libqt5printsupport5 -d libqt5serialport5 -d libqt5opengl5 \
+            -C "$STAGE" \
+            --package "oscar_${VERSION}-${{ matrix.label }}_amd64-Qt5.deb"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oscar-${{ matrix.label }}
+          path: |
+            OSCAR-${{ matrix.label }}.tar.gz
+            oscar_*${{ matrix.label }}_amd64-Qt5.deb
